@@ -1,0 +1,30 @@
+# web/ carries its own .gitignore for Next.js specifics. This covers the repo root.
+
+# Secrets. .env.example is committed, real values never are.
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+*.tsbuildinfo
+
+# Next.js
+.next/
+out/
+
+# Vercel
+.vercel
+
+# Clerk keyless dev state, can contain secrets
+.clerk/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Agent scratch
+.claude/
+.superpowers/
