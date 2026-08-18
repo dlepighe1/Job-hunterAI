@@ -454,6 +454,15 @@ test.
   introduced a foreign-key bug. Nothing called `ensureProfile`, so every new user's first
   save would have failed, and no test caught it because the tests mock the insert. Only a
   real signed-in write would have found it. It is fixed, but the class of bug is not.
+
+  **Narrowed 2026-08-18** by `web/lib/db.schema.test.ts`, which checks every column
+  `lib/db.ts` names against `supabase/schema.sql`: 274 references across all nine tables,
+  including columns added by `alter table ... add column if not exists`, which a parser
+  reading only the `create` bodies reports as missing. It covers the cheapest and most likely
+  half of this class — a renamed or misspelled column, which every mocked test accepts and
+  which then fails only against the real project. It cannot cover types, nullability,
+  constraint violations or foreign keys, so a live signed-in write is still the thing that
+  would have caught the `ensureProfile` bug itself.
 - ~~`ObsidianBackdrop` is mounted on the marketing shell only.~~ **Closed 2026-08-18.** The
   backdrop now renders on `.obsidian-app` as spec §3 always specified, verified on all seven
   app screens at six widths: fixed, `z-index: -4`, `pointer-events: none`, 30 contours and 10
