@@ -1,71 +1,183 @@
-﻿"use client";
+"use client";
 
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-const activity = [
-  { title: "Interview confirmed", detail: "Google · Platform Strategy", time: "Tomorrow, 10:00 AM", tone: "blue" },
-  { title: "New 98% match", detail: "Founders Fund · Portfolio Systems", time: "12 minutes ago", tone: "gold" },
-  { title: "Response received", detail: "NVIDIA · Global Operations", time: "Yesterday", tone: "neutral" },
-  { title: "Contact engaged", detail: "Maya Chen · Stripe", time: "2 days ago", tone: "blue" },
-];
+import { CareerIntelligence } from "@/components/dashboard/CareerIntelligence";
+import { HuntDrawer } from "@/components/dashboard/HuntDrawer";
+import { KpiCards } from "@/components/dashboard/KpiCards";
+import { MatchDistribution } from "@/components/dashboard/MatchDistribution";
+import { PipelineChart } from "@/components/dashboard/PipelineChart";
+import { PriorityTargets } from "@/components/dashboard/PriorityTargets";
+import { RecentIntelligence } from "@/components/dashboard/RecentIntelligence";
+import { RoleLandscape } from "@/components/dashboard/RoleLandscape";
+import { VelocityChart } from "@/components/dashboard/VelocityChart";
+import { useDevIdentity } from "@/components/DevIdentity";
+import { useDashboard } from "@/lib/use-dashboard";
+import { useNow } from "@/lib/use-now";
 
-const targets = [
-  { id: 1, score: "99.4%", title: "VP of Engineering", company: "Anthropic", location: "San Francisco · Hybrid", salary: "$450K–$600K TC", note: "Your distributed systems leadership maps directly to the team’s current scaling mandate." },
-  { id: 2, score: "98.1%", title: "Head of Cloud Operations", company: "Databricks", location: "Seattle · Hybrid", salary: "Equity focused", note: "Strong technical operations fit with a manageable gap in public-cloud cost ownership." },
-];
-
+/**
+ * The authenticated home.
+ *
+ * Every panel answers a different question, and that is the constraint that decides what is
+ * allowed on this page:
+ *
+ *   KPI cards:           how much am I doing?
+ *   Velocity:            how is that changing over time?
+ *   Match Distribution: how strong are the roles I am targeting?
+ *   Pipeline:            where do my live opportunities stand?
+ *   Role Landscape:      what else does my experience support?
+ *   Priority Targets:    what have I decided to focus on?
+ *   Recent Intelligence: what just happened?
+ *   Career Intelligence: what patterns are emerging?
+ *
+ * Three things are deliberately absent. There is no "Upcoming" panel, because interview
+ * dates already live on the applications they belong to and a second copy would drift. No
+ * "Today's Mission", which overlaps Priority Targets. And no "Job Hunt Pulse", since a composite
+ * score with no defined interpretation is less useful than any one of the sentences in
+ * Career Intelligence.
+ *
+ * This is the third version of this page. The first invented its metrics; the second was
+ * honest but static. This one counts real data and says so when there is none.
+ */
 export default function DashboardPage() {
-  const [selected, setSelected] = useState<(typeof targets)[number] | null>(null);
-  const [period, setPeriod] = useState("8 weeks");
+  const { user } = useUser();
+  const dev = useDevIdentity();
+  const { data, state, reload } = useDashboard();
+  const [huntOpen, setHuntOpen] = useState(false);
+  const now = useNow();
+
+  const { applications, contacts, affinities, insights, counts } = data;
+
+  const derived = useMemo(() => {
+    const week = 7 * 24 * 60 * 60 * 1000;
+    const month = 30 * 24 * 60 * 60 * 1000;
+
+    const since = (iso: string | null, window: number) => {
+      if (!iso) return false;
+      const at = new Date(iso).getTime();
+      return !Number.isNaN(at) && now - at <= window;
+    };
+
+    return {
+      interviews: applications.filter((a) => a.status === "interview").length,
+      offers: applications.filter((a) => a.status === "offer").length,
+      appliedThisWeek: applications.filter((a) => since(a.appliedAt, week)).length,
+      contactsThisMonth: contacts.filter((c) => since(c.createdAt, month)).length,
+    };
+  }, [applications, contacts, now]);
+
+  const firstName =
+    user?.firstName?.trim() ||
+    user?.fullName?.trim().split(" ")[0] ||
+    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+    (dev.active ? dev.name : "") ||
+    "there";
+
+  // Before hydration there is no clock, so the neutral greeting renders and is replaced
+  // once the client has one. Reading the hour during render would mismatch on hydration
+  // for anyone whose server and browser disagree about the time of day.
+  const greeting =
+    now === 0
+      ? "Welcome back"
+      : (() => {
+          const hour = new Date(now).getHours();
+          return hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+        })();
 
   return (
-    <div className="executive-page">
-      <header className="page-header">
-        <div><span className="page-kicker">CAREER COMMAND CENTER</span><h1>Executive Overview</h1><p>Signals, momentum, and the next best action across your search.</p></div>
-        <div className="page-actions"><button className="icon-button" type="button" aria-label="Notifications">○<i /></button><Link href="/matcher" className="obsidian-button">Start Matcher <span>↗</span></Link></div>
+    <>
+      <header className="dash-header">
+        <div>
+          <h1>
+            {greeting}, {firstName} <span aria-hidden="true">👋</span>
+          </h1>
+          <p>Here&apos;s how your career search is developing.</p>
+        </div>
+
+        <div className="dash-header__actions">
+          {/* Hunt, not a generic Search. The primary utility on this page is getting to the
+              boards the user actually applies through. */}
+          <button type="button" className="button button--primary" onClick={() => setHuntOpen(true)}>
+            Hunt
+          </button>
+        </div>
       </header>
 
-      <section className="metric-strip">
-        <article><span>ACTIVE APPLICATIONS</span><strong>24</strong><p><b>+6</b> this month</p></article>
-        <article><span>INTERVIEW RATE</span><strong>18.7%</strong><p><b>+4.2%</b> from last cycle</p></article>
-        <article><span>NETWORK MOMENTUM</span><strong>12</strong><p><b>5</b> warm conversations</p></article>
-        <article><span>AVG. MATCH QUALITY</span><strong>91%</strong><p><b>Top 8%</b> of targets</p></article>
-      </section>
-
-      <section className="dashboard-grid">
-        <article className="obsidian-panel velocity-panel">
-          <div className="panel-heading"><div><span>SEARCH MOMENTUM</span><h2>Job Hunt Velocity</h2><p>Applications and interview invitations over time.</p></div><select value={period} onChange={(e)=>setPeriod(e.target.value)} aria-label="Chart period"><option>8 weeks</option><option>12 weeks</option><option>6 months</option></select></div>
-          <div className="velocity-chart">
-            <div className="chart-grid"><i /><i /><i /></div>
-            <div className="velocity-line" aria-hidden="true"><span style={{left:"2%",bottom:"14%"}}/><span style={{left:"16%",bottom:"18%"}}/><span style={{left:"30%",bottom:"37%"}}/><span style={{left:"44%",bottom:"44%"}}/><span style={{left:"58%",bottom:"55%"}}/><span style={{left:"72%",bottom:"61%"}}/><span style={{left:"86%",bottom:"76%"}}/><span style={{left:"98%",bottom:"82%"}}/></div>
-            <div className="chart-columns">{[22,28,43,50,59,67,78,88].map((height,index)=><i key={index} style={{height:`${height}%`}}><span>{[5,8,12,10,15,18,22,25][index]}</span></i>)}</div>
+      {state.kind === "loading" && (
+        <div className="dash-grid" aria-busy="true">
+          <div className="kpi-row">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="skeleton" style={{ height: 96 }} />
+            ))}
           </div>
-          <div className="chart-footer">{["W1","W2","W3","W4","W5","W6","W7","W8"].map(w=><span key={w}>{w}</span>)}</div>
-        </article>
+          <div className="skeleton" style={{ height: 300 }} />
+          <div className="skeleton" style={{ height: 260 }} />
+        </div>
+      )}
 
-        <article className="obsidian-panel distribution-panel">
-          <div className="panel-heading"><div><span>PORTFOLIO HEALTH</span><h2>Match Distribution</h2><p>Relevance across saved roles.</p></div></div>
-          <div className="distribution-list">
-            <div><p><span>HIGH CONFIDENCE</span><b>14 roles</b></p><i><u style={{width:"76%"}} /></i><small>90–100%</small></div>
-            <div><p><span>MARKET READY</span><b>38 roles</b></p><i><u style={{width:"53%"}} /></i><small>70–89%</small></div>
-            <div><p><span>NEEDS POSITIONING</span><b>12 roles</b></p><i><u style={{width:"22%"}} /></i><small>Below 70%</small></div>
+      {state.kind === "unauthenticated" && (
+        <div className="notice" data-tone="info">
+          <strong>Sign in to see your dashboard</strong>
+          This page summarises data stored against an account. The matcher works signed out
+          and stores nothing:{" "}
+          <Link href="/matcher" style={{ color: "var(--cyan)", textDecoration: "underline" }}>
+            score a resume
+          </Link>{" "}
+          without one.
+        </div>
+      )}
+
+      {state.kind === "unconfigured" && (
+        <div className="notice" data-tone="warn">
+          <strong>No database configured</strong>
+          {state.message}
+        </div>
+      )}
+
+      {state.kind === "failed" && (
+        <div className="notice" data-tone="error" role="alert">
+          <strong>Could not load your dashboard</strong>
+          {state.message}
+          <div className="page-actions">
+            <button type="button" className="button button--ghost" onClick={reload}>
+              Try again
+            </button>
           </div>
-          <Link href="/matcher" className="panel-link">Run a new analysis <span>→</span></Link>
-        </article>
+        </div>
+      )}
 
-        <article className="obsidian-panel activity-panel">
-          <div className="panel-heading"><div><span>LIVE SIGNALS</span><h2>Recent Intelligence</h2></div><Link href="/applications">View all</Link></div>
-          <div className="activity-list">{activity.map((item)=><div key={item.title}><i className={`tone-${item.tone}`} /><span><strong>{item.title}</strong><p>{item.detail}</p><small>{item.time}</small></span></div>)}</div>
-        </article>
+      {state.kind === "ready" && (
+        <div className="dash-grid">
+          <KpiCards
+            contacts={counts.contacts}
+            applications={counts.applications}
+            interviews={derived.interviews}
+            upcomingInterviews={derived.offers}
+            resumes={counts.resumes}
+            tailored={counts.tailored}
+            appliedThisWeek={derived.appliedThisWeek}
+            contactsThisMonth={derived.contactsThisMonth}
+          />
 
-        <section className="priority-panel">
-          <div className="priority-heading"><div><span>RECOMMENDED NEXT MOVES</span><h2>Priority Targets</h2><p>Roles where your evidence and current momentum are strongest.</p></div><Link href="/applications">All applications →</Link></div>
-          <div className="target-grid">{targets.map(target=><article key={target.id} className="target-card"><div className="target-card__top"><span>{target.company.slice(0,1)}</span><b>{target.score} MATCH</b></div><small>{target.salary}</small><h3>{target.title}</h3><p>{target.company} · {target.location}</p><div><i>TOP PRIORITY</i><button onClick={()=>setSelected(target)} type="button">Review target</button></div></article>)}</div>
-        </section>
-      </section>
+          <div className="dash-row dash-row--analytics">
+            <VelocityChart applications={applications} />
+            <MatchDistribution applications={applications} />
+            <PipelineChart applications={applications} />
+          </div>
 
-      {selected && <div className="detail-modal" role="dialog" aria-modal="true" aria-label="Target details"><button className="detail-modal__backdrop" onClick={()=>setSelected(null)} aria-label="Close" /><article><button onClick={()=>setSelected(null)} aria-label="Close">×</button><span className="page-kicker">PRIORITY TARGET · {selected.score} MATCH</span><h2>{selected.title}</h2><p>{selected.company} · {selected.location}</p><div className="modal-insight">{selected.note}</div><div className="modal-actions"><Link href="/matcher" className="obsidian-button">Analyze this role ↗</Link><Link href="/network" className="ghost-button">Find a connection</Link></div></article></div>}
-    </div>
+          <div className="dash-row dash-row--landscape">
+            <RoleLandscape affinities={affinities} baselineCount={counts.baselineAnalyses} />
+            <PriorityTargets applications={applications} contacts={contacts} />
+            <RecentIntelligence applications={applications} resumeCount={counts.resumes} />
+          </div>
+
+          <CareerIntelligence insights={insights} />
+        </div>
+      )}
+
+      <HuntDrawer open={huntOpen} onClose={() => setHuntOpen(false)} />
+    </>
   );
 }

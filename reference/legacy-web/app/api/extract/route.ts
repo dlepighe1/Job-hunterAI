@@ -91,13 +91,13 @@ export async function POST(request: Request) {
   }
 
   if (text.length < 100) {
-    // Almost certainly a scanned image with no text layer. Say so — an empty textarea
+    // Almost certainly a scanned image with no text layer. Say so, because an empty textarea
     // with no explanation is the worst possible outcome here.
     return NextResponse.json(
       {
         error: "NO_TEXT_LAYER",
         message:
-          "That PDF has no extractable text — it is probably a scan or an image export. Paste the resume text instead.",
+          "That PDF has no extractable text. It is probably a scan or an image export. Paste the resume text instead.",
       },
       { status: 422 },
     );

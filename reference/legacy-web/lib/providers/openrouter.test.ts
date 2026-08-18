@@ -61,7 +61,7 @@ describe("response parsing", () => {
   });
 
   it("does not truncate on a closing brace inside a string value", async () => {
-    // The naive regex approach (/\{.*\}/) breaks here — a brace in the summary text
+    // The naive regex approach (/\{.*\}/) breaks here, since a brace in the summary text
     // ends the match early and the JSON never parses.
     const tricky = { ...VALID, summary: "Uses a closing brace } in the prose. Odd, but legal." };
     mockFetch(reply(JSON.stringify(tricky)));
@@ -92,7 +92,7 @@ describe("repair retry", () => {
     expect(result.matchScore).toBe(72);
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
-    // The repair turn must tell the model what was actually wrong — a bare "try again"
+    // The repair turn must tell the model what was actually wrong, because a bare "try again"
     // reliably produces the same broken output a second time.
     const secondBody = JSON.parse(fetchMock.mock.calls[1][1].body);
     const repairPrompt = secondBody.messages.at(-1).content;

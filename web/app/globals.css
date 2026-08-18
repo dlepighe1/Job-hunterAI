@@ -1,119 +1,6862 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
-@theme{--font-sans:var(--font-inter),ui-sans-serif,system-ui,sans-serif;--font-mono:var(--font-geist-mono),ui-monospace,monospace;--color-brand:var(--accent-color,#adc6ff);--color-brand-hover:var(--accent-color-hover,#d8e2ff);--color-accent:var(--accent-color,#adc6ff);--color-accent-hover:var(--accent-color-hover,#d8e2ff)}
-:root{--font-inter:"Inter","Segoe UI",Arial,sans-serif;--font-hanken:"Hanken Grotesk","Aptos Display","Segoe UI",sans-serif;--font-geist-mono:"Geist Mono","SFMono-Regular",Consolas,monospace;--obsidian:#070a0b;--panel:#101415;--line:#272d30;--text:#e7eaeb;--muted:#969da1;--blue:#adc6ff;--gold:#e9c349}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--obsidian);color:var(--text);font-family:var(--font-inter),sans-serif}button,input,textarea,select{font:inherit}a{color:inherit;text-decoration:none}::selection{background:#adc6ff47;color:#fff}::-webkit-scrollbar{width:9px}::-webkit-scrollbar-track{background:#080b0c}::-webkit-scrollbar-thumb{background:#303638;border:2px solid #080b0c;border-radius:10px}h1,h2,h3,.product-mark,.marketing-mark{font-family:var(--font-hanken),sans-serif}
-.button,.obsidian-button,.ghost-button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:14px;border:1px solid transparent;border-radius:5px;padding:0 20px;font-family:var(--font-geist-mono),monospace;font-size:12px;font-weight:650;letter-spacing:.055em;cursor:pointer;transition:.2s}.button:hover,.obsidian-button:hover,.ghost-button:hover{transform:translateY(-2px)}.button--primary,.obsidian-button{background:var(--blue);color:#07172c;border-color:#ffffff59;box-shadow:0 12px 35px #4b8eff1f}.button--primary:hover,.obsidian-button:hover{background:#d8e2ff}.button--ghost,.ghost-button{background:transparent;color:#dfe4e6;border-color:#3b4245}.button--ghost:hover,.ghost-button:hover{background:#ffffff0a}.button--light{background:#edf0f1;color:#080b0c;border-radius:999px}
-.marketing-shell{--accent-color:#adc6ff;color-scheme:dark;min-height:100vh;background:radial-gradient(circle at 50% 18%,#3559871f,transparent 28rem),linear-gradient(#090d0e,#070a0b 45%,#090d10);color:#e9eced;overflow:hidden}
-.marketing-nav{width:min(1320px,calc(100% - 64px));height:78px;margin:auto;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff12;position:relative;z-index:5}.marketing-mark{display:inline-flex;align-items:center;gap:10px;font-size:19px;font-weight:750}.marketing-mark>span{width:26px;height:26px;display:grid;place-items:center;border-radius:3px;background:var(--blue);color:#07172c;font-size:13px;font-family:var(--font-geist-mono)}.marketing-nav nav,.marketing-footer nav{display:flex;gap:32px}.marketing-nav nav a,.text-link{color:#979fa3;font-family:var(--font-geist-mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase}.marketing-nav nav a:hover,.text-link:hover{color:#fff}.marketing-nav__actions{display:flex;align-items:center;gap:24px}
-.hero-section{width:min(1280px,calc(100% - 64px));margin:auto;padding:105px 0 96px;text-align:center}.eyebrow{display:inline-flex;align-items:center;gap:9px;color:#aab0b3;font-family:var(--font-geist-mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase}.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--blue);box-shadow:0 0 18px var(--blue)}.hero-section h1{max-width:980px;margin:24px auto 20px;font-size:clamp(54px,7.2vw,102px);line-height:.94;letter-spacing:-.06em;font-weight:750}.hero-section h1 em,.final-cta h2 em{color:var(--blue);font-style:normal}.hero-section>p{max-width:680px;margin:auto;color:#9ca4a8;font-size:17px;line-height:1.75}.hero-actions{display:flex;justify-content:center;gap:12px;margin-top:36px}.trust-row{display:flex;justify-content:center;gap:34px;margin-top:22px;color:#687074;font-family:var(--font-geist-mono);font-size:9px;text-transform:uppercase}.trust-row span:before{content:"✓";color:#90a7d8;margin-right:8px}
-.product-window{width:min(1120px,100%);height:610px;margin:92px auto 0;display:grid;grid-template-columns:210px 1fr;text-align:left;background:#0b0f10;border:1px solid #31383b;border-radius:12px;box-shadow:0 55px 120px #0008,0 0 80px #4b8eff0f;overflow:hidden}.product-window__rail{padding:26px 20px;background:#111516;border-right:1px solid #292f31}.product-window__rail .marketing-mark{font-size:15px;margin-bottom:32px}.mini-profile{display:flex;align-items:center;gap:10px;padding:13px 9px;margin-bottom:22px;border:1px solid #282e31;background:#15191a}.mini-profile>i{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#718096 0 18%,transparent 19%),radial-gradient(ellipse at 50% 105%,#718096 0 40%,transparent 41%),#222a2e}.mini-profile span{display:flex;flex-direction:column}.mini-profile b{font-size:10px}.mini-profile small{color:var(--gold);font-size:7px}.mini-nav{display:flex;align-items:center;gap:12px;padding:11px 12px;color:#7e878b;font-size:10px}.mini-nav i{width:13px;height:13px;border:1px solid}.mini-nav.active{color:var(--blue);background:#262c31;border-left:2px solid var(--blue)}
-.product-window__main{padding:42px 46px}.preview-heading{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px}.preview-heading span{display:flex;flex-direction:column}.preview-heading small,.preview-grid small{font-family:var(--font-geist-mono);font-size:8px;color:#6d767a;letter-spacing:.12em}.preview-heading b{font-size:27px;margin-top:7px}.preview-heading>i{background:var(--blue);color:#07172c;font-style:normal;font-size:9px;padding:12px 16px}.preview-grid{display:grid;grid-template-columns:1.7fr 1fr;grid-template-rows:230px 195px;gap:15px}.preview-grid>div{border:1px solid #293033;background:#111516d1;padding:22px;border-radius:5px}.preview-chart strong{display:block;font-size:13px;margin-top:6px}.chart-bars{height:132px;display:flex;align-items:flex-end;gap:11px;border-bottom:1px solid #283034;padding-top:16px}.chart-bars i{flex:1;background:linear-gradient(var(--blue),#adc6ff0a);border-top:1px solid #dbe6ff}.chart-labels{display:flex;justify-content:space-between;margin-top:9px;color:#5d666a;font-size:7px}.preview-score{display:flex;flex-direction:column;align-items:center;text-align:center}.score-ring{width:105px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#101415 57%,transparent 58%),conic-gradient(var(--blue) 0 92%,#273033 92%)}.score-ring span{font-size:30px;font-weight:700}.preview-score strong{margin-top:13px;font-size:11px;color:#dae4f9}.preview-score p,.preview-target p{color:#687175;font-size:8px}.preview-activity>div{display:grid;grid-template-columns:8px 1fr auto;gap:9px;padding:10px 0;border-bottom:1px solid #22282a;color:#8e979b;font-size:9px}.preview-activity i{width:5px;height:5px;background:var(--blue)}.match-chip{float:right;color:var(--blue);background:#adc6ff14;padding:4px 6px;font-size:7px}.preview-target h3{clear:both;padding-top:24px;font-size:17px}.preview-target button{margin-top:14px;padding:9px 12px;background:#2b3032;border:1px solid #3c4346;color:#dfe3e5;font-size:8px}
-.precision-section,.platform-section,.security-section{width:min(1180px,calc(100% - 64px));margin:auto;padding:120px 0}.precision-section{display:grid;grid-template-columns:1fr 1fr;gap:110px;align-items:center}.section-copy h2,.section-heading h2,.security-section h2{margin:18px 0;font-size:clamp(40px,4.4vw,65px);line-height:1;letter-spacing:-.045em}.section-copy>p,.section-heading>p,.security-section>div>p{color:#8f989c;line-height:1.75}.proof-list{margin-top:38px}.proof-list>div{display:grid;grid-template-columns:42px 1fr;padding:20px 0;border-top:1px solid #252b2e}.proof-list span{color:var(--blue);font-family:var(--font-geist-mono);font-size:10px}.proof-list p{margin:0;color:#747d81;font-size:13px;line-height:1.6}.proof-list b{display:block;color:#e0e4e5;font-size:14px}
-.analysis-card{padding:36px;border:1px solid #30373a;border-radius:10px;background:linear-gradient(150deg,#151a1c,#0d1112)}.analysis-card__top{display:flex;justify-content:space-between;font-family:var(--font-geist-mono);font-size:9px;color:#7c8589}.analysis-card__top small{color:var(--gold)}.analysis-score{display:flex;gap:30px;align-items:center;padding:38px 0;border-bottom:1px solid #2a3032}.score-ring--large{width:142px;flex:0 0 auto}.score-ring--large span{font-size:47px}.analysis-score>div:last-child{display:flex;flex-direction:column}.analysis-score small{color:#788185;font-size:8px}.analysis-score strong{font-size:22px;margin:6px 0}.analysis-score p{color:#818a8e;font-size:12px}.analysis-bars p{display:grid;grid-template-columns:1fr auto;gap:10px;color:#9ba3a6;font-size:11px}.analysis-bars i{grid-column:1/-1;height:4px;background:#293033}.analysis-bars u{display:block;height:100%;background:var(--blue)}
-.platform-section,.security-section{border-top:1px solid #202628}.section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:80px;margin-bottom:58px}.section-heading>p{max-width:390px}.feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:#2a3032;border:1px solid #2a3032}.feature-grid article{min-height:295px;padding:38px;background:#0b0f10;position:relative}.feature-grid span{color:#697276;font-size:9px}.feature-grid h3{margin:54px 0 12px;font-size:27px}.feature-grid p{color:#818a8e;font-size:13px;line-height:1.7}.feature-grid b{position:absolute;left:38px;bottom:35px;color:var(--blue);font-size:9px}.security-section{display:grid;grid-template-columns:.8fr 1.2fr;gap:90px;align-items:center}.security-grid{display:grid;gap:12px}.security-grid article{display:grid;grid-template-columns:40px 1fr;padding:23px;border:1px solid #2a3032;background:#0d1112}.security-grid article>span{grid-row:1/3;color:var(--blue)}.security-grid p{color:#7c8589;font-size:12px;margin:5px 0}
-.final-cta{width:min(1180px,calc(100% - 64px));margin:40px auto 120px;padding:70px 72px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(115deg,#222e40e6,#1c182be0);border:1px solid #3c4656;border-radius:18px}.final-cta small{font-size:9px;color:#8b96a4}.final-cta h2{margin:12px 0 0;font-size:clamp(36px,4vw,58px);line-height:1}.marketing-footer{width:min(1320px,calc(100% - 64px));margin:auto;padding:42px 0;border-top:1px solid #23292b;display:flex;align-items:center;justify-content:space-between;color:#687175}.marketing-footer p,.marketing-footer nav{font-size:9px}
-.obsidian-app{min-height:100vh;background:#090d0e;color:var(--text)}.app-sidebar{position:fixed;inset:0 auto 0 0;width:270px;display:flex;flex-direction:column;z-index:30;background:#15191a;border-right:1px solid #2a3032}.sidebar__brand{height:82px;display:flex;align-items:center;padding:0 26px;border-bottom:1px solid #272d30}.product-mark{display:inline-flex;align-items:center;gap:10px;font-size:20px;font-weight:750}.product-mark__icon{display:grid;place-items:center;width:32px;height:32px;background:var(--blue);color:#07172c;border-radius:3px;font-family:var(--font-geist-mono);font-size:14px}.product-mark__ai{color:var(--blue)}
-.sidebar-profile{display:flex;align-items:center;gap:12px;margin:24px 18px 8px;padding:15px;border:1px solid #2a3032;background:#111516}.user-glyph,.contact-avatar{width:40px;height:40px;flex:0 0 auto;position:relative;overflow:hidden;display:inline-block;border-radius:50%;background:#20282c;border:1px solid #4b5960}.user-glyph:before,.contact-avatar:before{content:"";position:absolute;width:10px;height:10px;top:8px;left:50%;transform:translateX(-50%);border-radius:50%;background:#8ea0aa}.user-glyph:after,.contact-avatar:after{content:"";position:absolute;width:24px;height:15px;bottom:4px;left:50%;transform:translateX(-50%);border-radius:50% 50% 20% 20%;background:#8ea0aa}.sidebar-profile div{min-width:0;display:flex;flex-direction:column}.sidebar-profile strong{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sidebar-profile span{color:#758084;font-size:9px}
-.side-nav{flex:1;padding:22px 14px;overflow:auto}.side-nav__label{display:block;padding:0 13px 10px;color:#606a6e;font-family:var(--font-geist-mono);font-size:8px;letter-spacing:.14em}.side-nav__item{height:45px;margin:3px 0;display:flex;align-items:center;gap:13px;padding:0 13px;color:#a3aaad;border-left:2px solid transparent;font-size:12px;transition:.2s}.side-nav__item:hover{color:#eef1f2;background:#1c2123}.side-nav__item.is-active{color:var(--blue);background:#292f36;border-left-color:var(--blue)}.side-nav__icon{width:18px;height:18px}.side-nav__item small{margin-left:auto;min-width:18px;height:18px;display:grid;place-items:center;background:#3c3108;color:var(--gold);font-size:8px}
-.sidebar__bottom{padding:14px;border-top:1px solid #272d30}.upgrade-card{padding:16px;margin-bottom:12px;border:1px solid #30383c;background:#151a1f}.upgrade-card span{color:var(--gold);font-size:8px}.upgrade-card strong{display:block;font-size:11px;line-height:1.5;margin:7px 0 13px}.upgrade-card button{width:100%;height:34px;border:1px solid #4d5861;background:#22282b;color:#dfe3e5;font-size:9px}.sidebar-utility{width:100%;height:34px;display:flex;align-items:center;gap:12px;padding:0 10px;border:0;background:transparent;color:#7d878b;font-size:10px;cursor:pointer}.sidebar-utility:hover{color:#e7eaeb}.sidebar-utility--danger:hover{color:#ffb4ab}
-.app-stage{min-height:100vh;padding-left:270px;display:flex;flex-direction:column}.app-content{width:min(1320px,calc(100% - 72px));margin:auto;padding:44px 0 70px;flex:1;animation:page-enter .42s ease}@keyframes page-enter{from{opacity:0;transform:translateY(9px)}}.app-footer{width:min(1320px,calc(100% - 72px));margin:auto;min-height:76px;display:flex;align-items:center;gap:26px;color:#677175;border-top:1px solid #202628;font-size:9px}.app-footer strong{color:#c8cdcf;font-size:12px}.app-footer nav{margin-left:auto;display:flex;gap:24px}.mobile-header,.mobile-drawer{display:none}
-.executive-page{display:flex;flex-direction:column;gap:28px}.page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;padding-bottom:28px;border-bottom:1px solid #252b2d}.page-kicker{color:#798387;font-family:var(--font-geist-mono);font-size:9px;letter-spacing:.14em}.page-header h1{margin:8px 0 3px;color:#edf0f1;font-size:42px;line-height:1;letter-spacing:-.04em}.page-header p{margin:0;color:#8c969a;font-size:13px}.page-actions{display:flex;gap:10px}.icon-button{width:44px;height:44px;position:relative;background:#111516;color:#adb5b8;border:1px solid #31383b}.icon-button i{position:absolute;right:9px;top:8px;width:5px;height:5px;background:var(--gold);border-radius:50%}
-.glass-panel,.glass-card,.obsidian-panel{background:#101415eb;border:1px solid #2d3436;border-radius:6px;box-shadow:0 18px 48px #0000001f}.glass-card{padding:20px;transition:.2s}.glass-card:hover{transform:translateY(-2px);border-color:#424b4f}.metric-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #293033;background:#293033;gap:1px}.metric-strip article{padding:21px 24px;background:#0f1314}.metric-strip span,.panel-heading>div>span,.priority-heading>div>span{color:#6f797d;font-family:var(--font-geist-mono);font-size:8px;letter-spacing:.13em}.metric-strip strong{display:block;margin:8px 0 4px;font-size:29px}.metric-strip p{margin:0;color:#687276;font-size:9px}.metric-strip p b{color:#a9bcdf}
-.dashboard-grid{display:grid;grid-template-columns:1.6fr .8fr;gap:22px;align-items:start}.obsidian-panel{padding:26px}.panel-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.panel-heading h2,.priority-heading h2{font-size:21px;margin:7px 0 1px}.panel-heading p,.priority-heading p{margin:0;color:#727c80;font-size:11px}.panel-heading select{background:#0c1011;border:1px solid #333b3e;color:#aeb5b8;padding:7px 9px;font-size:8px}.velocity-chart{height:245px;position:relative;margin-top:28px}.chart-grid{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-around}.chart-grid i{border-top:1px solid #202628}.chart-columns{position:absolute;inset:0;display:flex;align-items:flex-end;gap:18px;padding:0 14px}.chart-columns>i{flex:1;min-height:8px;position:relative;background:linear-gradient(#adc6ff33,#adc6ff05);border-top:1px solid #adc6ff73}.chart-columns span{position:absolute;top:-20px;left:50%;transform:translateX(-50%);color:#9dabc4;font-size:7px;opacity:0}.chart-columns i:hover span{opacity:1}.chart-footer{display:flex;justify-content:space-around;padding-top:10px;border-top:1px solid #2b3234;color:#626c70;font-size:8px}
-.distribution-list{padding:18px 0}.distribution-list>div{margin:20px 0 28px}.distribution-list p{display:flex;justify-content:space-between;margin:0 0 9px;font-size:9px}.distribution-list p span{color:#aab1b4}.distribution-list i{display:block;height:5px;background:#292f31}.distribution-list u{display:block;height:100%;background:var(--blue)}.distribution-list>div:nth-child(2) u{background:var(--gold)}.distribution-list>div:nth-child(3) u{background:#5e6871}.distribution-list small{display:block;margin-top:6px;color:#5f686c;font-size:8px}.panel-link{display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid #252b2d;color:var(--blue);font-size:9px}
-.activity-panel{grid-column:1}.activity-panel .panel-heading>a,.priority-heading>a{color:var(--blue);font-size:8px}.activity-list{display:grid;grid-template-columns:repeat(2,1fr);gap:1px 28px;margin-top:17px}.activity-list>div{display:flex;gap:13px;padding:16px 0;border-top:1px solid #23292b}.activity-list>div>i{width:3px;height:41px;background:#7d878b}.activity-list>div>i.tone-blue{background:var(--blue)}.activity-list>div>i.tone-gold{background:var(--gold)}.activity-list span{display:flex;flex-direction:column}.activity-list strong{font-size:11px}.activity-list p{margin:3px 0;color:#848d91;font-size:9px}.activity-list small{color:#5f686c;font-size:8px}
-.priority-panel{grid-column:1/-1}.priority-heading{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:17px}.target-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}.target-card{padding:24px;border:1px solid #2c3335;background:#101415;border-radius:6px}.target-card__top{display:flex;justify-content:space-between}.target-card__top>span{width:40px;height:40px;display:grid;place-items:center;background:#303638}.target-card__top>b{color:var(--blue);background:#adc6ff14;padding:5px 7px;font-size:8px}.target-card>small{display:block;margin-top:17px;color:#7d878b;font-size:9px}.target-card h3{margin:8px 0 2px;font-size:22px}.target-card>p{margin:0;color:#858e92;font-size:10px}.target-card>div:last-child{display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:17px;border-top:1px solid #272d2f}.target-card>div:last-child i{color:var(--gold);font-size:7px;font-style:normal}.target-card button{background:transparent;border:0;color:var(--blue);font-size:9px;cursor:pointer}
-.detail-modal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:20px}.detail-modal__backdrop{position:absolute;inset:0;background:#000c;border:0;backdrop-filter:blur(8px)}.detail-modal>article,.contact-form{width:min(520px,100%);position:relative;padding:34px;background:#101415;border:1px solid #3a4346;box-shadow:0 30px 90px #000}.detail-modal>article>button,.contact-form>button:first-child{position:absolute;top:15px;right:16px;border:0;background:transparent;color:#8c969a;font-size:22px}.detail-modal h2,.contact-form h2{font-size:31px;margin:12px 0 3px}.detail-modal article>p{color:#858e92;font-size:11px}.modal-insight{margin:24px 0;padding:16px;border-left:2px solid var(--blue);background:#171c1e;color:#aeb5b8;font-size:12px;line-height:1.7}.modal-actions{display:flex;gap:9px}
-.mode-switcher{display:flex;width:max-content;border:1px solid #30373a;background:#0d1112}.mode-switcher button{min-height:42px;padding:0 18px;border:0;border-right:1px solid #30373a;background:transparent;color:#7f898d;font-size:10px;cursor:pointer}.mode-switcher button span{margin-right:9px;color:#535d61;font-size:8px}.mode-switcher button.is-active{background:#252b30;color:#e6eaeb;box-shadow:inset 0 -2px var(--blue)}.mode-switcher button.is-active span{color:var(--blue)}
-.network-split{min-height:660px;display:grid;grid-template-columns:minmax(0,1.28fr) minmax(370px,.72fr);gap:1px;background:#2c3335;border:1px solid #2c3335}.contact-browser,.contact-detail{background:#0c1011}.contact-browser{padding:20px}.contact-browser__tools{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.contact-browser__tools label{width:min(390px,72%);height:39px;display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid #303739;background:#080b0c}.contact-browser__tools input{width:100%;border:0;outline:0;background:transparent;color:#dfe3e5;font-size:10px}.contact-browser__tools small{color:#606a6e;font-size:8px}.contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.contact-card{min-height:188px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 12px;border:1px solid #293033;background:#111516;color:#dce1e3;cursor:pointer;transition:.2s}.contact-card:hover{transform:translateY(-2px);border-color:#495256}.contact-card.is-active{border-color:#7188b5;background:#171d22}.relationship-dot{position:absolute;top:12px;right:12px;width:6px;height:6px;border-radius:50%;background:#829095}.relationship-dot--priority{background:var(--gold);box-shadow:0 0 12px var(--gold)}.relationship-dot--engaged{background:var(--blue)}.contact-card .contact-avatar{width:52px;height:52px;margin-bottom:13px}.contact-card strong{font-size:12px}.contact-card p{margin:5px 0 2px;color:#90999d;font-size:9px;text-align:center}.contact-card small{color:#657074;font-size:8px}
-.contact-detail{padding:28px}.contact-detail__hero{display:flex;gap:16px;align-items:center;padding-bottom:24px;border-bottom:1px solid #293033}.contact-detail__hero .contact-avatar{width:58px;height:58px}.contact-detail__hero span{display:flex;flex-direction:column}.contact-detail__hero small{color:var(--gold);font-size:7px}.contact-detail h2{margin:4px 0;font-size:24px}.contact-detail__hero p{margin:1px 0;color:#818b8f;font-size:10px}.contact-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:20px 0;border-bottom:1px solid #293033}.contact-meta span{color:#a6aeb1;font-size:9px;overflow:hidden;text-overflow:ellipsis}.contact-meta b,.contact-section>span,.inline-composer>div:first-child>span{display:block;margin-bottom:5px;color:#606a6e;font-size:7px}.contact-section{padding:20px 0 0}.credential-chips{display:flex;flex-wrap:wrap;gap:7px}.credential-chips i{padding:6px 8px;background:#1c2224;border:1px solid #30383b;color:#98a1a5;font-size:8px;font-style:normal}.contact-section textarea,.inline-composer textarea,.research-detail textarea,.contact-form textarea{width:100%;margin-top:8px;min-height:86px;resize:vertical;padding:12px;border:1px solid #30383b;background:#080b0c;color:#aeb6b9;outline:0;font-size:10px;line-height:1.65}.contact-detail__actions{display:flex;gap:9px;margin-top:24px}
-.inline-composer{margin-top:22px;padding-top:20px;border-top:1px solid #303739}.inline-composer>div:first-child,.inline-composer>div:last-child{display:flex;align-items:center;justify-content:space-between}.inline-composer>div:first-child button{border:0;background:transparent;color:#8d969a}.compose-toggle{display:flex!important;justify-content:flex-start!important;margin:9px 0}.compose-toggle button{padding:7px 10px;border:1px solid #31393c;background:transparent;color:#798387;font-size:8px}.compose-toggle button.is-active{background:#283036;color:var(--blue)}.inline-composer input,.research-pane input,.contact-form input{width:100%;height:40px;padding:0 11px;border:1px solid #30383b;background:#080b0c;color:#dce1e3;outline:0;font-size:10px}.inline-composer>div:last-child small{color:#636d71;font-size:8px}.inline-composer .obsidian-button{min-height:36px;padding-inline:13px;font-size:8px}
-.relationship-map{border:1px solid #2c3335;background:#0b0f10}.map-toolbar{display:flex;align-items:flex-end;justify-content:space-between;padding:23px 26px;border-bottom:1px solid #293033}.map-toolbar h2{margin:6px 0 0;font-size:22px}.map-toolbar>div:last-child{display:flex;gap:15px;color:#737d81;font-size:8px}.map-toolbar>div:last-child span{display:flex;align-items:center;gap:6px}.map-toolbar>div:last-child i{width:6px;height:6px;border-radius:50%;background:#657074}.map-toolbar i.blue{background:var(--blue)!important}.map-toolbar i.gold{background:var(--gold)!important}.graph-canvas{height:590px;position:relative;overflow:hidden;background-image:radial-gradient(#22292b 1px,transparent 1px);background-size:28px 28px}.graph-node,.graph-person{position:absolute;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #394246;background:#121719;color:#dfe3e5;cursor:pointer;box-shadow:0 15px 50px #0006}.graph-node{width:130px;height:105px}.graph-node b{width:32px;height:32px;display:grid;place-items:center;margin-bottom:8px;background:#2a3134}.graph-node strong{font-size:11px}.graph-node small{color:#697377;font-size:7px}.graph-node--self{left:calc(50% - 65px);top:calc(50% - 52px);border-color:#7287ad}.graph-node--self .contact-avatar{width:37px;height:37px}.node-google{left:10%;top:14%}.node-anthropic{right:10%;top:14%}.node-stripe{right:15%;bottom:11%}.graph-person{width:90px;height:75px}.graph-person .contact-avatar{width:30px;height:30px}.graph-person span{font-size:8px}.person-sarah{left:26%;top:22%}.person-elena{right:27%;top:25%}.person-maya{right:32%;bottom:20%}.graph-line{position:absolute;z-index:1;height:1px;background:#52616a;transform-origin:left center}.line-a{width:260px;left:18%;top:28%;transform:rotate(28deg);background:var(--blue)}.line-b{width:245px;left:51%;top:48%;transform:rotate(-36deg);background:var(--gold)}.line-c{width:300px;left:52%;top:51%;transform:rotate(33deg)}.line-d{width:155px;left:19%;top:28%;transform:rotate(8deg)}.line-e{width:170px;right:19%;bottom:24%;transform:rotate(-12deg);background:var(--blue)}
-.research-layout{display:grid;grid-template-columns:1.3fr .7fr;gap:1px;background:#2c3335;border:1px solid #2c3335}.research-pane,.research-detail{background:#0d1112;padding:32px}.research-pane h2{margin:12px 0 8px;font-size:31px}.research-pane>p{color:#818b8f;font-size:11px;line-height:1.7}.research-pane form{margin:28px 0}.research-pane form label,.contact-form label{display:block;margin-bottom:7px;color:#6f797d;font-size:8px}.research-pane form>div{display:flex;gap:8px}.research-pane form input{flex:1}.research-guardrail{display:flex;gap:11px;padding:13px;border:1px solid #31383a;background:#15191a;color:#7d878b}.research-guardrail>span{color:var(--gold)}.research-guardrail p{margin:0;font-size:9px}.research-guardrail b{display:block;color:#b7bec1}.research-results{margin-top:24px;border:1px solid #2d3436}.research-results__head{display:flex;justify-content:space-between;padding:12px;background:#171c1e;color:#778185;font-size:8px}.research-results>button{width:100%;display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:12px;padding:13px;border:0;border-top:1px solid #282f31;background:#0e1213;color:#dfe3e5;text-align:left}.research-results .contact-avatar{width:34px;height:34px}.research-results strong{font-size:10px}.research-results p{margin:2px 0;color:#7d878b;font-size:8px}.research-results button>small{color:var(--blue);font-size:8px}.research-detail h3{margin:12px 0 5px;font-size:22px}.research-detail>p{color:#808a8e;font-size:10px;line-height:1.7}.credential-list{display:grid;gap:1px;margin:22px 0;background:#2a3133}.credential-list span{padding:12px;background:#111516;color:#b3babd;font-size:9px}.credential-list b{display:block;color:#606a6e;font-size:7px}.research-detail .ghost-button{margin-top:12px;width:100%}.contact-form{display:flex;flex-direction:column;gap:15px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.contact-form .obsidian-button{align-self:flex-end}
-.app-content>div:not(.executive-page)>header h1,.app-content>header h1{font-family:var(--font-hanken);color:#edf0f1!important}.app-content textarea,.app-content input,.app-content select{border-radius:4px!important}.app-content .rounded-2xl,.app-content .rounded-xl,.app-content .rounded-lg{border-radius:6px}.app-content .bg-gradient-to-r{background-image:none!important;background-color:var(--blue)!important;color:#07172c!important}.app-content .text-blue-400,.app-content .text-indigo-400{color:var(--blue)!important}.app-content .border-slate-800{border-color:#2c3335!important}
-@media(max-width:1100px){.marketing-nav nav{display:none}.precision-section{gap:55px}.dashboard-grid{grid-template-columns:1fr}.distribution-panel,.activity-panel{grid-column:auto}.priority-panel{grid-column:1}.network-split,.research-layout{grid-template-columns:1fr}.contact-grid{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:900px){.app-sidebar{display:none}.app-stage{padding-left:0;padding-top:64px}.mobile-header{position:fixed;inset:0 0 auto;height:64px;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#0f1314f0;border-bottom:1px solid #2b3234}.mobile-header button{background:transparent;border:0;color:#cfd4d6;font-size:20px}.mobile-drawer{position:fixed;inset:0;z-index:70;display:block}.mobile-drawer__backdrop{position:absolute;inset:0;border:0;background:#000b}.mobile-drawer__panel{position:absolute;inset:0 auto 0 0;width:min(320px,88vw);display:flex;flex-direction:column;background:#15191a;overflow:auto}.mobile-drawer__close{position:absolute;right:12px;top:13px;z-index:2;border:0;background:transparent;color:#aeb5b8;font-size:25px}.app-content,.app-footer{width:calc(100% - 36px)}.marketing-nav,.hero-section,.precision-section,.platform-section,.security-section,.final-cta,.marketing-footer{width:calc(100% - 36px)}.product-window{grid-template-columns:1fr;height:auto}.product-window__rail{display:none}.precision-section,.security-section{grid-template-columns:1fr;gap:55px}.section-heading{align-items:flex-start;flex-direction:column;gap:10px}.metric-strip{grid-template-columns:repeat(2,1fr)}.contact-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:640px){.marketing-nav{height:66px}.marketing-nav__actions .text-link{display:none}.hero-section h1{font-size:48px}.hero-actions,.analysis-score,.marketing-footer,.page-header,.app-footer{flex-direction:column;align-items:flex-start}.trust-row{flex-direction:column;gap:8px}.product-window{margin-top:60px}.product-window__main{padding:22px 16px}.preview-heading{align-items:flex-start;flex-direction:column;gap:15px}.preview-grid{grid-template-columns:1fr;grid-template-rows:auto}.preview-score,.preview-activity,.preview-target{display:none!important}.precision-section,.platform-section,.security-section{padding:80px 0}.feature-grid,.target-grid,.activity-list{grid-template-columns:1fr}.final-cta{padding:35px 25px;flex-direction:column;align-items:flex-start;gap:30px}.page-header h1{font-size:36px}.metric-strip{grid-template-columns:1fr 1fr}.metric-strip article{padding:17px}.mode-switcher{width:100%;overflow:auto}.mode-switcher button{flex:0 0 auto}.contact-grid{grid-template-columns:repeat(2,1fr)}.contact-meta,.form-grid{grid-template-columns:1fr}.graph-person{display:none}.research-pane,.research-detail{padding:22px}.research-pane form>div{flex-direction:column}.app-footer{padding:22px 0;gap:8px}.app-footer nav{margin-left:0}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-/* Sophistication pass: layered depth, refined shape, and restrained motion. */
-:root{
-  --ease-executive:cubic-bezier(.22,.8,.22,1);
-  --shadow-panel:0 22px 55px rgba(0,0,0,.26),0 2px 8px rgba(0,0,0,.18);
-  --shadow-float:0 32px 80px rgba(0,0,0,.38),0 0 55px rgba(75,142,255,.055)
+
+/* ===========================================================================
+   TYPE: self-hosted, no network dependency.
+
+   The previous stylesheet asked for Inter / Hanken Grotesk / Geist Mono and
+   loaded none of them. Every visitor fell through to Segoe UI, which is why
+   the product read as unfinished no matter how the layout was tuned. These
+   four files ship from /public/fonts and are subset-free variable faces.
+   =========================================================================== */
+
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Variable.woff2") format("woff2");
+  font-weight: 200 700;
+  font-display: swap;
+  font-style: normal;
 }
-.marketing-shell{background:radial-gradient(ellipse 58% 38% at 50% 12%,rgba(76,111,160,.16),transparent 72%),radial-gradient(ellipse 42% 32% at 7% 58%,rgba(43,76,104,.08),transparent 72%),radial-gradient(ellipse 38% 28% at 96% 78%,rgba(82,58,111,.08),transparent 74%),linear-gradient(180deg,#090d0e 0%,#070a0b 48%,#0a0e11 100%)}
-.marketing-nav{border-color:rgba(255,255,255,.085);background:linear-gradient(180deg,rgba(10,14,15,.78),rgba(10,14,15,.32));backdrop-filter:blur(18px)}
-.marketing-mark>span,.product-mark__icon{border-radius:8px;box-shadow:0 9px 24px rgba(75,142,255,.18),inset 0 1px rgba(255,255,255,.42)}
-.button,.obsidian-button,.ghost-button{border-radius:10px;transition:transform .32s var(--ease-executive),box-shadow .32s var(--ease-executive),background-color .25s ease,border-color .25s ease,color .25s ease}
-.button--primary,.obsidian-button{background:linear-gradient(180deg,#c3d4ff 0%,#9ebcff 100%);box-shadow:0 13px 30px rgba(75,142,255,.18),inset 0 1px rgba(255,255,255,.72),inset 0 -1px rgba(34,70,128,.16)}
-.button--primary:hover,.obsidian-button:hover{transform:translateY(-2px) scale(1.012);box-shadow:0 19px 42px rgba(75,142,255,.25),inset 0 1px rgba(255,255,255,.8)}
-.button--ghost,.ghost-button{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.008));box-shadow:inset 0 1px rgba(255,255,255,.035)}
-.hero-section .eyebrow{animation:reveal-up .65s .05s both var(--ease-executive)}
-.hero-section h1{animation:reveal-up .78s .12s both var(--ease-executive)}
-.hero-section>p{animation:reveal-up .76s .2s both var(--ease-executive)}
-.hero-actions{animation:reveal-up .72s .28s both var(--ease-executive)}
-.trust-row{animation:reveal-up .7s .35s both var(--ease-executive)}
-.product-window{border-color:transparent;border-radius:22px;background:linear-gradient(145deg,#0d1214,#090c0d) padding-box,linear-gradient(135deg,rgba(255,255,255,.2),rgba(173,198,255,.11) 34%,rgba(255,255,255,.025) 70%) border-box;box-shadow:0 60px 140px rgba(0,0,0,.58),0 0 110px rgba(75,142,255,.075),inset 0 1px rgba(255,255,255,.055);animation:reveal-window .95s .42s both var(--ease-executive),window-breathe 9s 1.5s infinite ease-in-out}
-.mini-profile,.preview-grid>div,.analysis-card,.feature-grid article,.security-grid article{border-color:transparent;background:linear-gradient(145deg,rgba(20,25,27,.96),rgba(12,16,17,.94)) padding-box,linear-gradient(135deg,rgba(255,255,255,.14),rgba(173,198,255,.05) 45%,rgba(255,255,255,.018)) border-box;box-shadow:inset 0 1px rgba(255,255,255,.025),0 16px 42px rgba(0,0,0,.16)}
-.mini-profile{border-radius:12px}.preview-grid>div{border-radius:14px}.preview-heading>i,.preview-target button{border-radius:9px}.chart-bars i{border-radius:5px 5px 1px 1px}
-.analysis-card{border-radius:22px;box-shadow:var(--shadow-float),inset 0 1px rgba(255,255,255,.04);animation:soft-float 8s infinite ease-in-out}
-.score-ring{filter:drop-shadow(0 15px 30px rgba(0,0,0,.34));box-shadow:0 0 45px rgba(173,198,255,.085),inset 0 0 24px rgba(0,0,0,.34)}
-.feature-grid{gap:18px;background:transparent;border:0}
-.feature-grid article{border:1px solid transparent;border-radius:18px;overflow:hidden;transition:transform .4s var(--ease-executive),box-shadow .4s var(--ease-executive),border-color .3s ease}
-.feature-grid article:after{content:"";position:absolute;width:180px;height:180px;right:-100px;top:-100px;border-radius:50%;background:rgba(173,198,255,.055);filter:blur(8px);transition:transform .55s var(--ease-executive),opacity .4s ease;opacity:.45}
-.feature-grid article:hover{transform:translateY(-7px);box-shadow:0 28px 64px rgba(0,0,0,.3),0 0 44px rgba(75,142,255,.06)}
-.feature-grid article:hover:after{transform:translate(-18px,18px) scale(1.15);opacity:1}
-.security-grid article{border:1px solid transparent;border-radius:16px}
-.final-cta{position:relative;isolation:isolate;overflow:hidden;border-color:rgba(173,198,255,.18);border-radius:28px;box-shadow:0 35px 90px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.08)}
-.final-cta:before{content:"";position:absolute;z-index:-1;width:420px;height:420px;right:-120px;top:-230px;border-radius:50%;background:radial-gradient(circle,rgba(173,198,255,.16),transparent 68%)}
-.obsidian-app{position:relative;isolation:isolate;background:radial-gradient(ellipse 45% 28% at 72% 4%,rgba(63,91,130,.09),transparent 70%),radial-gradient(ellipse 35% 26% at 96% 60%,rgba(74,53,97,.055),transparent 72%),#090d0e}
-.obsidian-app:before{content:"";position:fixed;z-index:-1;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.012),transparent 32%,rgba(173,198,255,.012) 70%,transparent)}
-.app-sidebar{background:linear-gradient(180deg,rgba(22,27,29,.97),rgba(15,19,20,.985));border-color:rgba(255,255,255,.085);box-shadow:18px 0 58px rgba(0,0,0,.18);backdrop-filter:blur(22px)}
-.sidebar-profile,.upgrade-card{border-color:rgba(255,255,255,.09);border-radius:15px;background:linear-gradient(145deg,rgba(27,33,35,.92),rgba(15,19,20,.94));box-shadow:inset 0 1px rgba(255,255,255,.045),0 15px 35px rgba(0,0,0,.16)}
-.side-nav__item{border-left:0;border-radius:11px;transition:transform .3s var(--ease-executive),color .25s ease,background .25s ease,box-shadow .3s ease}
-.side-nav__item:hover{transform:translateX(3px)}
-.side-nav__item.is-active{background:linear-gradient(90deg,rgba(173,198,255,.15),rgba(173,198,255,.045));box-shadow:inset 3px 0 var(--blue),inset 0 1px rgba(255,255,255,.035),0 10px 30px rgba(0,0,0,.1)}
-.side-nav__item small{border-radius:6px}
-.app-content{animation:page-enter .58s var(--ease-executive)}
-.page-header{animation:reveal-up .55s both var(--ease-executive)}
-.executive-page>.metric-strip,.executive-page>.mode-switcher{animation:reveal-up .58s .08s both var(--ease-executive)}
-.executive-page>.dashboard-grid,.executive-page>.network-split,.executive-page>.relationship-map,.executive-page>.research-layout{animation:reveal-up .65s .15s both var(--ease-executive)}
-.glass-panel,.glass-card,.obsidian-panel,.target-card,.contact-card,.relationship-map,.research-layout,.network-split{border-color:transparent;background:linear-gradient(145deg,rgba(18,23,24,.94),rgba(11,15,16,.96)) padding-box,linear-gradient(135deg,rgba(255,255,255,.14),rgba(173,198,255,.045) 46%,rgba(255,255,255,.018)) border-box;box-shadow:var(--shadow-panel),inset 0 1px rgba(255,255,255,.025)}
-.glass-panel,.glass-card,.obsidian-panel{border-radius:16px}
-.metric-strip{border-radius:16px;overflow:hidden;box-shadow:var(--shadow-panel)}
-.metric-strip article{background:linear-gradient(145deg,#111617,#0d1112)}
-.icon-button{border-radius:11px;box-shadow:inset 0 1px rgba(255,255,255,.04),0 10px 25px rgba(0,0,0,.18)}
-.panel-heading select{border-radius:9px!important}
-.chart-columns>i{border-radius:6px 6px 2px 2px;transition:filter .3s ease,transform .3s var(--ease-executive),background .3s ease}
-.chart-columns>i:hover{transform:scaleY(1.025);filter:brightness(1.28)}
-.distribution-list i{border-radius:99px;overflow:hidden}
-.target-card{border:1px solid transparent;border-radius:17px;transition:transform .38s var(--ease-executive),box-shadow .38s var(--ease-executive),border-color .3s ease}
-.target-card:hover{transform:translateY(-6px);box-shadow:0 28px 65px rgba(0,0,0,.3),0 0 42px rgba(75,142,255,.055)}
-.target-card__top>span{border-radius:11px;box-shadow:inset 0 1px rgba(255,255,255,.09)}
-.target-card__top>b{border-radius:7px}
-.detail-modal>article,.contact-form{border-radius:20px;background:linear-gradient(145deg,rgba(21,27,29,.985),rgba(10,14,15,.99));box-shadow:0 45px 120px rgba(0,0,0,.68),inset 0 1px rgba(255,255,255,.065);animation:modal-in .38s both var(--ease-executive)}
-.mode-switcher{border-radius:13px;padding:4px;gap:3px;background:rgba(12,16,17,.78);box-shadow:inset 0 1px rgba(255,255,255,.04),0 14px 34px rgba(0,0,0,.16)}
-.mode-switcher button{border:0;border-radius:9px;transition:background .25s ease,color .25s ease,box-shadow .25s ease}
-.mode-switcher button.is-active{box-shadow:inset 0 1px rgba(255,255,255,.07),0 9px 22px rgba(0,0,0,.2)}
-.network-split,.relationship-map,.research-layout{border:1px solid transparent;border-radius:19px;overflow:hidden}
-.contact-browser,.contact-detail,.research-pane,.research-detail{background:rgba(10,14,15,.62);backdrop-filter:blur(14px)}
-.contact-browser__tools label{border-radius:11px;box-shadow:inset 0 1px 5px rgba(0,0,0,.34)}
-.contact-card{border:1px solid transparent;border-radius:15px;transition:transform .36s var(--ease-executive),box-shadow .36s var(--ease-executive),border-color .3s ease,background .3s ease}
-.contact-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px rgba(0,0,0,.3),0 0 32px rgba(75,142,255,.045)}
-.contact-card.is-active{box-shadow:0 20px 46px rgba(0,0,0,.28),inset 0 0 0 1px rgba(173,198,255,.15)}
-.credential-chips i{border-radius:8px}
-.contact-section textarea,.inline-composer textarea,.research-detail textarea,.contact-form textarea,.inline-composer input,.research-pane input,.contact-form input{border-radius:11px!important;transition:border-color .25s ease,box-shadow .25s ease,background .25s ease}
-.contact-section textarea:focus,.inline-composer textarea:focus,.research-detail textarea:focus,.contact-form textarea:focus,.inline-composer input:focus,.research-pane input:focus,.contact-form input:focus{border-color:rgba(173,198,255,.55);box-shadow:0 0 0 3px rgba(173,198,255,.08),inset 0 1px 5px rgba(0,0,0,.28)}
-.graph-node,.graph-person{border-radius:14px;transition:transform .35s var(--ease-executive),box-shadow .35s ease,border-color .3s ease}
-.graph-node:hover,.graph-person:hover{transform:translateY(-4px) scale(1.025);border-color:rgba(173,198,255,.42);box-shadow:0 24px 55px rgba(0,0,0,.42),0 0 30px rgba(75,142,255,.08)}
-.graph-node b{border-radius:9px}
-.app-content textarea,.app-content input,.app-content select{border-radius:10px!important}
-.app-content .rounded-2xl{border-radius:18px}.app-content .rounded-xl{border-radius:14px}.app-content .rounded-lg{border-radius:10px}
-@keyframes reveal-up{from{opacity:0;transform:translate3d(0,18px,0);filter:blur(2px)}to{opacity:1;transform:none;filter:blur(0)}}
-@keyframes reveal-window{from{opacity:0;transform:perspective(1400px) rotateX(4deg) translateY(28px) scale(.985);filter:blur(4px)}to{opacity:1;transform:perspective(1400px) rotateX(1deg);filter:blur(0)}}
-@keyframes window-breathe{0%,100%{transform:perspective(1400px) rotateX(1deg) translateY(0)}50%{transform:perspective(1400px) rotateX(.6deg) translateY(-5px)}}
-@keyframes soft-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes modal-in{from{opacity:0;transform:translateY(14px) scale(.975)}to{opacity:1;transform:none}}
-@keyframes page-enter{from{opacity:0;transform:translate3d(0,15px,0) scale(.995);filter:blur(3px)}to{opacity:1;transform:none;filter:blur(0)}}
-@media(prefers-reduced-motion:reduce){.product-window,.analysis-card,.hero-section .eyebrow,.hero-section h1,.hero-section>p,.hero-actions,.trust-row,.page-header,.executive-page>*{animation:none!important}}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-VariableItalic.woff2") format("woff2");
+  font-weight: 300 900;
+  font-display: swap;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Clash Display", "Satoshi", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-brand: var(--accent-color, #56ccf2);
+  --color-brand-hover: var(--accent-color-hover, #9ae0fa);
+  --color-accent: var(--accent-color, #56ccf2);
+  --color-accent-hover: var(--accent-color-hover, #9ae0fa);
+
+  /* Tailwind's stock ramps retuned to this product's palette.
+     ------------------------------------------------------------------
+     The matcher components are written in Tailwind utilities against
+     `slate`, `rose`, `amber` and `emerald`. Rewriting every class string
+     would be a large diff that still left two colour systems in the repo
+     disagreeing with each other. Overriding the ramps instead means one
+     definition governs both the hand-written neumorphic CSS and every
+     Tailwind utility, so `dark:bg-slate-900` and `var(--surface-2)` are
+     literally the same colour and stay that way.
+
+     Slate is remapped onto the obsidian ramp; the three semantic hues are
+     pulled toward the cyan / teal / gold / rose the rest of the system uses. */
+  --color-slate-50: #f7f7fa;
+  --color-slate-100: #f0f0f5;
+  --color-slate-200: #d6d6e0;
+  --color-slate-300: #b9b9c6;
+  --color-slate-400: #a0a0b0;
+  --color-slate-500: #888899;
+  --color-slate-600: #64708a;
+  --color-slate-700: #2a2f3d;
+  --color-slate-800: #18181f;
+  --color-slate-900: #14141b;
+  --color-slate-950: #08080c;
+
+  --color-emerald-50: #e6fff5;
+  --color-emerald-300: #5cf7c0;
+  --color-emerald-400: #00f5a0;
+  --color-emerald-700: #12855c;
+  --color-emerald-800: #0d6144;
+  --color-emerald-900: #083b2a;
+  --color-emerald-950: #05231a;
+
+  --color-amber-50: #fdf7e8;
+  --color-amber-300: #f7d789;
+  --color-amber-400: #f2c14e;
+  --color-amber-700: #8a6a17;
+  --color-amber-900: #3a2d0c;
+  --color-amber-950: #221a07;
+
+  --color-rose-50: #fff0f2;
+  --color-rose-300: #ffb3bf;
+  --color-rose-400: #ff7a8a;
+  --color-rose-700: #a3323f;
+  --color-rose-800: #7a2b35;
+  --color-rose-900: #3b171c;
+  --color-rose-950: #240e11;
+}
+
+/* ===========================================================================
+   NEUMORPHIC SUBSTRATE
+
+   The whole system is one idea: every surface is extruded from the ground
+   rather than placed on top of it. That means no element ever gets a border
+   as its primary definition. It gets a light source. One light, fixed at
+   top-left, for the entire product. A shadow that disagrees with that light
+   reads as a mistake even to someone who cannot say why.
+
+   Dark mode keeps the obsidian #08080c ground. Cyber Obsidian is a single
+   dark system: there is no light-mode counterpart; the neumorphic shadow
+   pair is tuned for one ground only, so a component is written once.
+   =========================================================================== */
+
+:root {
+  /* Ground + extruded surfaces, darkest to lightest. */
+  --obsidian: #08080c;
+  --surface: #101016;
+  --surface-2: #14141b;
+  --surface-3: #18181f;
+
+  /* The dual shadow. --lit is the top-left highlight, --cast the bottom-right
+     shadow. Cyan-tinted so the single light source reads as cyan-lit rather
+     than white-lit; the alpha stays under ~6% or the highlight reads as a
+     grey rectangle, not a lit edge. */
+  --lit: rgba(180, 230, 255, 0.045);
+  --lit-strong: rgba(180, 230, 255, 0.065);
+  --cast: rgba(0, 0, 0, 0.75);
+  --cast-deep: rgba(0, 0, 0, 0.88);
+
+  --text: #f0f0f5;
+  --text-dim: #b9b9c6;
+  --muted: #888899;
+  --hairline: rgba(86, 204, 242, 0.07);
+
+  /* The rim on raised surfaces. A light-source artifact, not a border. See DESIGN.md. */
+  --rim: inset 0 1px 0 rgba(86, 204, 242, 0.1);
+
+  --cyan: #56ccf2;
+  --teal: #00f5a0;
+  --gold: #f2c14e;
+  --rose: #ff7a8a;
+
+  /* Derived intelligence: Role Landscape, Career Intelligence, anything the system
+     inferred rather than counted. It earns its own hue precisely because that distinction
+     is the one this product must never blur: cyan is a number the user produced, violet is
+     a pattern the system claims to see in it.
+
+     #b3a4ff measures 8.13:1 at its worst against --surface-3, which puts it in the same
+     band as cyan (9.51), gold (10.52) and rose (7.07) rather than merely clearing the 4.5
+     floor. A dimmer violet passed the test and read as a different, sadder system. */
+  --violet: #b3a4ff;
+
+  /* Elevation recipes. Three levels is the whole vocabulary, because more than that
+     the light source stops being legible. */
+  --nm-sm:
+    -3px -3px 8px var(--lit),
+    4px 4px 12px var(--cast);
+  --nm:
+    -6px -6px 16px var(--lit),
+    9px 9px 26px var(--cast);
+  --nm-lg:
+    -10px -10px 30px var(--lit),
+    16px 16px 44px var(--cast-deep);
+  --nm-float:
+    -14px -14px 38px var(--lit-strong),
+    22px 22px 60px var(--cast-deep);
+  --nm-inset:
+    inset -3px -3px 9px var(--lit),
+    inset 5px 5px 14px var(--cast);
+  --nm-inset-deep:
+    inset -4px -4px 12px var(--lit),
+    inset 8px 8px 20px var(--cast-deep);
+
+  /* The gradient that sells the extrusion. Applied with the shadow pair, it
+     makes a flat rectangle read as a rounded solid catching the same light. */
+  --nm-face: linear-gradient(145deg, var(--surface-3), var(--surface));
+  --nm-face-inset: linear-gradient(145deg, var(--surface), var(--surface-3));
+
+  /* PRECISION-FLAT LAYER
+     ------------------------------------------------------------------
+     The second vocabulary. Neumorphism defines a surface by how it
+     catches light, which is beautiful on large sparse chrome and
+     illegible on anything carrying a value: measured, its boundaries
+     land at ~1.1:1 where WCAG 1.4.11 wants 3:1.
+
+     So data does not get shadows. It gets an explicit edge. `--edge` is
+     tuned to clear 3:1 against `--surface` and is the only border in the
+     system allowed to be a component's primary definition. Use this
+     vocabulary for tables, result rows, stats, and any selected state;
+     use neumorphism for the case around them. */
+  --edge: #64708a;
+  --edge-soft: #2a2f3d;
+  --pf-surface: #0b0b10;
+  --pf-surface-2: #131319;
+
+  /* Ambient colour fields. Very low alpha on purpose: these exist to stop
+     large obsidian areas reading as dead flat, not to be seen as gradients. */
+  --glow-cyan: color-mix(in srgb, var(--cyan) 9%, transparent);
+  --glow-teal: color-mix(in srgb, var(--teal) 6%, transparent);
+
+  /* Weaker than the ambient fields above, deliberately. This one moves, and
+     motion makes a glow far easier to notice than alpha does, so matching their
+     9% would read as a torch being shone at the page. */
+  --glow-spot: color-mix(in srgb, var(--cyan) 6%, transparent);
+
+  /* Fine grain. Near-black gradients band badly on 8-bit displays, visible
+     as concentric rings around any glow. A little noise dithers it away and
+     is the actual reason the obsidian stops looking stale. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+
+  /* Backdrop strokes. Every line in the grid and contour layers reads its colour
+     from here, so the whole field retunes from two values.
+
+     These numbers are deliberately near the floor of what renders. The layer
+     sits behind body copy and must never compete with it. The reference for
+     this design showed bright saturated currents, and that was rejected. If it
+     is legible as a picture rather than as texture, it is too loud.
+
+     The contours are now the only line work in the backdrop; an isometric grid
+     layer was cut as a second competing texture. 0.07 over #08080c is a delta of
+     about 5 sRGB values on the blue channel, above the 3.5% grain's amplitude,
+     so it survives being dithered, and well under the ~10 where line work starts
+     pulling the eye off body copy. */
+  --topo-line: rgba(86, 204, 242, 0.07);
+  /* The travelling dashes are the only thing here allowed to be brighter than
+     the field, and only just, since teal marks movement across the system. */
+  --topo-pulse: rgba(0, 245, 160, 0.14);
+
+  --r-sm: 12px;
+  --r: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+  --r-pill: 999px;
+
+  /* One spacing rhythm. The old page ran ~250px of dead air between sections
+     with no relationship to anything; these are all multiples of the same
+     step and scale with the viewport. */
+  --gap-section: clamp(4.5rem, 8vw, 7.5rem);
+  --gap-block: clamp(2rem, 3.5vw, 3.25rem);
+  --shell: min(1180px, 92vw);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+
+  /* The header floats over the content rather than reserving space, so an anchor
+     jump used to land the section's true top under the bar, so the eyebrow and the
+     first line of the heading were both swallowed, and the section read as
+     already half-scrolled. This is the nav's height plus enough air that the
+     heading arrives with room above it rather than flush against the chrome.
+
+     Set here rather than per-section so anything given an id gets it. */
+  scroll-padding-top: clamp(96px, 11vh, 132px);
+}
+
+body {
+  margin: 0;
+  background: var(--obsidian);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--cyan) 32%, transparent);
+  color: var(--text);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--obsidian);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border: 3px solid var(--obsidian);
+  border-radius: var(--r-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--cyan) 35%, var(--surface-3));
+}
+
+/* ---------------------------------------------------------------------------
+   Type scale.
+
+   The old hero rendered at 102px on a 1440 viewport and ate the entire fold,
+   then dropped straight to 11px inside cards with nothing in between. This is
+   a proper ratio with the display face doing the work at the top and the body
+   face carrying everything under 1.5rem.
+   --------------------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2.6rem, 5.2vw, 4.4rem);
+}
+h2 {
+  font-size: clamp(2rem, 3.6vw, 3.1rem);
+}
+h3 {
+  font-size: clamp(1.25rem, 1.7vw, 1.5rem);
+  letter-spacing: -0.015em;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+em {
+  font-style: normal;
+  color: var(--cyan);
+}
+
+/* The one mono label style, used everywhere a value or a category is named. */
+.eyebrow,
+.page-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.eyebrow i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--cyan) 70%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Primitives
+   --------------------------------------------------------------------------- */
+
+.nm-raised,
+.obsidian-panel {
+  background: var(--nm-face);
+  border-radius: var(--r);
+  box-shadow:
+    var(--nm),
+    var(--rim);
+}
+
+.nm-inset {
+  background: var(--nm-face-inset);
+  border-radius: var(--r);
+  box-shadow: var(--nm-inset);
+}
+
+.button,
+.obsidian-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    box-shadow 0.28s var(--ease),
+    transform 0.28s var(--ease),
+    color 0.28s var(--ease);
+}
+
+/* Icons inside buttons carry no intrinsic size, and an unsized 24x24 viewBox stretches to the
+   line box and shoves the label into a three-line wrap. */
+.button svg,
+.obsidian-button svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.button:hover,
+.obsidian-button:hover {
+  box-shadow: var(--nm);
+  transform: translateY(-2px);
+}
+
+.button:active,
+.obsidian-button:active {
+  box-shadow: var(--nm-inset);
+  transform: translateY(0);
+}
+
+.button:focus-visible,
+.obsidian-button:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+.button--primary {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--cyan) 92%, white),
+    color-mix(in srgb, var(--cyan) 78%, black)
+  );
+  color: #0a0d0e;
+  font-weight: 700;
+  box-shadow:
+    -4px -4px 12px var(--lit),
+    6px 6px 20px var(--cast),
+    0 0 34px color-mix(in srgb, var(--cyan) 22%, transparent);
+}
+
+.button--primary:hover {
+  box-shadow:
+    -6px -6px 18px var(--lit-strong),
+    10px 10px 30px var(--cast-deep),
+    0 0 52px color-mix(in srgb, var(--cyan) 34%, transparent);
+}
+
+.button--light {
+  background: var(--nm-face);
+  color: var(--text);
+}
+
+.button--ghost {
+  background: transparent;
+  box-shadow: none;
+  border: 1px solid var(--hairline);
+  color: var(--text-dim);
+}
+
+.button--ghost:hover {
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+  color: var(--text);
+  border-color: transparent;
+}
+
+.text-link {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  transition: color 0.24s var(--ease);
+}
+.text-link:hover {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   Marketing shell
+   --------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+   Obsidian depth
+
+   A single flat #08080c across 5000px of scroll reads as dead, and any glow
+   laid on it bands into visible rings on an 8-bit display.
+
+   This used to be two pseudo-elements on the shell. It is now
+   `<ObsidianBackdrop />` (components/backdrop/), because the field grew a grid
+   and a contour map, which are geometry and belong in markup rather than in a
+   `background` shorthand. The shell keeps only the flat ground colour; every
+   layer above it is the component's.
+   --------------------------------------------------------------------------- */
+
+.marketing-shell,
+.obsidian-app {
+  position: relative;
+  min-height: 100vh;
+  background: var(--obsidian);
+  overflow-x: clip;
+  isolation: isolate;
+}
+
+/* ---------------------------------------------------------------------------
+   Backdrop layers
+
+   All fixed and `pointer-events: none`, so each costs one composite layer and
+   none of them ever enters hit-testing or reflow. Negative z-indices put them
+   behind the shell's content but in front of its background, which works
+   because `.marketing-shell` sets `isolation: isolate` and so contains them.
+   --------------------------------------------------------------------------- */
+
+.obsidian-backdrop,
+.obsidian-backdrop > * {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* The ambient colour field. Three low-alpha radials so 5000px of scroll is not
+   one flat black. This is the old `.marketing-shell::before`, moved onto the
+   wrapper the rest of the stack already sits in. */
+.obsidian-backdrop {
+  z-index: -4;
+  background:
+    radial-gradient(58% 34% at 18% 0%, var(--glow-cyan), transparent 68%),
+    radial-gradient(46% 30% at 88% 22%, var(--glow-teal), transparent 70%),
+    radial-gradient(64% 40% at 50% 100%, var(--glow-cyan), transparent 72%);
+}
+
+.obsidian-backdrop__topo {
+  z-index: -3;
+}
+
+/* The cursor spotlight: a soft disc of light tracking the pointer, so the ground
+   answers to presence instead of being a static sheet.
+
+   `inset: 0 auto auto 0` overrides the `inset: 0` on the shared rule above. This
+   layer is a fixed-size disc that gets moved, not a full-viewport sheet: it is
+   anchored at the viewport origin and pulled back by half its own size, so the
+   point `useSpotlight` translates it to is its centre rather than its corner.
+
+   Held at opacity 0 until the hook has seen a real pointer position. Without
+   that gate the disc would sit glowing in the top-left corner on load, and would
+   stay there forever on every device the hook declines to run on. */
+.obsidian-backdrop__spot {
+  z-index: -2;
+  inset: 0 auto auto 0;
+  width: 640px;
+  height: 640px;
+  margin: -320px 0 0 -320px;
+  background: radial-gradient(circle closest-side, var(--glow-spot), transparent);
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+  will-change: transform;
+}
+
+.obsidian-backdrop__spot[data-active="true"] {
+  opacity: 1;
+}
+
+/* Load-bearing, not decoration. Near-black gradients quantise into visible
+   concentric rings on an 8-bit display, and #08080c makes that worse rather
+   than better; this noise dithers the steps away, and it is the actual reason
+   the obsidian reads as deep rather than stale. It has to stay last, above
+   every gradient. Do not remove it when adding glows. */
+.obsidian-backdrop__grain {
+  z-index: -1;
+  opacity: 0.035;
+  background-image: var(--grain);
+  background-repeat: repeat;
+}
+
+.obsidian-backdrop__topo path {
+  fill: none;
+  stroke: var(--topo-line);
+  stroke-width: 1;
+}
+
+/* Scoped to the contours, deliberately NOT to the currents. The field is scaled
+   up by `preserveAspectRatio: slice` and without this the hairlines thicken with
+   it, but how `non-scaling-stroke` composes with `pathLength` and
+   `stroke-dasharray` is under-specified and has differed between engines, and
+   the currents' "four evenly spaced dashes, seamless loop" depends on those dash
+   units meaning exactly what `pathLength` says. The currents are 5/1000 of a path
+   long; nobody can see how thick they are. */
+.obsidian-backdrop__contours path {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Data currents. Capped at 10 paths, see backdrop.test.tsx: stroke-dashoffset
+   animates on the main thread, so this is the one part of the backdrop that is
+   not free.
+
+   These are overlays sitting on top of intact contours, not the contours
+   themselves: a dasharray of 5/250 leaves 2% of a line drawn, so applying it
+   to a contour would delete that ring from the map.
+
+   Units are 1/1000 of each path (`pathLength="1000"` in TopographicField), so
+   the 250 cycle is exactly four evenly spaced currents per contour whatever its
+   real length, and one full cycle of travel returns the pattern to where it
+   started, so the loop loses its seam. */
+.obsidian-backdrop__currents path {
+  stroke: var(--topo-pulse);
+  stroke-dasharray: 5 245;
+  animation: topo-pulse 14s linear infinite;
+}
+
+.obsidian-backdrop__currents path:nth-of-type(3n) {
+  animation-delay: -4.7s;
+}
+.obsidian-backdrop__currents path:nth-of-type(3n + 1) {
+  animation-delay: -9.3s;
+}
+
+@keyframes topo-pulse {
+  to {
+    stroke-dashoffset: -250;
+  }
+}
+
+.marketing-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.marketing-mark > span:first-child {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--cyan) 90%, white),
+    color-mix(in srgb, var(--cyan) 70%, black)
+  );
+  color: #0a0d0e;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  box-shadow:
+    -2px -2px 6px var(--lit),
+    3px 3px 10px var(--cast);
+}
+
+/* The bar itself is fully transparent and hit-tests only where there is
+   something to click. The previous version painted a translucent obsidian
+   plate across the full width, which slid over the content underneath as a
+   visible rectangular patch on scroll. The blur now belongs to the pill and
+   the actions, the two things that actually need to stay readable over
+   moving content, not to the container. */
+.marketing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: var(--shell);
+  margin: 0 auto;
+  padding: 18px 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.marketing-nav > * {
+  pointer-events: auto;
+}
+
+/* A soft fade behind the bar, not a plate.
+   With the container fully transparent, headings scroll directly under the pill and
+   collide with it, which is legible chaos. The original fix was a translucent rectangle, which is
+   what read as a patch, because it had two hard vertical edges and a hard bottom edge
+   moving over the content. This has none: it is full-bleed, so no side edges, and it
+   fades to zero over 130px, so there is no bottom edge to see. It darkens what passes
+   beneath the nav without ever announcing itself as a shape. */
+.marketing-nav::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 130px;
+  pointer-events: none;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    var(--obsidian) 0%,
+    color-mix(in srgb, var(--obsidian) 82%, transparent) 42%,
+    transparent 100%
+  );
+}
+
+.marketing-nav > nav {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  box-shadow: var(--nm-inset);
+  backdrop-filter: blur(20px) saturate(1.3);
+}
+
+.marketing-nav > nav a {
+  position: relative;
+  z-index: 1;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  transition: color 0.3s var(--ease);
+}
+
+.marketing-nav > nav a:hover {
+  color: var(--text);
+}
+
+/* Active section. The indicator is a real element that slides between tabs
+   rather than a background swapped per link, so movement between sections
+   reads as one continuous object, and because it is driven by transform it
+   costs nothing on the compositor. */
+.nav-indicator {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  /* `left: 0` is load-bearing and was missing.
+     Without it an absolutely positioned child of a flex container falls back to
+     its *static* position on the inline axis, the content-box start, which is the
+     nav's own 5px of padding. The JS then applies `translateX(tab.offsetLeft)`,
+     and `offsetLeft` is measured from the nav's border box, so it already
+     contains that same 5px. The two stacked: the pill sat 5px right of the tab
+     it was meant to sit under, which read as a lopsided capsule with the label
+     off-centre inside it. Anchoring to 0 makes the transform absolute rather
+     than relative to wherever the element happened to land. */
+  left: 0;
+  z-index: 0;
+  border-radius: var(--r-pill);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--cyan) 26%, var(--surface-3)),
+    color-mix(in srgb, var(--cyan) 12%, var(--surface))
+  );
+  box-shadow:
+    var(--nm-sm),
+    inset 0 0 0 1px color-mix(in srgb, var(--cyan) 34%, transparent);
+  transition:
+    transform 0.42s var(--ease),
+    width 0.42s var(--ease),
+    opacity 0.3s var(--ease);
+}
+
+.marketing-nav > nav a[data-active="true"] {
+  color: var(--cyan);
+  font-weight: 500;
+}
+
+.marketing-nav__actions .button--light {
+  background: color-mix(in srgb, var(--surface-3) 78%, transparent);
+  backdrop-filter: blur(20px) saturate(1.3);
+}
+
+/* --- Precision-flat vocabulary -------------------------------------------
+   Data surfaces. No shadow, an explicit >=3:1 edge, tighter padding than the
+   neumorphic scale. These sit *inside* neumorphic chrome, a machined case
+   around a crisp readout. */
+
+/* The outer border identifies the component, so it uses `--edge` (3.48:1). The internal
+   rules below use `--edge-soft` (1.72:1) and that is deliberate, not an oversight: a
+   divider between rows is a decorative separator, which 1.4.11 exempts. The panel edge
+   and the row text carry identification. Taking the internal rules to 3:1 would draw a
+   cage and make the readout harder to scan, not easier. */
+.pf-panel {
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: var(--pf-surface);
+  overflow: hidden;
+}
+
+.pf-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--edge-soft);
+  background: var(--pf-surface-2);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pf-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 15px;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+.pf-row + .pf-row {
+  border-top: 1px solid var(--edge-soft);
+}
+
+.pf-row b {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* A measured value at display scale, with its unit and basis attached. */
+.pf-stat {
+  padding: 18px 15px;
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+.pf-stat small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 9px;
+}
+
+.pf-stat strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.pf-stat p {
+  margin-top: 11px;
+  font-size: 0.8125rem;
+  line-height: 1.62;
+  color: var(--text-dim);
+}
+
+/* A horizontal magnitude bar. The fill is the only saturated element in the
+   panel, which is what makes three of them scannable at a glance. */
+.pf-meter {
+  position: relative;
+  height: 3px;
+  margin-top: 9px;
+  border-radius: 2px;
+  background: var(--edge-soft);
+  overflow: hidden;
+}
+
+.pf-meter i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+  background: var(--cyan);
+  transform-origin: left;
+  animation: meter-fill 1.1s var(--ease) both;
+}
+
+.pf-meter[data-tone="muted"] i {
+  background: var(--edge);
+}
+
+@keyframes meter-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* --- The applications table ----------------------------------------------
+   Phase 1c. Precision-flat throughout, per DESIGN.md: this carries nothing but
+   values and states, and that is the rule that decides the vocabulary. The
+   panel edge is `--edge` (3.48:1); the internal row rules are `--edge-soft`,
+   which 1.4.11 exempts as decorative separators, and taking them to 3:1 would
+   draw a cage and make the table harder to scan, not easier. */
+
+.applications {
+  display: grid;
+  gap: 18px;
+}
+
+.applications__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.applications__controls .field {
+  min-width: 200px;
+}
+
+.applications__controls .field > label {
+  display: block;
+  margin-bottom: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.applications__count {
+  margin-left: auto;
+  padding-bottom: 13px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.applications__none {
+  padding: 26px 16px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-dim);
+}
+
+/* The table can exceed a narrow viewport, so it scrolls inside its own panel rather
+   than making the page scroll sideways. */
+.applications__scroll {
+  overflow-x: auto;
+}
+
+.pf-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.pf-table th {
+  padding: 0;
+  border-bottom: 1px solid var(--edge-soft);
+  background: var(--pf-surface-2);
+  text-align: left;
+}
+
+.pf-table th button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 11px 15px;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.22s var(--ease);
+}
+
+.pf-table th button:hover {
+  color: var(--text-dim);
+}
+
+.pf-table th button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+/* The sort indicator is a second cue on top of aria-sort, not the only one. The
+   header button also reads its own state to assistive technology. */
+.pf-table th button span {
+  font-size: 0.5rem;
+  color: var(--edge);
+}
+
+.pf-table th button span[data-active="true"] {
+  color: var(--cyan);
+}
+
+.pf-table td {
+  padding: 12px 15px;
+  border-top: 1px solid var(--edge-soft);
+  color: var(--text-dim);
+  vertical-align: middle;
+}
+
+.pf-table td[data-numeric="true"],
+.pf-table th[data-numeric="true"] {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pf-table td b {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pf-table td small {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.pf-table tbody tr {
+  cursor: pointer;
+  transition: background 0.2s var(--ease);
+}
+
+.pf-table tbody tr:hover {
+  background: var(--pf-surface-2);
+}
+
+/* Selected state is a ring plus a tint. Never a 3px left bar, since DESIGN.md names that
+   as the single most recognisable tell of AI-generated UI, and the ring already
+   clears 3:1 on its own. */
+.pf-table tbody tr[data-selected="true"] {
+  background: color-mix(in srgb, var(--cyan) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 55%, transparent);
+}
+
+/* A score that exists reads at full contrast; an em dash for "nothing measured yet"
+   recedes, so a column of dashes never looks like a column of readings. */
+.score-cell {
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+
+.score-cell[data-scored="true"] {
+  color: var(--text);
+}
+
+.status-select {
+  min-width: 116px;
+  padding: 5px 9px;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: var(--pf-surface);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.status-select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.status-select:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* Tone is a second channel on a control that already spells its state out in words.
+   Colour is never the sole carrier of meaning (FEATURES.md §2.6). */
+.status-select[data-tone="active"] {
+  border-color: color-mix(in srgb, var(--cyan) 60%, var(--edge));
+  color: var(--cyan);
+}
+
+.status-select[data-tone="good"] {
+  border-color: color-mix(in srgb, var(--teal) 60%, var(--edge));
+  color: var(--teal);
+}
+
+.status-select[data-tone="bad"] {
+  border-color: color-mix(in srgb, var(--rose) 50%, var(--edge));
+  color: var(--rose);
+}
+
+.row-action {
+  padding: 5px 11px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-sm);
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+
+.row-action:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--rose) 55%, var(--edge-soft));
+  color: var(--rose);
+}
+
+.row-action:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.row-action:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.new-application__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  padding: 18px 15px;
+}
+
+.new-application__grid .field > label {
+  display: block;
+  margin-bottom: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.new-application__grid .nm-input {
+  width: 100%;
+}
+
+.new-application__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 15px 18px;
+}
+
+.new-application .notice {
+  margin: 0 15px 16px;
+}
+
+/* --- Sidebar lower group -------------------------------------------------- */
+
+.side-nav--tools {
+  margin-top: 22px;
+}
+
+/* Inset, not raised. This is a note in the corner of the workspace, not the product's
+   main call to action, and a raised card here would outrank the navigation above it. */
+.upgrade-card {
+  display: block;
+  padding: 14px 15px;
+  margin-bottom: 14px;
+  border-radius: var(--r-sm);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  text-decoration: none;
+  transition: box-shadow 0.24s var(--ease);
+}
+
+.upgrade-card:hover {
+  box-shadow:
+    var(--nm-inset),
+    0 0 0 1px color-mix(in srgb, var(--violet) 34%, transparent);
+}
+
+.upgrade-card:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--nm-inset),
+    0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.upgrade-card strong {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--violet);
+}
+
+.upgrade-card span {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Says what it is rather than offering a checkout that does not exist. Billing is a
+   Phase 1 non-goal and a dead "Upgrade Now" button is worse than an honest label. */
+.upgrade-card em {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-style: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--edge);
+}
+
+/* --- Dev mode banner ------------------------------------------------------
+   Deliberately loud. A dev session is visually identical to a real one, which is
+   the point of it and also the risk, so the one thing that distinguishes them
+   must not be subtle. Amber is the system's caution hue. */
+
+.dev-banner {
+  position: sticky;
+  top: 0;
+  /* Below the drawer (60), not above it. A sticky strip that overlaps a modal's close
+     button is worse than one that scrolls out of view behind it. */
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 18px;
+  background: color-mix(in srgb, var(--gold) 14%, var(--obsidian));
+  border-bottom: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.dev-banner b {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+}
+
+.dev-banner span {
+  flex: 1;
+  min-width: 220px;
+}
+
+.dev-banner code {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  padding: 3px 8px;
+  border-radius: var(--r-sm);
+  background: var(--pf-surface);
+  border: 1px solid var(--edge-soft);
+  color: var(--muted);
+}
+
+/* --- The drawer ----------------------------------------------------------
+   One implementation, used by Hunt, application details, resume preview and
+   role details. See components/ui/Drawer.tsx. */
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+.drawer__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(4, 4, 8, 0.62);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  animation: drawer-fade 0.2s var(--ease) both;
+}
+
+.drawer__panel {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: min(480px, 100vw);
+  background: var(--surface);
+  /* Cast to the LEFT, because the panel sits at the right edge and the system's light
+     source is top-left. A symmetric shadow here would break the one rule the whole
+     neumorphic vocabulary rests on. */
+  box-shadow:
+    -24px 0 60px var(--cast-deep),
+    inset 1px 0 0 rgba(86, 204, 242, 0.09);
+  animation: drawer-in 0.26s var(--ease) both;
+}
+
+.drawer__panel[data-width="wide"] {
+  width: min(720px, 100vw);
+}
+
+.drawer__panel:focus-visible {
+  outline: none;
+}
+
+@keyframes drawer-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translate3d(24px, 0, 0);
+    opacity: 0;
+  }
+}
+
+.drawer__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.drawer__head h2 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.drawer__head p {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.drawer__close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--text-dim);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s var(--ease);
+}
+
+.drawer__close:hover {
+  color: var(--text);
+}
+
+.drawer__close:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--nm-inset),
+    0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px 28px;
+}
+
+.drawer__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--hairline);
+  background: var(--pf-surface-2);
+}
+
+/* A drawer that occupies 480px of a 390px phone is a drawer nobody can read. */
+@media (max-width: 640px) {
+  .drawer__panel,
+  .drawer__panel[data-width="wide"] {
+    width: 100vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer__panel,
+  .drawer__scrim {
+    animation: none;
+  }
+}
+
+/* --- Outreach ------------------------------------------------------------- */
+
+.draft-list {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The draft is shown as written, because a message is whitespace-significant, and reflowing it
+   here would misrepresent what the user is about to paste into their mail client. */
+.draft__body {
+  margin: 0;
+  padding: 15px;
+  border-top: 1px solid var(--edge-soft);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.draft__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 13px 15px;
+  border-top: 1px solid var(--edge-soft);
+  background: var(--pf-surface-2);
+}
+
+/* --- Network -------------------------------------------------------------- */
+
+.company-list {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* A company where everything is closed still belongs on the screen, since it is history, but
+   it should not compete with the ones still in play. */
+.company[data-closed="true"] {
+  opacity: 0.72;
+}
+
+.company__stage {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+}
+
+.company__stage[data-tone="active"] {
+  color: var(--cyan);
+}
+.company__stage[data-tone="good"] {
+  color: var(--teal);
+}
+.company__stage[data-tone="bad"] {
+  color: var(--rose);
+}
+.company__stage[data-tone="neutral"] {
+  color: var(--muted);
+}
+
+.company__contact {
+  align-items: flex-start;
+  background: var(--pf-surface-2);
+}
+
+.company__contact b {
+  display: block;
+  color: var(--text);
+}
+
+.company__contact small {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.company__contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* `.row-action` is styled for a button; these two are anchors and need the reset. */
+.company__contact-actions a.row-action {
+  text-decoration: none;
+  line-height: 1.6;
+}
+
+.company__none {
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* --- Responsive and motion for the redesigned surfaces --------------------
+   Desktop is the primary experience, but shrinking it until the text is
+   unreadable is not a mobile layout. Each of these collapses a structure
+   rather than scaling it. */
+
+@media (max-width: 819px) {
+  /* The radar needs width to place its labels; below this the list underneath is the
+     better presentation and the picture stops earning its space. */
+  .dash-panel--landscape .landscape__radar {
+    display: none;
+  }
+
+  .landscape__list {
+    max-height: none;
+  }
+
+  .dash-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .funnel {
+    gap: 4px;
+  }
+
+  .funnel__bar small {
+    font-size: 0.5rem;
+    letter-spacing: 0;
+  }
+
+  /* Two columns of diff on a phone is two unreadable columns. */
+  .tailor__diff,
+  .matcher-grid,
+  .engine-cards__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kpi {
+    padding: 14px;
+  }
+
+  .kpi__text b {
+    font-size: 1.375rem;
+  }
+
+  .applications__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .applications__count {
+    margin-left: 0;
+    padding-bottom: 0;
+  }
+
+  .dash-panel {
+    padding: 16px;
+  }
+}
+
+/* Everything that moves collapses. The topographic backdrop, the drawer and the charts
+   all animate; none of them carries information in the motion itself. */
+@media (prefers-reduced-motion: reduce) {
+  .funnel__fill,
+  .analysis-progress__mark svg,
+  .kpi {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .kpi:hover {
+    transform: none;
+  }
+
+  .star-toggle:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* --- Applications: view toggle, grid, drawer detail ----------------------- */
+
+.view-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.view-toggle button {
+  padding: 6px 15px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.view-toggle button[aria-pressed="true"] {
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+  color: var(--cyan);
+}
+
+.view-toggle button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.star-toggle {
+  border: 0;
+  background: none;
+  font-size: 0.9375rem;
+  line-height: 1;
+  color: var(--edge);
+  cursor: pointer;
+  transition: color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.star-toggle[aria-pressed="true"] {
+  color: var(--gold);
+}
+
+.star-toggle:hover:not(:disabled) {
+  transform: scale(1.15);
+  color: var(--gold);
+}
+
+.star-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+  border-radius: 4px;
+}
+
+/* The company cell is the row's primary affordance, so it is a real button rather than a
+   click handler on the <tr>, so it is reachable by keyboard and announced as actionable. */
+.cell-link {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cell-link b {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cell-link small {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.cell-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+  border-radius: 4px;
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Dense on purpose: a grid of six enormous cards is a worse table. */
+.app-card__open {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  padding: 15px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-card[data-selected="true"] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 55%, transparent);
+}
+
+.app-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-card__head b {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.app-card__head small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.app-card__head .target-list__star {
+  margin-left: auto;
+}
+
+.app-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-card__meta .score-cell {
+  font-size: 0.6875rem;
+}
+
+.app-card__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--muted);
+}
+
+.app-card__open:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.drawer-section {
+  margin-bottom: 24px;
+}
+
+.drawer-section h3 {
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.detail-grid dt {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.detail-grid dd {
+  margin-top: 5px;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+.timeline {
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.timeline li {
+  display: flex;
+  gap: 14px;
+  padding: 10px 0 10px 16px;
+  position: relative;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+/* The spine and its nodes. A vertical rule reads as sequence in a way a plain list does
+   not, and this is the one place in the app where chronology is the content. */
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 16px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+}
+
+.timeline li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 24px;
+  bottom: -4px;
+  width: 1px;
+  background: var(--edge-soft);
+}
+
+.timeline time {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* --- Matcher: stepper, engines, progress, report, tailor ------------------ */
+
+.matcher-grid {
+  display: grid;
+  gap: 26px;
+}
+
+@media (min-width: 1000px) {
+  .matcher-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  list-style: none;
+  padding: 0;
+}
+
+.stepper button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-pill);
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.22s var(--ease), border-color 0.22s var(--ease);
+}
+
+.stepper button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.stepper li[data-state="current"] button {
+  border-color: color-mix(in srgb, var(--cyan) 55%, transparent);
+  color: var(--cyan);
+}
+
+/* A completed step keeps a visible affordance: it is the way back to the analysis, and
+   re-running one costs a model call. */
+.stepper li[data-state="done"] button {
+  color: var(--teal);
+  border-color: color-mix(in srgb, var(--teal) 40%, var(--edge-soft));
+}
+
+.stepper button span {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: currentColor;
+  color: var(--obsidian);
+  font-size: 0.5625rem;
+}
+
+.stepper button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.engine-cards {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.engine-cards legend {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.engine-cards__grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+@media (min-width: 560px) {
+  .engine-cards__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.engine-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm), var(--rim);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 0.24s var(--ease);
+}
+
+.engine-card:hover:not(:disabled) {
+  box-shadow: var(--nm), var(--rim);
+}
+
+/* Selected is a ring plus a tint, never the raised shadow alone, which measures ~1.07:1
+   and is invisible as a state. */
+.engine-card[aria-checked="true"] {
+  background: color-mix(in srgb, var(--cyan) 7%, var(--surface));
+  box-shadow:
+    var(--nm-sm),
+    inset 0 0 0 1px color-mix(in srgb, var(--cyan) 55%, transparent);
+}
+
+.engine-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.engine-card:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--nm-sm),
+    0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.engine-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.engine-card__head b {
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.engine-card__badge {
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.engine-card__badge[data-tone="teal"] {
+  border: 1px solid color-mix(in srgb, var(--teal) 50%, transparent);
+  color: var(--teal);
+}
+.engine-card__badge[data-tone="cyan"] {
+  border: 1px solid color-mix(in srgb, var(--cyan) 50%, transparent);
+  color: var(--cyan);
+}
+.engine-card__badge[data-tone="gold"] {
+  border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent);
+  color: var(--gold);
+}
+
+.engine-card__body {
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.engine-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.engine-card__foot [data-tone="gold"] { color: var(--gold); }
+
+.analysis-progress {
+  display: grid;
+  gap: 16px;
+}
+
+.analysis-progress__list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 20px;
+  border-radius: var(--r);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.analysis-progress__list li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 0.875rem;
+  color: var(--muted);
+  transition: color 0.3s var(--ease);
+}
+
+.analysis-progress__list li[data-state="done"] { color: var(--text-dim); }
+.analysis-progress__list li[data-state="active"] { color: var(--text); }
+
+.analysis-progress__mark {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.analysis-progress__list li[data-state="done"] .analysis-progress__mark { color: var(--teal); }
+.analysis-progress__list li[data-state="active"] .analysis-progress__mark { color: var(--cyan); }
+
+.analysis-progress__mark svg {
+  width: 13px;
+  height: 13px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.analysis-progress__note {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* --- Analysis report ------------------------------------------------------ */
+
+.report {
+  display: grid;
+  gap: 16px;
+}
+
+.report__caveat,
+.report__note {
+  font-size: 0.75rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.report__breakdown small {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.report__breakdown-value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.report__breakdown-value b {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.report__breakdown-value .pf-meter {
+  flex: 1;
+  margin-top: 0;
+}
+
+.report .pf-panel > .report__note {
+  padding: 0 15px 14px;
+}
+
+.report__list,
+.report__prose,
+.report__actions {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 15px;
+}
+
+.report__list li b {
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.report__list q {
+  display: block;
+  margin-top: 5px;
+  padding-left: 11px;
+  border-left: 1px solid var(--edge-soft);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.report__gap-head,
+.report__action-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.report__list small {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.report__chip {
+  padding: 2px 8px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.report__chip[data-tone="high"] {
+  border-color: color-mix(in srgb, var(--rose) 45%, var(--edge-soft));
+  color: var(--rose);
+}
+.report__chip[data-tone="medium"] {
+  border-color: color-mix(in srgb, var(--gold) 45%, var(--edge-soft));
+  color: var(--gold);
+}
+
+.report__prose li,
+.report__actions p {
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.report__actions li b {
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.report__actions p {
+  margin-top: 6px;
+}
+
+.report__cta {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 18px;
+  border-radius: var(--r);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.report__cta p {
+  font-size: 0.75rem;
+  line-height: 1.65;
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+/* --- Tailor workspace ----------------------------------------------------- */
+
+.tailor {
+  display: grid;
+  gap: 16px;
+}
+
+.tailor__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm), var(--rim);
+}
+
+.tailor__bar b {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.tailor__bar small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.tailor__bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tailor__list {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Decided rows recede so the eye lands on what still needs a decision. */
+.tailor__list li[data-decision="accepted"] {
+  border-color: color-mix(in srgb, var(--teal) 45%, var(--edge));
+}
+.tailor__list li[data-decision="rejected"] {
+  opacity: 0.55;
+}
+
+.tailor__diff {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+}
+
+@media (min-width: 780px) {
+  .tailor__diff {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.tailor__side small {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tailor__side p {
+  padding: 11px;
+  border-radius: var(--r-sm);
+  background: var(--pf-surface);
+  border: 1px solid var(--edge-soft);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.tailor__side[data-side="proposed"] small {
+  color: var(--teal);
+}
+
+.tailor__side .nm-textarea {
+  width: 100%;
+  font-size: 0.8125rem;
+}
+
+.tailor__reason {
+  padding: 0 15px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.tailor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 13px 15px;
+}
+
+.tailor__actions .row-action[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--cyan) 55%, transparent);
+  color: var(--cyan);
+}
+
+.tailor__foot {
+  display: flex;
+  gap: 10px;
+}
+
+/* --- Dashboard ------------------------------------------------------------
+   Dense on purpose. The brief asks for a professional intelligence surface, not
+   six enormous cards, since a user should see a meaningful amount of their search
+   without scrolling. Whitespace comes from the rhythm between panels rather
+   than from padding inside them. */
+
+.dash-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.dash-header h1 {
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  letter-spacing: -0.02em;
+}
+
+.dash-header p {
+  margin-top: 6px;
+  font-size: 0.9375rem;
+  color: var(--text-dim);
+}
+
+.dash-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.dash-row {
+  display: grid;
+  gap: 18px;
+}
+
+/* Velocity is the widest because it carries a time axis; the other two are readable
+   compact. Below 1200 the row stacks rather than squeezing three charts into a phone. */
+@media (min-width: 1200px) {
+  .dash-row--analytics {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+
+  /* Role Landscape spans the full row and Priority Targets / Recent Intelligence share
+     the next one. The landscape's own three-column interior needs ~900px to lay out, and
+     squeezing it into a third of the row made its labels collide with its filters. */
+  .dash-row--landscape {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .dash-row--landscape > .dash-panel--landscape {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 820px) and (max-width: 1199px) {
+  .dash-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+}
+
+.kpi {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 18px;
+  text-decoration: none;
+  transition: box-shadow 0.26s var(--ease), transform 0.26s var(--ease);
+}
+
+/* Lifts a little on hover, a raised surface catching more of the same light, not a
+   different effect. */
+.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--nm-lg), var(--rim);
+}
+
+.kpi:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--nm),
+    0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.kpi__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-sm);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.kpi__icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.kpi__icon[data-tone="cyan"] { color: var(--cyan); }
+.kpi__icon[data-tone="teal"] { color: var(--teal); }
+.kpi__icon[data-tone="violet"] { color: var(--violet); }
+.kpi__icon[data-tone="gold"] { color: var(--gold); }
+
+.kpi__text {
+  min-width: 0;
+}
+
+.kpi__text small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.kpi__text b {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.kpi__text em {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  font-style: normal;
+  color: var(--muted);
+}
+
+/* --- Dashboard panels ----------------------------------------------------- */
+
+.dash-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.dash-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.dash-panel .panel-title {
+  font-size: 1rem;
+}
+
+.dash-panel__sub {
+  margin-top: 3px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.dash-subhead {
+  margin: 16px 0 10px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dash-panel__note {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.dash-panel__link {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.dash-panel__link:hover {
+  text-decoration: underline;
+}
+
+.dash-panel__empty,
+.dash-panel__empty-block {
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.dash-panel__empty-block {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 18px 0 6px;
+}
+
+.dash-panel__empty-block p:first-child {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.dash-range select,
+.applications__controls select {
+  padding: 7px 11px;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: var(--pf-surface);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  cursor: pointer;
+}
+
+.dash-range select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+/* --- Velocity chart ------------------------------------------------------- */
+
+.dash-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.dash-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+/* A hidden series is dimmed AND its dot goes grey, so the state is not carried by colour
+   alone, and aria-pressed carries it for anyone not looking at either. */
+.dash-legend__item[aria-pressed="false"] {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.dash-legend__item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+  border-radius: 4px;
+}
+
+.dash-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.velocity {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.velocity__axis {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--muted);
+}
+
+.velocity__readout {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-dim);
+}
+
+.velocity__hint {
+  color: var(--muted);
+}
+
+.chart-alt {
+  margin-top: 12px;
+}
+
+.chart-alt summary {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.chart-alt .pf-table {
+  min-width: 0;
+  margin-top: 10px;
+}
+
+/* --- Match distribution --------------------------------------------------- */
+
+.band-list {
+  display: grid;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.band-list__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.8125rem;
+}
+
+.band-list__head b {
+  color: var(--text);
+}
+
+.band-list__head small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--muted);
+}
+
+.band-list__count {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.band-list__count b {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.pf-meter[data-tone="good"] i { background: var(--teal); }
+.pf-meter[data-tone="active"] i { background: var(--cyan); }
+
+/* --- Pipeline funnel ------------------------------------------------------ */
+
+.funnel {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+  min-height: 150px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.funnel__bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 150px;
+  text-decoration: none;
+  border-radius: var(--r-sm);
+  transition: background 0.2s var(--ease);
+}
+
+.funnel__bar:hover {
+  background: color-mix(in srgb, var(--cyan) 7%, transparent);
+}
+
+.funnel__bar:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.funnel__bar b {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.funnel__fill {
+  width: 100%;
+  max-width: 46px;
+  border-radius: 5px 5px 0 0;
+  animation: funnel-rise 0.6s var(--ease) both;
+}
+
+@keyframes funnel-rise {
+  from {
+    height: 0 !important;
+  }
+}
+
+.funnel__bar small {
+  max-width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  /* No tracking here. Five uppercase labels across a narrow panel collide the moment
+     letter-spacing is added, and "SCREENING" is the one that goes first. */
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.funnel__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--edge-soft);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.funnel__foot b {
+  font-family: var(--font-mono);
+  color: var(--cyan);
+}
+
+.funnel__foot .dash-panel__link {
+  margin-top: 0;
+}
+
+/* --- Role landscape ------------------------------------------------------- */
+
+.landscape {
+  display: grid;
+  gap: 18px;
+}
+
+@media (min-width: 900px) {
+  .dash-panel--landscape .landscape {
+    grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.4fr) minmax(190px, 1fr);
+    align-items: start;
+  }
+}
+
+.landscape__primary-body {
+  padding: 15px;
+}
+
+.landscape__primary-body b {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--text);
+}
+
+.landscape__score {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--cyan);
+}
+
+.landscape__primary-body small {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.landscape__primary-body p {
+  margin-top: 10px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.landscape__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.landscape__filter {
+  padding: 5px 11px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-pill);
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.landscape__filter[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--cyan) 55%, transparent);
+  color: var(--cyan);
+}
+
+.landscape__filter:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.landscape__radar {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  height: auto;
+  overflow: visible;
+}
+
+.landscape__label {
+  font-size: 8.5px;
+  fill: var(--text-dim);
+}
+
+.landscape__value {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  fill: var(--muted);
+}
+
+.landscape__list {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.landscape__list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s var(--ease);
+}
+
+.landscape__list button:hover {
+  background: var(--pf-surface-2);
+}
+
+.landscape__list button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.landscape__dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.landscape__list-role {
+  flex: 1;
+  min-width: 0;
+}
+
+.landscape__list-role b {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.landscape__list-role small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.landscape__list-score {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* --- Role detail drawer --------------------------------------------------- */
+
+.role-detail h3 {
+  margin: 20px 0 8px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.role-detail > p {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.role-detail .pf-stat {
+  border-bottom: 0;
+}
+
+.role-detail__list {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.role-detail__list li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+/* The marker carries the meaning in shape as well as colour, since a check and a dash read
+   differently in greyscale, which two coloured dots would not. */
+.role-detail__list li::before {
+  position: absolute;
+  left: 0;
+  font-family: var(--font-mono);
+}
+
+.role-detail__list li[data-tone="good"]::before {
+  content: "+";
+  color: var(--teal);
+}
+
+.role-detail__list li[data-tone="gap"]::before {
+  content: "–";
+  color: var(--gold);
+}
+
+/* --- Priority targets and feeds ------------------------------------------- */
+
+.target-list,
+.feed {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.target-list a,
+.target-list__row,
+.feed a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  transition: background 0.18s var(--ease);
+}
+
+.target-list a:hover,
+.feed a:hover {
+  background: var(--pf-surface-2);
+}
+
+.target-list a:focus-visible,
+.feed a:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.target-list__star {
+  color: var(--gold);
+  font-size: 0.75rem;
+}
+
+.target-list__main,
+.feed__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.target-list__main b,
+.feed__text b {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.target-list__main small,
+.feed__text small {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.target-list__meta {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px 10px;
+  max-width: 46%;
+  /* Wraps rather than clipping. "85 out of 100 · calibrated" does not fit beside a role
+     and a company in a third-width panel, and truncating it would drop the calibration
+     state, which FEATURES.md §2.2 requires wherever the number appears. */
+  text-align: right;
+}
+
+.target-list__meta .score-cell {
+  font-size: 0.6875rem;
+}
+
+.status-chip {
+  padding: 3px 8px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.status-chip[data-tone="active"] {
+  border-color: color-mix(in srgb, var(--cyan) 50%, var(--edge-soft));
+  color: var(--cyan);
+}
+.status-chip[data-tone="good"] {
+  border-color: color-mix(in srgb, var(--teal) 50%, var(--edge-soft));
+  color: var(--teal);
+}
+.status-chip[data-tone="bad"] {
+  border-color: color-mix(in srgb, var(--rose) 45%, var(--edge-soft));
+  color: var(--rose);
+}
+
+.feed__mark,
+.hunt__mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.feed__mark[data-tone="cyan"] { color: var(--cyan); }
+.feed__mark[data-tone="teal"] { color: var(--teal); }
+.feed__mark[data-tone="violet"] { color: var(--violet); }
+
+.feed time {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* --- Career intelligence -------------------------------------------------- */
+
+.insight-list {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 900px) {
+  .dash-panel--intelligence .insight-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.insight-list li {
+  padding: 13px 15px;
+  border-radius: var(--r-sm);
+  background: var(--pf-surface);
+  border: 1px solid var(--edge-soft);
+}
+
+.insight-list li[data-tone="good"] { border-left-color: var(--teal); }
+.insight-list li[data-tone="gap"] { border-left-color: var(--gold); }
+.insight-list li[data-tone="adjacent"] { border-left-color: var(--violet); }
+
+.insight-list__label {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.insight-list li[data-tone="good"] .insight-list__label { color: var(--teal); }
+.insight-list li[data-tone="gap"] .insight-list__label { color: var(--gold); }
+.insight-list li[data-tone="adjacent"] .insight-list__label { color: var(--violet); }
+
+.insight-list p {
+  font-size: 0.8125rem;
+  line-height: 1.62;
+  color: var(--text-dim);
+}
+
+/* --- Hunt drawer ---------------------------------------------------------- */
+
+.hunt {
+  display: grid;
+  gap: 14px;
+}
+
+.hunt__search .nm-input {
+  width: 100%;
+}
+
+.hunt__note {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.hunt__label {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hunt__boards {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hunt__boards li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hunt__boards a {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 11px 13px;
+  border-radius: var(--r-sm);
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm), var(--rim);
+  text-decoration: none;
+  transition: box-shadow 0.22s var(--ease);
+}
+
+.hunt__boards a:hover {
+  box-shadow: var(--nm), var(--rim);
+}
+
+.hunt__boards a:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--nm-sm),
+    0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.hunt__board-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hunt__board-text b {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.hunt__board-text small {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hunt__boards svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+}
+
+.hunt__empty {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.hunt__add {
+  padding: 11px;
+  border: 1px dashed var(--edge-soft);
+  border-radius: var(--r-sm);
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--cyan);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease);
+}
+
+.hunt__add:hover {
+  border-color: color-mix(in srgb, var(--cyan) 45%, transparent);
+}
+
+.hunt__add:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.hunt__form-body {
+  display: grid;
+  gap: 13px;
+  padding: 15px;
+}
+
+.hunt__form-body .field > label {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hunt__form-body .nm-input {
+  width: 100%;
+}
+
+.hunt__form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* --- Resumes -------------------------------------------------------------- */
+
+.resume-list {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.resume-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px;
+}
+
+.resume-card__main b {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.resume-card__main small {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+/* Reads as a label, not as a decoration: the word carries the meaning and the colour
+   only reinforces it. */
+.resume-card__default {
+  padding: 2px 7px;
+  border: 1px solid color-mix(in srgb, var(--teal) 55%, var(--edge));
+  border-radius: var(--r-sm);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  color: var(--teal);
+}
+
+.resume-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resume-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.resume-tile {
+  display: flex;
+  flex-direction: column;
+}
+
+.resume-tile__open {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  padding: 15px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resume-tile__open:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.resume-tile__doc {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--cyan);
+}
+
+.resume-tile__doc svg {
+  width: 17px;
+  height: 17px;
+}
+
+.resume-tile__body {
+  min-width: 0;
+}
+
+.resume-tile__body b {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.resume-tile__body small {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.resume-tile__body em {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.6875rem;
+  font-style: normal;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.resume-tile__body .resume-card__default {
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.resume-tile__actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 15px 14px;
+}
+
+.resume-note {
+  margin-top: 12px;
+  padding: 11px 13px;
+  border-radius: var(--r-sm);
+  background: var(--pf-surface);
+  border: 1px solid var(--edge-soft);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+/* A résumé preview needs to be readable as a document, so it keeps its own line breaks and
+   gets more room than the drawer's default column. */
+.resume-preview {
+  max-height: 420px;
+  overflow-y: auto;
+  border-top: 0;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-sm);
+}
+
+.resume-editor__body {
+  display: grid;
+  gap: 18px;
+  padding: 18px 15px;
+}
+
+.resume-editor__body .field > label {
+  display: block;
+  margin-bottom: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.resume-editor__body .nm-input,
+.resume-editor__body .nm-textarea {
+  width: 100%;
+}
+
+.resume-editor__upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.resume-editor__hint {
+  flex: 1;
+  min-width: 220px;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.resume-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.saved-resume label {
+  display: block;
+  margin-bottom: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.saved-resume .nm-input {
+  width: 100%;
+}
+
+/* --- Save a matcher result against an application ------------------------ */
+
+.save-result {
+  margin-top: 20px;
+}
+
+.save-result__body {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+}
+
+.save-result__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.save-result__row select,
+.save-result__row input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.save-result__note {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.save-result__done {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.marketing-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.marketing-nav__actions .button {
+  min-height: 40px;
+  padding: 0 20px;
+  font-size: 0.75rem;
+}
+
+/* --- Hero --------------------------------------------------------------- */
+
+.hero-section {
+  position: relative;
+  width: var(--shell);
+  margin: 0 auto;
+  padding: clamp(3.5rem, 7vw, 6rem) 0 var(--gap-section);
+  display: grid;
+  /* The illustration column now carries dense product UI rather than an orb, so
+     it takes the larger share instead of the smaller one. */
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  align-items: center;
+  gap: clamp(1.75rem, 4vw, 4.5rem);
+}
+
+/* A soft pool of light behind the hero so the extruded shapes have something
+   to sit in. Without it the top of the page is a flat black rectangle. */
+.hero-section::before {
+  content: "";
+  position: absolute;
+  top: -18%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130%;
+  height: 150%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    58% 46% at 50% 34%,
+    color-mix(in srgb, var(--cyan) 11%, transparent),
+    transparent 72%
+  );
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.hero-section h1 {
+  max-width: 13ch;
+}
+
+.hero-section h1 em {
+  display: inline-block;
+  background: linear-gradient(
+    100deg,
+    var(--cyan),
+    color-mix(in srgb, var(--cyan) 55%, var(--teal))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-lede {
+  max-width: 46ch;
+  font-size: 1.0625rem;
+  line-height: 1.68;
+  color: var(--text-dim);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+/* Replaced `.trust-row`, which was three inset pills each led by an identical
+   teal dot. Three matching capsules under a CTA is badge soup, the shape of
+   reassurance rather than the substance of it, and the repeated dot implied a
+   checklist of equivalent items when the three claims are a guarantee, a
+   capability and a refusal.
+
+   One quiet line, mono to match the eyebrow, measure capped so it breaks where
+   the sentences do. */
+.trust-line {
+  margin-top: 14px;
+  /* In rem, not ch. `ch` resolves to 5.6px here against a real advance nearer
+     7px, because the unit is the width of "0" in the *first available* font, and this
+     line renders in the mono face while `ch` was being measured elsewhere. A
+     narrower measure stranded "emailing, ever." alone on a third line; this
+     sets the line in two. */
+  max-width: 22rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 2;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* --- Hero showcase ------------------------------------------------------
+   The rotating asset rail. Replaced an extruded orb carrying three drifting
+   stat chips; that vocabulary (`.hero-visual`, `.hero-orb`, `.hero-chip` and
+   the `breathe` and `drift` keyframes that only they used) is deleted rather
+   than left dormant, since nothing renders those class names any more.
+   ------------------------------------------------------------------------ */
+
+.hero-showcase {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: clamp(12px, 1.6vw, 20px);
+  margin: 0;
+  /* Was a flat 560px cap. The illustrations are dense product UI and were the
+     thing a visitor squinted at; with the case removed they can have the whole
+     column, so the cap now scales with the viewport instead of pinning small on
+     a large screen. */
+  width: 100%;
+  max-width: clamp(20rem, 50vw, 54rem);
+}
+
+/* The whole point of the frame. A fixed ratio means three assets of differing
+   height cannot resize the hero as they rotate, since the panels are stacked in one
+   grid cell rather than laid out in sequence, so the frame is exactly one panel
+   tall no matter how many it holds.
+
+   No case any more: no fill, no shadow, no rim, no clipping. It was a plate that
+   boxed the illustration in and cost it a border's worth of width on every side,
+   and the assets do not need one: the raster is rendered on near-black by
+   design and the SVG assets draw their own panels. What is left is a layout
+   box that reserves height and nothing else. */
+.hero-showcase__frame {
+  position: relative;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* Every panel occupies the same cell. Cross-fade, not slide: a slide needs a
+   direction, and a rail that wraps has no honest direction to slide at the seam. */
+.hero-showcase__panel {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 0.7s var(--ease);
+}
+
+.hero-showcase__panel[data-active="true"] {
+  opacity: 1;
+}
+
+.hero-showcase__panel img {
+  width: 100%;
+  height: 100%;
+  /* `contain`, not `cover`. With the case gone there is no boundary to bleed to,
+     and cropping a 16:9 render inside a 16:9 box only ever loses edges. */
+  object-fit: contain;
+}
+
+/* --- Hero overlays -------------------------------------------------------
+   The animated layer over each raster. Every figure a visitor can read lives
+   here rather than in the image. See PlatesOverlay's docblock for why that
+   distinction is the point rather than an implementation detail.
+
+   Registered to the raster by sharing its 1120x630 coordinate space and its
+   `cover` fit, so the two cannot drift apart as the frame resizes.
+   ------------------------------------------------------------------------ */
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* --- Plates ---------------------------------------------------------------
+   Drawn entirely in SVG: there is no raster under this asset. See
+   PlatesOverlay.tsx for why flat product UI cannot be a generated image.
+   --------------------------------------------------------------------------- */
+
+.hero-overlay--plates text {
+  font-family: var(--font-mono);
+}
+
+.pl-panel {
+  fill: var(--pf-surface);
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+/* The tailored plate is the one being drawn attention to, so it gets the accent
+   edge. Same construction, one step warmer. */
+.pl-panel--after {
+  stroke: color-mix(in srgb, var(--cyan) 34%, transparent);
+}
+
+.pl-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  fill: var(--text);
+}
+
+.pl-panel-title--after {
+  fill: var(--cyan);
+}
+
+.pl-spark {
+  fill: var(--cyan);
+}
+
+.pl-divider {
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+.pl-card {
+  fill: var(--pf-surface-2);
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+/* Icon stand-ins. Filled blocks, not outlined boxes, because outlined squares beside a
+   row label read as unchecked checkboxes, which next to a check mark on the same
+   row said the opposite of what the row meant. */
+.pl-glyph {
+  fill: var(--edge);
+  opacity: 0.55;
+}
+
+/* Section labels. Tiny and wide-tracked, the same gesture as `.eyebrow`. */
+.pl-label {
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  fill: var(--muted);
+}
+
+.pl-strong {
+  font-size: 9px;
+  fill: var(--text);
+}
+
+.pl-row-label {
+  font-size: 8.5px;
+  fill: var(--text-dim);
+}
+
+/* The weak-areas column is 140 units wide and shares each row with a severity
+   tag, so its labels run a size smaller to stop the two colliding. */
+.pl-row-label--tight {
+  font-size: 7.5px;
+}
+
+.pl-body,
+.pl-meta {
+  font-size: 8px;
+  fill: var(--text-dim);
+}
+
+.pl-meta {
+  fill: var(--muted);
+}
+
+.pl-dot {
+  fill: var(--edge);
+}
+
+.pl-name {
+  font-size: 17px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.pl-role {
+  font-size: 9.5px;
+  fill: var(--text-dim);
+}
+
+.pl-ok {
+  font-size: 8.5px;
+  fill: var(--teal);
+}
+
+/* --- Score rings --- */
+
+.pl-ring-track {
+  fill: none;
+  stroke: var(--edge-soft);
+  stroke-width: 9;
+}
+
+/* `pathLength="100"` makes the dash units percent-of-circumference, so `--arc`
+   is literally the score. The ring draws rather than counting: a counting number
+   needs JavaScript and a second code path to land on its final value under
+   reduced motion, where a drawn arc gets that for free. */
+.pl-ring-value {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: var(--arc) 100;
+  stroke-dashoffset: var(--arc);
+  animation: pl-ring-draw 1.5s var(--ease) forwards;
+}
+
+.pl-ring-value[data-tone="cyan"] {
+  stroke: var(--cyan);
+}
+.pl-ring-value[data-tone="teal"] {
+  stroke: var(--teal);
+}
+
+@keyframes pl-ring-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.pl-ring-value-text {
+  font-size: 44px;
+  font-weight: 700;
+  fill: var(--text);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.pl-ring-caption {
+  font-size: 9.5px;
+  fill: var(--text-dim);
+  text-anchor: middle;
+}
+
+/* Never a bare number, per content rule 2. A lone score in a hero reads as a
+   percentage to everyone who has ever seen one. */
+.pl-ring-scale {
+  font-size: 8px;
+  letter-spacing: 0.02em;
+  fill: var(--muted);
+  text-anchor: middle;
+}
+
+/* --- Pills and tags --- */
+
+.pl-pill rect {
+  fill: color-mix(in srgb, currentColor 12%, transparent);
+  stroke: color-mix(in srgb, currentColor 40%, transparent);
+  stroke-width: 1;
+}
+
+.pl-pill circle {
+  fill: currentColor;
+}
+
+.pl-pill text {
+  font-size: 9px;
+  fill: currentColor;
+  dominant-baseline: central;
+}
+
+.pl-pill[data-tone="gold"] {
+  color: var(--gold);
+}
+.pl-pill[data-tone="teal"] {
+  color: var(--teal);
+}
+
+.pl-tag rect {
+  fill: color-mix(in srgb, currentColor 14%, transparent);
+  stroke: color-mix(in srgb, currentColor 38%, transparent);
+  stroke-width: 1;
+}
+
+.pl-tag text {
+  font-size: 7px;
+  fill: currentColor;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.pl-tag[data-tone="rose"] {
+  color: var(--rose);
+}
+.pl-tag[data-tone="gold"] {
+  color: var(--gold);
+}
+.pl-tag[data-tone="cyan"] {
+  color: var(--cyan);
+}
+
+/* Rows arrive in sequence rather than all at once, so the panel reads as being
+   filled in rather than as having always been there. */
+.pl-weak-row,
+.pl-check {
+  animation: pl-row-in 0.5s var(--ease) both;
+}
+
+@keyframes pl-row-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* --- Meters --- */
+
+.pl-meter-track {
+  fill: var(--edge-soft);
+}
+
+.pl-meter-fill {
+  fill: var(--cyan);
+  transform-origin: 216px 0;
+  animation: pl-meter-fill 1.1s var(--ease) both;
+}
+
+/* Scales to the row's own percentage, not to full, so the bar reports the value
+   rather than merely animating. */
+@keyframes pl-meter-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(var(--pct));
+  }
+}
+
+.pl-pct {
+  font-size: 8.5px;
+  fill: var(--muted);
+  text-anchor: end;
+}
+
+.pl-action {
+  font-size: 8px;
+  fill: var(--muted);
+}
+
+/* --- The lift into the new score --- */
+
+.pl-arrow {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 2;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: pl-arrow-draw 1.1s var(--ease) 0.5s forwards;
+}
+
+.pl-arrow-head {
+  fill: var(--cyan);
+  opacity: 0;
+  animation: pl-fade-in 0.3s var(--ease) 1.5s forwards;
+}
+
+@keyframes pl-arrow-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pl-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Check list --- */
+
+.pl-check rect:first-of-type {
+  fill: var(--pf-surface-2);
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+.pl-check text {
+  font-size: 8.5px;
+  fill: var(--text-dim);
+  dominant-baseline: central;
+}
+
+.pl-check-mark {
+  fill: color-mix(in srgb, var(--teal) 16%, transparent);
+  stroke: var(--teal);
+  stroke-width: 1.2;
+}
+
+/* --- Badges and tiles --- */
+
+.pl-badge rect {
+  fill: color-mix(in srgb, var(--teal) 12%, transparent);
+  stroke: color-mix(in srgb, var(--teal) 34%, transparent);
+  stroke-width: 1;
+}
+
+.pl-badge circle {
+  fill: var(--teal);
+}
+
+.pl-badge text {
+  font-size: 8.5px;
+  fill: var(--teal);
+  dominant-baseline: central;
+}
+
+.pl-tile-value {
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--text);
+  text-anchor: middle;
+}
+
+.pl-tile-value[data-tone="teal"] {
+  fill: var(--teal);
+}
+.pl-tile-value[data-tone="cyan"] {
+  fill: var(--cyan);
+}
+
+.pl-tile-label {
+  font-size: 7px;
+  letter-spacing: 0.04em;
+  fill: var(--muted);
+  text-anchor: middle;
+}
+
+/* --- Connector --- */
+
+.pl-connector rect {
+  fill: var(--surface-2);
+  stroke: color-mix(in srgb, var(--cyan) 30%, transparent);
+  stroke-width: 1;
+}
+
+/* "Re-scored", not "Revamp & Elevate": the product did not touch the resume.
+   The user's own edits moved the score, and the wording has to say so. */
+.pl-connector text {
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  fill: var(--text-dim);
+  text-anchor: middle;
+}
+
+/* --- Applications ---------------------------------------------------------
+   Keeps its raster (a real 3D laptop); everything readable is drawn over it.
+   --------------------------------------------------------------------------- */
+
+.hero-overlay--apps text {
+  font-family: var(--font-mono);
+}
+
+.app-screen-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: var(--text);
+}
+
+.app-filter rect {
+  fill: var(--surface-2);
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+.app-filter text {
+  font-size: 10px;
+  fill: var(--muted);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.app-rule {
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+.app-col {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  fill: var(--muted);
+}
+
+.app-row-bg {
+  fill: transparent;
+}
+
+/* The highlight walks the table one row at a time, which is the sequence the
+   reference shows and the only motion on the screen itself. */
+.app-row {
+  animation: app-row-scan 6.6s var(--ease) infinite;
+}
+
+.app-row-bg {
+  transition: fill 0.3s var(--ease);
+}
+
+@keyframes app-row-scan {
+  0%,
+  16%,
+  100% {
+    opacity: 0.62;
+  }
+  4%,
+  10% {
+    opacity: 1;
+  }
+}
+
+.app-row-mark {
+  fill: var(--surface-3);
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+.app-row-company {
+  font-size: 11px;
+  fill: var(--text);
+  dominant-baseline: central;
+}
+
+.app-row-meta {
+  font-size: 10px;
+  fill: var(--muted);
+  dominant-baseline: central;
+}
+
+.app-status rect {
+  fill: color-mix(in srgb, currentColor 14%, transparent);
+  stroke: color-mix(in srgb, currentColor 38%, transparent);
+  stroke-width: 1;
+}
+
+.app-status circle {
+  fill: currentColor;
+}
+
+.app-status text {
+  font-size: 9px;
+  fill: currentColor;
+  dominant-baseline: central;
+}
+
+.app-status[data-tone="teal"] {
+  color: var(--teal);
+}
+.app-status[data-tone="gold"] {
+  color: var(--gold);
+}
+.app-status[data-tone="cyan"] {
+  color: var(--cyan);
+}
+
+.app-stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.app-more {
+  font-size: 10px;
+  fill: var(--cyan);
+  text-anchor: middle;
+}
+
+/* One band of light crossing the lens, entering and leaving rather than
+   materialising in the middle of the glass. */
+.app-lens-sweep {
+  animation: app-lens-sweep 5.5s var(--ease) infinite;
+}
+
+@keyframes app-lens-sweep {
+  0% {
+    transform: translateX(620px);
+  }
+  55%,
+  100% {
+    transform: translateX(1230px);
+  }
+}
+
+/* --- Floating panels --- */
+
+.app-panel > rect:first-of-type,
+.app-card > rect:first-of-type {
+  fill: var(--pf-surface-2);
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+.app-panel-mark,
+.app-card-mark {
+  fill: var(--surface-2);
+  stroke: color-mix(in srgb, var(--cyan) 40%, transparent);
+  stroke-width: 1;
+}
+
+.app-panel-title,
+.app-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.app-panel-meta,
+.app-card-meta {
+  font-size: 9.5px;
+  fill: var(--muted);
+}
+
+.app-panel-body {
+  font-size: 9.5px;
+  fill: var(--text-dim);
+}
+
+.app-panel-label,
+.app-card-label {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  fill: var(--muted);
+}
+
+.app-fact-key {
+  font-size: 9.5px;
+  fill: var(--muted);
+}
+
+.app-fact-value {
+  font-size: 9.5px;
+  fill: var(--text-dim);
+  text-anchor: end;
+}
+
+.app-verified {
+  fill: color-mix(in srgb, var(--teal) 22%, transparent);
+  stroke: var(--teal);
+  stroke-width: 1.2;
+}
+
+/* --- Network --------------------------------------------------------------
+   Drawn entirely in SVG; no raster. Matches the reference composition: hub,
+   four contacts with company badges, suggestion pill, two contact cards.
+   --------------------------------------------------------------------------- */
+
+.hero-overlay--network text {
+  font-family: var(--font-mono);
+}
+
+/* The tilt. A real 3D rotation on the whole scene rather than a skew, so the
+   discs stay circular in their own plane and the graph reads as a surface being
+   looked at slightly from above and to the side. Kept small, because past about 8deg
+   the type on the cards starts to smear. The roadmap chip is outside this group
+   so it stays square to the frame. */
+.net-scene {
+  transform: perspective(1500px) rotateX(7deg) rotateY(-7deg) rotateZ(-0.6deg);
+  transform-origin: 560px 346px;
+}
+
+/* --- Neumorphic depth ---
+   The same dual shadow as the rest of the system, expressed as SVG filters: a
+   cyan-tinted light from the top-left, a deep cast to the bottom-right. Drop
+   shadows rather than box shadows because these are circles and cards inside an
+   SVG, and a box shadow would draw the bounding rectangle. */
+.net-node,
+.net-hub,
+.net-card,
+.net-suggest,
+.net-badge,
+.net-card-tile {
+  filter:
+    drop-shadow(-3px -4px 6px rgba(180, 230, 255, 0.06))
+    drop-shadow(7px 9px 16px rgba(0, 0, 0, 0.72));
+}
+
+/* --- Edges --- */
+
+.net-edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--cyan) 62%, transparent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: net-edge-draw 0.9s var(--ease) both;
+}
+
+@keyframes net-edge-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.net-pulse {
+  fill: none;
+  stroke: var(--teal);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 4 100;
+  animation: net-pulse-travel 4.5s linear infinite;
+}
+
+@keyframes net-pulse-travel {
+  from {
+    stroke-dashoffset: 4;
+  }
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+/* Secondary links: contact to contact around the ring, not out from the hub.
+   Dashed and dimmer so they read as "these two know each other" rather than as
+   connections the user has. */
+.net-hint {
+  fill: none;
+  stroke: color-mix(in srgb, var(--edge) 85%, transparent);
+  stroke-width: 1.8;
+  stroke-dasharray: 6 10;
+  stroke-linecap: round;
+}
+
+/* One dot per link, sitting on the curve's own midpoint so it can never drift
+   off the line it belongs to. */
+.net-hint-dot {
+  fill: var(--cyan);
+  stroke: var(--obsidian);
+  stroke-width: 2.5;
+  animation: net-hint-pulse 3.6s var(--ease) infinite;
+}
+
+@keyframes net-hint-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- Nodes --- */
+
+.net-node {
+  animation: net-node-in 0.5s var(--ease) both;
+}
+
+@keyframes net-node-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.net-node-ring {
+  fill: none;
+  stroke: color-mix(in srgb, var(--cyan) 55%, transparent);
+  stroke-width: 2;
+}
+
+.net-node-body {
+  fill: url(#net-node-fill);
+}
+
+/* --- The figures ---
+   Featureless on every variant. Spec §6 excludes profiling people who have not
+   consented, and rendered faces are precisely what that rules out. The variants
+   differ by silhouette alone: hair, a bob, curls, headphones. */
+/* The face is the lit surface and the body reads a step back from it, which is what
+   gives the three-quarter turn its depth rather than flattening into one silhouette. */
+.net-face {
+  fill: color-mix(in srgb, var(--cyan) 55%, var(--text));
+}
+
+.net-body {
+  fill: color-mix(in srgb, var(--cyan) 72%, var(--text));
+}
+
+/* Hair has to separate from two things at once: the light face in front of it and
+   the dark disc behind it. At 24% cyan on obsidian it cleared neither and every
+   figure read as the same bald silhouette. This sits between them. */
+.net-hair,
+.net-earcup {
+  fill: color-mix(in srgb, var(--edge) 78%, var(--obsidian));
+}
+
+.net-headband {
+  fill: none;
+  stroke: color-mix(in srgb, var(--edge) 78%, var(--obsidian));
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.net-hub-ring {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 2.5;
+}
+
+.net-hub-body {
+  fill: url(#net-hub-fill);
+}
+
+.net-hub-halo {
+  fill: none;
+  stroke: color-mix(in srgb, var(--cyan) 34%, transparent);
+  stroke-width: 1.5;
+  transform-origin: 560px 346px;
+  animation: net-halo 4.5s var(--ease) infinite;
+}
+
+@keyframes net-halo {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+}
+
+.net-hub-status {
+  fill: var(--teal);
+  stroke: var(--obsidian);
+  stroke-width: 3;
+}
+
+/* --- Company badges ---
+   A rounded square, as the reference draws them, on a white plate: these are
+   real marks and their brand colours are only legible on one. */
+.net-badge rect {
+  fill: #fff;
+  stroke: color-mix(in srgb, var(--edge) 55%, transparent);
+  stroke-width: 1;
+}
+
+/* --- Floating cards --- */
+
+.net-suggest > rect,
+.net-card > rect:first-of-type {
+  fill: color-mix(in srgb, var(--surface-2) 94%, transparent);
+  stroke: var(--edge-soft);
+  stroke-width: 1;
+}
+
+.net-suggest-bulb circle {
+  fill: color-mix(in srgb, var(--gold) 40%, transparent);
+  stroke: var(--gold);
+  stroke-width: 1.6;
+}
+
+.net-suggest-bulb rect {
+  fill: var(--gold);
+}
+
+.net-mini-avatar {
+  fill: var(--edge);
+  stroke: var(--surface-2);
+  stroke-width: 2;
+}
+
+.net-suggest-title,
+.net-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.net-suggest-meta,
+.net-card-meta {
+  font-size: 12px;
+  fill: var(--muted);
+}
+
+.net-chevron {
+  font-size: 20px;
+  fill: var(--muted);
+}
+
+.net-card-tile {
+  fill: #fff;
+  stroke: color-mix(in srgb, var(--edge) 50%, transparent);
+  stroke-width: 1;
+}
+
+.net-card-status {
+  fill: var(--teal);
+}
+
+.net-card-bar {
+  fill: color-mix(in srgb, var(--edge) 42%, transparent);
+}
+
+/* --- Roadmap chip --- */
+
+.net-chip rect {
+  fill: color-mix(in srgb, var(--gold) 12%, transparent);
+  stroke: color-mix(in srgb, var(--gold) 45%, transparent);
+  stroke-width: 1;
+}
+
+.net-chip text {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  fill: var(--gold);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.hero-showcase__dots {
+  display: flex;
+  gap: 10px;
+}
+
+/* Deliberately a real button with a real hit area. The visible dot is the
+   ::after; the button around it is 32px square so it is reachable on a touch
+   screen and by anyone whose pointing is not pixel-precise. */
+.hero-showcase__dot {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.hero-showcase__dot::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--edge);
+  transition:
+    background 0.28s var(--ease),
+    transform 0.28s var(--ease);
+}
+
+.hero-showcase__dot:hover::after {
+  background: var(--text-dim);
+}
+
+.hero-showcase__dot[aria-pressed="true"]::after {
+  background: var(--cyan);
+  transform: scale(1.5);
+}
+
+.hero-showcase__dot:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+
+/* Hidden visually, not from assistive technology. The dots are distinguishable
+   by sight from their position; a screen reader needs the asset named. */
+.hero-showcase__dot-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.hero-showcase__caption {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* --- Product window ----------------------------------------------------- */
+
+.product-window {
+  position: relative;
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  width: var(--shell);
+  margin: 0 auto var(--gap-section);
+  border-radius: var(--r-xl);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm-lg),
+    var(--rim);
+  overflow: hidden;
+}
+
+.product-window__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 26px 18px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.product-window__rail .marketing-mark {
+  margin-bottom: 20px;
+  font-size: 0.9375rem;
+}
+
+.mini-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  border-radius: var(--r-sm);
+  font-size: 0.8125rem;
+  color: var(--muted);
+  transition: all 0.24s var(--ease);
+}
+
+.mini-nav i {
+  width: 15px;
+  height: 15px;
+  border-radius: 5px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  flex-shrink: 0;
+}
+
+.mini-nav.active {
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+  color: var(--text);
+}
+
+.mini-nav.active i {
+  background: var(--cyan);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+.product-window__main {
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.preview-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.preview-heading small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.preview-heading b {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.preview-heading i {
+  padding: 6px 13px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.6875rem;
+  color: var(--teal);
+  white-space: nowrap;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.preview-chart,
+.preview-score {
+  padding: 22px;
+  border-radius: var(--r);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.preview-chart small,
+.preview-score small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.preview-chart strong {
+  font-family: var(--font-mono);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.preview-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.preview-score strong {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 14px;
+}
+
+.preview-score p {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+.score-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 116px;
+  height: 116px;
+  margin: 6px auto 0;
+  border-radius: 50%;
+  background: var(--nm-face);
+  box-shadow: var(--nm);
+}
+
+.score-ring::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--cyan) 0turn 0.72turn,
+    color-mix(in srgb, var(--surface-3) 80%, transparent) 0.72turn 1turn
+  );
+  z-index: -1;
+  filter: blur(0.4px);
+}
+
+.score-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--nm-face);
+  box-shadow: var(--nm-inset);
+}
+
+.score-ring span {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 2.125rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   Section frame, shared by every marketing section below the hero
+   --------------------------------------------------------------------------- */
+
+.platform-section,
+.precision-section,
+.security-section,
+.final-cta {
+  width: var(--shell);
+  margin: 0 auto;
+  padding-bottom: var(--gap-section);
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: end;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  margin-bottom: var(--gap-block);
+}
+
+.section-heading h2 {
+  margin-top: 14px;
+}
+
+.section-heading > p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  padding-bottom: 6px;
+}
+
+/* --- Platform / feature grid -------------------------------------------- */
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 20px;
+}
+
+.feature-grid article {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 30px 28px 26px;
+  border-radius: var(--r-lg);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm),
+    var(--rim);
+  transition:
+    transform 0.42s var(--ease),
+    box-shadow 0.42s var(--ease);
+}
+
+.feature-grid article:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    var(--nm-float),
+    var(--rim);
+}
+
+/* The icon well: an inset socket with the icon raised inside it. This is
+   the single most legible neumorphic gesture in the system, so it repeats
+   across features, security and the app nav. */
+.feature-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--cyan);
+  margin-bottom: 4px;
+  transition: color 0.42s var(--ease);
+}
+
+.feature-grid article:hover .feature-icon {
+  color: color-mix(in srgb, var(--cyan) 70%, white);
+}
+
+.feature-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.feature-grid article > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.feature-grid article[data-state="live"] > span {
+  color: var(--teal);
+}
+.feature-grid article[data-state="next"] > span {
+  color: var(--cyan);
+}
+
+/* Emphasis follows availability.
+
+   These were four cards at one elevation, distinguished only by the colour of
+   a status pill. That is a templated pattern, and worse, it misrepresents the
+   section: one of these is a thing you can use in the next ten seconds and two
+   of them do not exist. A grid that renders all four identically is telling
+   the visitor they are equivalent.
+
+   `live` is lifted an elevation and given an accent rim; the unbuilt ones drop
+   to the shallowest one and dim their copy. They still say what they are and
+   still say why they are deferred; they just stop competing. */
+.feature-grid article[data-state="live"] {
+  box-shadow:
+    var(--nm-lg),
+    inset 0 0 0 1px color-mix(in srgb, var(--cyan) 20%, transparent),
+    var(--rim);
+}
+
+.feature-grid article[data-state="live"] b {
+  color: var(--text);
+}
+
+.feature-grid article:not([data-state]) {
+  box-shadow:
+    var(--nm-sm),
+    var(--rim);
+}
+
+.feature-grid article:not([data-state]) .feature-icon {
+  opacity: 0.62;
+}
+
+.feature-grid article:not([data-state]) p {
+  color: var(--muted);
+}
+
+.feature-grid article p {
+  font-size: 0.9375rem;
+  line-height: 1.68;
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.feature-grid article b {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.feature-grid article a b,
+.feature-grid a article b {
+  color: var(--cyan);
+}
+
+.feature-link {
+  display: contents;
+}
+
+/* --- Evidence / precision ----------------------------------------------- */
+
+.precision-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+  align-items: start;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+.section-copy > h2 {
+  margin: 14px 0 18px;
+}
+
+.section-copy > p {
+  font-size: 1rem;
+  line-height: 1.72;
+  color: var(--text-dim);
+  max-width: 52ch;
+}
+
+.proof-list {
+  display: grid;
+  gap: 4px;
+  margin-top: 30px;
+}
+
+.proof-list > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px;
+  border-radius: var(--r);
+  transition: all 0.32s var(--ease);
+}
+
+.proof-list > div:hover {
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+}
+
+.proof-list span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--cyan);
+}
+
+.proof-list p {
+  font-size: 0.9375rem;
+  line-height: 1.66;
+  color: var(--text-dim);
+}
+
+.proof-list b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+
+.analysis-card {
+  padding: clamp(24px, 3vw, 32px);
+  border-radius: var(--r-lg);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm-lg),
+    var(--rim);
+}
+
+.analysis-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.analysis-card__top span,
+.analysis-card__top small {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.analysis-card__top small {
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--gold);
+}
+
+.analysis-score {
+  padding: 26px 0 22px;
+}
+
+.analysis-score small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.analysis-score strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.analysis-score p {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.analysis-bars {
+  display: grid;
+  gap: 2px;
+  padding: 18px;
+  border-radius: var(--r);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.analysis-bars p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+.analysis-bars p + p {
+  border-top: 1px solid var(--hairline);
+}
+
+.analysis-bars b {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.analysis-note {
+  margin-top: 18px;
+  font-size: 0.75rem;
+  line-height: 1.66;
+  color: var(--muted);
+}
+
+.analysis-note em {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.preview-caption {
+  margin-top: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+/* --- Security ------------------------------------------------------------ */
+
+.security-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+.security-section > div:first-child h2 {
+  margin: 14px 0 16px;
+}
+
+.security-section > div:first-child p {
+  font-size: 1rem;
+  line-height: 1.72;
+  color: var(--text-dim);
+  max-width: 42ch;
+}
+
+.security-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.security-grid article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+  padding: 24px;
+  border-radius: var(--r);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm-sm),
+    var(--rim);
+  transition:
+    transform 0.36s var(--ease),
+    box-shadow 0.36s var(--ease);
+}
+
+.security-grid article:hover {
+  transform: translateX(6px);
+  box-shadow:
+    var(--nm),
+    var(--rim);
+}
+
+.security-grid article > span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--teal);
+}
+
+.security-grid article > span svg {
+  width: 20px;
+  height: 20px;
+}
+
+.security-grid b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.security-grid p {
+  font-size: 0.875rem;
+  line-height: 1.66;
+  color: var(--text-dim);
+}
+
+/* --- Waitlist ------------------------------------------------------------ */
+
+.waitlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.waitlist-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 30px 28px;
+  border-radius: var(--r-lg);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm),
+    var(--rim);
+}
+
+.waitlist-card > span {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.waitlist-card h3 {
+  margin-top: 2px;
+}
+
+.waitlist-card > p {
+  font-size: 0.9375rem;
+  line-height: 1.68;
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.waitlist-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.waitlist-form label {
+  display: block;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.nm-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--text);
+  font-size: 0.875rem;
+  transition: box-shadow 0.28s var(--ease);
+}
+
+.nm-input::placeholder {
+  color: var(--muted);
+}
+
+.nm-input:focus {
+  outline: none;
+  box-shadow:
+    var(--nm-inset),
+    0 0 0 2px color-mix(in srgb, var(--cyan) 55%, transparent);
+}
+
+.form-status {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-size: 0.8125rem;
+}
+
+.form-status[data-tone="ok"] {
+  color: var(--teal);
+}
+.form-status[data-tone="error"] {
+  color: var(--rose);
+}
+
+/* --- Final CTA ----------------------------------------------------------- */
+
+.final-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(38px, 5vw, 58px);
+  border-radius: var(--r-xl);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm-lg),
+    var(--rim);
+  margin-bottom: var(--gap-section);
+}
+
+.final-cta small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.final-cta h2 {
+  max-width: 18ch;
+}
+
+.marketing-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: var(--shell);
+  margin: 0 auto;
+  padding: 30px 0 44px;
+  border-top: 1px solid var(--hairline);
+}
+
+.marketing-footer p,
+.marketing-footer nav span {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.marketing-footer nav {
+  display: flex;
+  gap: 20px;
+}
+
+/* ---------------------------------------------------------------------------
+   App shell
+   --------------------------------------------------------------------------- */
+
+.obsidian-app {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--obsidian);
+}
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 26px 20px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.product-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.product-mark__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--cyan) 90%, white),
+    color-mix(in srgb, var(--cyan) 70%, black)
+  );
+  color: #0a0d0e;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  box-shadow:
+    -2px -2px 6px var(--lit),
+    3px 3px 10px var(--cast);
+}
+
+.product-mark__ai {
+  color: var(--cyan);
+}
+
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--r);
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+}
+
+.sidebar-profile strong {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-profile span:not(.user-glyph) {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-profile > div {
+  min-width: 0;
+}
+
+.user-glyph {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--cyan) 80%, white),
+    color-mix(in srgb, var(--cyan) 45%, var(--teal))
+  );
+  box-shadow:
+    -2px -2px 6px var(--lit),
+    3px 3px 9px var(--cast);
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.side-nav__label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 12px 10px;
+}
+
+.side-nav__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: var(--r-sm);
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  transition: all 0.26s var(--ease);
+}
+
+.side-nav__item:hover {
+  color: var(--text);
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+}
+
+/* Same reasoning and the same resolution as .nm-option: which page you are on is state,
+   so it gets an accent ring and tint rather than the raised shadow alone, and not a left
+   bar, so the two selected states in the product speak one language. */
+.side-nav__item.is-active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--cyan) 12%, var(--surface-3));
+  box-shadow:
+    var(--nm-sm),
+    inset 0 0 0 1px color-mix(in srgb, var(--cyan) 52%, transparent);
+  font-weight: 600;
+}
+
+.side-nav__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: color 0.26s var(--ease);
+}
+
+.side-nav__item.is-active .side-nav__icon,
+.side-nav__item:hover .side-nav__icon {
+  color: var(--cyan);
+}
+
+.side-nav__item small {
+  margin-left: auto;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sidebar__bottom {
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+}
+
+.sidebar-utility {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 13px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.26s var(--ease);
+}
+
+.sidebar-utility:hover {
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+  color: var(--text);
+}
+
+.sidebar-utility--danger:hover {
+  color: var(--rose);
+}
+
+.app-stage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  flex: 1;
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 48px) clamp(20px, 4vw, 44px);
+  animation: rise 0.5s var(--ease);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 22px clamp(20px, 4vw, 44px);
+  border-top: 1px solid var(--hairline);
+}
+
+.app-footer strong {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.app-footer span {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.page-header {
+  margin-bottom: var(--gap-block);
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.page-header h1 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  margin: 12px 0 0;
+}
+
+.page-header p {
+  margin-top: 12px;
+  max-width: 62ch;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.mobile-header,
+.mobile-drawer {
+  display: none;
+}
+
+/* --- App content primitives ---------------------------------------------- */
+
+.executive-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.obsidian-panel {
+  padding: clamp(22px, 3vw, 30px);
+  border-radius: var(--r-lg);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm),
+    var(--rim);
+}
+
+.panel-title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
+.panel-body {
+  max-width: 66ch;
+  font-size: 0.9375rem;
+  line-height: 1.72;
+  color: var(--text-dim);
+}
+
+.roadmap-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roadmap-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--r);
+  transition: all 0.3s var(--ease);
+}
+
+.roadmap-list li:hover {
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.roadmap-list .phase {
+  align-self: start;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  color: var(--cyan);
+  white-space: nowrap;
+}
+
+.roadmap-list strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.roadmap-list p {
+  font-size: 0.875rem;
+  line-height: 1.66;
+  color: var(--text-dim);
+}
+
+/* A bulleted list of capabilities, used by the phase placeholders. */
+.spec-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spec-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  font-size: 0.9375rem;
+  line-height: 1.66;
+  color: var(--text-dim);
+  transition: all 0.3s var(--ease);
+}
+
+.spec-list li:hover {
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.spec-list li::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-top: 9px;
+  border-radius: 50%;
+  background: var(--nm-face);
+  box-shadow:
+    -1px -1px 2px var(--lit),
+    1px 1px 3px var(--cast),
+    0 0 8px color-mix(in srgb, var(--cyan) 45%, transparent);
+}
+
+/* The centred single-column layout the locked and unbuilt screens share. */
+.stage-narrow {
+  width: min(680px, 100%);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3.5rem) 0;
+}
+
+.stage-narrow h1 {
+  font-size: clamp(2rem, 4vw, 2.9rem);
+  margin: 14px 0 16px;
+}
+
+.stage-narrow > p {
+  font-size: 1rem;
+  line-height: 1.72;
+  color: var(--text-dim);
+}
+
+.callout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 30px;
+  padding: 24px;
+  border-radius: var(--r-lg);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm),
+    var(--rim);
+}
+
+.callout p {
+  flex: 1;
+  min-width: 220px;
+  font-size: 0.9375rem;
+  line-height: 1.66;
+  color: var(--text-dim);
+}
+
+/* --- Forms ---------------------------------------------------------------- */
+
+.field {
+  display: block;
+}
+
+.field__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.field__head label {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.field__count {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.field__count[data-short="true"] {
+  color: var(--gold);
+}
+
+.field__hint {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.nm-textarea {
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: var(--r);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  resize: vertical;
+  transition: box-shadow 0.28s var(--ease);
+}
+
+.nm-textarea::placeholder {
+  color: var(--muted);
+}
+
+.nm-textarea:focus {
+  outline: none;
+  box-shadow:
+    var(--nm-inset),
+    0 0 0 2px color-mix(in srgb, var(--cyan) 50%, transparent);
+}
+
+.nm-textarea:disabled,
+.nm-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Segmented control: the engine picker and any other small exclusive choice. */
+.nm-segment {
+  display: grid;
+  gap: 6px;
+}
+
+.nm-segment__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px;
+  padding: 6px;
+  border-radius: var(--r);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.nm-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-dim);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.26s var(--ease);
+}
+
+.nm-option:hover:not(:disabled) {
+  color: var(--text);
+}
+
+/* Selected state is precision-flat, not neumorphic.
+   Which engine is selected is a state indicator under WCAG 1.4.11, and shadow alone
+   measured at 1.07:1 against its own track, invisible on a dim panel or in sunlight.
+   On the one control where choosing wrong spends money, that is not acceptable.
+
+   The accent ring does the work, measured at 3.70:1 against the fill. An earlier version
+   added a 3px left bar on top of it; that is the side-tab tell, and it was redundant, since
+   the ring already cleared the threshold on its own. Ring plus tint plus accent label is
+   three carriers without borrowing a cliché for a fourth. */
+.nm-option[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--cyan) 14%, var(--surface-3));
+  box-shadow:
+    var(--nm-sm),
+    inset 0 0 0 1px color-mix(in srgb, var(--cyan) 58%, transparent);
+  color: var(--text);
+}
+
+.nm-option[aria-pressed="true"] strong {
+  color: var(--cyan);
+}
+
+.nm-option:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.nm-option strong {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.nm-option small {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.engine-tag {
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.engine-tag[data-tone="cost"] {
+  color: var(--gold);
+}
+.engine-tag[data-tone="calibrated"] {
+  color: var(--teal);
+}
+
+.nm-segment legend {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  padding: 0;
+}
+
+/* --- Result panels -------------------------------------------------------- */
+
+.result-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.result-panel {
+  padding: 24px;
+  border-radius: var(--r-lg);
+  background: var(--nm-face);
+  box-shadow:
+    var(--nm),
+    var(--rim);
+}
+
+.result-panel > h3 {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.coverage-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 13px;
+  padding: 13px 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.coverage-row + .coverage-row {
+  border-top: 1px solid var(--hairline);
+}
+
+.coverage-row svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.coverage-row[data-state="covered"] svg {
+  color: var(--teal);
+}
+.coverage-row[data-state="partial"] svg {
+  color: var(--gold);
+}
+.coverage-row[data-state="missing"] svg {
+  color: var(--rose);
+}
+
+.coverage-row q {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.chip b {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.empty-state {
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  padding: 40px;
+  border-radius: var(--r-lg);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  text-align: center;
+}
+
+.empty-state p:first-child {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.empty-state p + p {
+  margin-top: 7px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.notice {
+  padding: 18px 20px;
+  border-radius: var(--r);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-size: 0.875rem;
+  line-height: 1.66;
+  color: var(--text-dim);
+}
+
+.notice strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.notice[data-tone="info"] strong {
+  color: var(--cyan);
+}
+.notice[data-tone="warn"] strong {
+  color: var(--gold);
+}
+.notice[data-tone="error"] strong {
+  color: var(--rose);
+}
+
+.skeleton {
+  height: 150px;
+  border-radius: var(--r);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--cyan) 7%, transparent),
+    transparent
+  );
+  animation: sweep 1.8s var(--ease) infinite;
+}
+
+@keyframes sweep {
+  to {
+    transform: translateX(200%);
+  }
+}
+
+/* --- Settings ------------------------------------------------------------- */
+
+.setting-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+}
+
+.setting-row + .setting-row {
+  border-top: 1px solid var(--hairline);
+}
+
+.setting-row__text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.setting-row__text p {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 52ch;
+}
+
+.swatch-row {
+  display: flex;
+  gap: 10px;
+}
+
+.swatch {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+  display: grid;
+  place-items: center;
+  transition: all 0.26s var(--ease);
+}
+
+.swatch i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: block;
+}
+
+.swatch:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--nm);
+}
+
+.swatch[aria-pressed="true"] {
+  box-shadow: var(--nm-inset);
+}
+
+.swatch[aria-pressed="true"] i {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px currentColor;
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+  .hero-section,
+  .precision-section,
+  .security-section,
+  .section-heading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-section {
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  /* Centred once the two columns collapse. Left at `width: min(100%, 560px)`
+     inside a full-width row it hugged the left edge with a strip of dead space
+     beside it, which reads as a layout bug rather than a choice.
+
+     The orb this replaced set `order: -1` here, floating the visual above the
+     headline at tablet width and back below it at 760. The rail does not: spec
+     §4.1 pins the copy first and permanent, so it leads at every width and
+     there is no reorder to get wrong. */
+  .hero-showcase {
+    justify-self: center;
+    /* The `44vw` cap is sized for the two-column hero. Once the columns stack,
+       the illustration has the whole row and half the viewport reads as a
+       shrunken thumbnail with dead space either side. */
+    max-width: min(100%, 48rem);
+  }
+
+  .section-heading {
+    align-items: start;
+    gap: 20px;
+  }
+
+  .section-heading > p {
+    padding-bottom: 0;
+  }
+
+  .product-window {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .product-window__rail {
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    padding: 16px;
+  }
+
+  .product-window__rail .marketing-mark {
+    margin-bottom: 0;
+    margin-right: 8px;
+  }
+
+  .mini-nav {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .obsidian-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-sidebar {
+    display: none;
+  }
+
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px clamp(16px, 4vw, 24px);
+    background: var(--nm-face-inset);
+    box-shadow: var(--nm-inset);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  .mobile-header button {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: var(--nm-face);
+    box-shadow: var(--nm-sm);
+    color: var(--text);
+    font-size: 1.125rem;
+    cursor: pointer;
+  }
+
+  .mobile-drawer {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+  }
+
+  .mobile-drawer__backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+  }
+
+  .mobile-drawer__panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: min(300px, 86vw);
+    height: 100%;
+    padding: 26px 20px;
+    background: var(--surface);
+    box-shadow: var(--nm-lg);
+    overflow-y: auto;
+    animation: slide-in 0.34s var(--ease);
+  }
+
+  @keyframes slide-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .mobile-drawer__close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--nm-face);
+    box-shadow: var(--nm-sm);
+    color: var(--text);
+    font-size: 1.125rem;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 760px) {
+  .marketing-nav > nav {
+    display: none;
+  }
+
+  .marketing-nav {
+    padding: 14px 0;
+  }
+
+  .marketing-nav__actions .text-link {
+    display: none;
+  }
+
+  .preview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Copy leads on a phone. The orb this replaced had to be pushed back below the
+     headline here, because at 390px it consumed the entire first fold and a visitor's
+     first screen was an abstract shape with no indication of what the product does. The
+     rail never floats above the copy at any width, so there is nothing to undo, but the
+     rule that mattered still holds, and this note is why.
+
+     The dots keep their 32px hit area; only the gap between them tightens. */
+  .hero-showcase {
+    margin-top: 8px;
+    gap: 12px;
+  }
+
+  .final-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .security-grid article:hover {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Auth drawer
+   --------------------------------------------------------------------------- */
+
+.auth-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(7px);
+  cursor: pointer;
+  animation: fade-in 0.34s var(--ease);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.auth-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 201;
+  width: min(468px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--edge-soft);
+  box-shadow: -30px 0 80px rgba(0, 0, 0, 0.72);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: drawer-in 0.46s var(--ease);
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.auth-drawer[data-closing="true"] {
+  animation: drawer-out 0.32s var(--ease) forwards;
+}
+
+@keyframes drawer-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.auth-drawer__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 26px;
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+.auth-drawer__close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.26s var(--ease);
+}
+
+.auth-drawer__close:hover {
+  color: var(--text);
+  box-shadow: var(--nm);
+}
+
+.auth-drawer__close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.auth-drawer__body {
+  flex: 1;
+  padding: 26px;
+}
+
+.auth-drawer__intro {
+  margin-bottom: 22px;
+}
+
+.auth-drawer__intro h2 {
+  font-size: 1.65rem;
+  margin-bottom: 9px;
+}
+
+.auth-drawer__intro p {
+  font-size: 0.875rem;
+  line-height: 1.66;
+  color: var(--text-dim);
+}
+
+/* Mode switch: precision-flat, because which mode you are in is state. */
+.auth-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-bottom: 24px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.auth-switch button {
+  padding: 11px 14px;
+  border: 0;
+  background: var(--pf-surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.28s var(--ease);
+}
+
+.auth-switch button + button {
+  border-left: 1px solid var(--edge-soft);
+}
+
+.auth-switch button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--cyan) 16%, var(--pf-surface));
+  color: var(--cyan);
+  box-shadow: inset 0 -2px 0 var(--cyan);
+}
+
+.auth-drawer__note {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--edge-soft);
+  font-size: 0.75rem;
+  line-height: 1.66;
+  color: var(--muted);
+}
+
+@media (max-width: 520px) {
+  .auth-drawer {
+    width: 100vw;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll reveal + section vectors
+   --------------------------------------------------------------------------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease);
+}
+
+.reveal[data-shown="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Decorative line-art anchored to a section corner. Drawn in the system's own
+   grammar (concentric arcs, grids, contours) rather than dropped-in icon
+   tiles, and always behind content at low opacity. */
+.section-vector {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  color: var(--cyan);
+  opacity: 0.14;
+}
+
+.section-vector--tr {
+  top: -40px;
+  right: -60px;
+  width: 340px;
+}
+
+.section-vector--bl {
+  bottom: -50px;
+  left: -70px;
+  width: 300px;
+}
+
+.platform-section,
+.precision-section,
+.security-section {
+  position: relative;
+}
+
+/* Lift real content above the decorative vector. The vector itself has to be excluded:
+   `.platform-section > *` and `.section-vector` have identical specificity, so without
+   the :not() this rule wins on source order and silently resets the vector from
+   `absolute` back to `relative`, which pushes it into flow at the top of the section
+   instead of anchoring it to a corner. */
+.platform-section > *:not(.section-vector),
+.precision-section > *:not(.section-vector),
+.security-section > *:not(.section-vector) {
+  position: relative;
+  z-index: 1;
+}
+
+/* The dashboard's ambient mark. */
+.panel-vector {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  width: 132px;
+  color: var(--cyan);
+  opacity: 0.11;
+  pointer-events: none;
+}
+
+.obsidian-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.obsidian-panel > *:not(.panel-vector) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .section-vector,
+  .panel-vector {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Route transition
+   --------------------------------------------------------------------------- */
+
+::view-transition-old(root) {
+  animation: vt-out 0.28s var(--ease) both;
+}
+
+::view-transition-new(root) {
+  animation: vt-in 0.42s var(--ease) both;
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: scale(1.008) translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* A reveal that never fires would leave the whole page invisible, so the
+     end state has to be forced rather than just un-animated. */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* The universal rule above already lands the currents on their end state, and
+     because one cycle of travel is exactly one dash period that end state is
+     where they started, so this changes nothing visible. It is here because
+     relying on that arithmetic to hold is worse than saying the thing outright. */
+  .obsidian-backdrop__currents path {
+    animation: none !important;
+  }
+
+  /* The spotlight is pointer-driven rather than keyframed, so nothing above
+     reaches it. `useSpotlight` already declines to run under reduced motion;
+     this is the belt to that pair of braces. */
+  .obsidian-backdrop__spot {
+    display: none;
+  }
+}

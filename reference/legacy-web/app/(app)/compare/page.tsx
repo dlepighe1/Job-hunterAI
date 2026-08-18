@@ -63,7 +63,7 @@ export default function ComparePage() {
         </h1>
         <p className="mt-2 max-w-3xl leading-relaxed text-slate-600 dark:text-slate-400">
           The same resume and job description scored by a purpose-built fine-tuned model, by
-          Claude, and by a free open-weights model. Where they disagree is the interesting part —
+          Claude, and by a free open-weights model. Where they disagree is the interesting part,
           and only one of them has an external-validation number behind it.
         </p>
       </header>
@@ -97,7 +97,7 @@ export default function ComparePage() {
             <tr className="border-b border-slate-100 dark:border-slate-800/60">
               <td className="py-2.5 font-mono text-xs">Claude</td>
               <td className="py-2.5 text-slate-500 dark:text-slate-400">
-                none on this task — a general model, not measured against this label set
+                none on this task, a general model, not measured against this label set
               </td>
               <td className="py-2.5 font-mono text-xs text-slate-500">no</td>
               <td className="py-2.5 font-mono text-xs text-emerald-700 dark:text-emerald-400">
@@ -159,7 +159,7 @@ export default function ComparePage() {
             <span className="tabular font-semibold text-slate-900 dark:text-slate-50">
               {spread} points
             </span>
-            {spread >= 15 && " — that is a large disagreement. The calibrated model is the one with evidence behind it."}
+            {spread >= 15 && ". That is a large disagreement. The calibrated model is the one with evidence behind it."}
           </p>
         )}
 
@@ -204,7 +204,7 @@ function EngineColumn({
         <p className="text-sm text-slate-500 dark:text-slate-500">Not run yet.</p>
       )}
 
-      {/* One engine failing must not blank the others — that is the point of allSettled. */}
+      {/* One engine failing must not blank the others, which is the point of allSettled. */}
       {!isRunning && outcome && !outcome.ok && (
         <div className="flex gap-2 rounded-md bg-rose-50 p-3 dark:bg-rose-950/50">
           <XCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />

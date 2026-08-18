@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { analyzeAtsKeywords } from "@/lib/ats";
+import { getUserIdOrNull } from "@/lib/auth";
+import { getApplication, isPersistenceConfigured, saveAnalysis } from "@/lib/db";
 import { MissingEnvError, env, hasAnthropicKey } from "@/lib/env";
-import { AnalyzeError } from "@/lib/errors";
+import { AnalyzeError, errorBody } from "@/lib/errors";
 import { scoreWithBaseModel } from "@/lib/providers/baseline";
 import { analyzeWithClaude } from "@/lib/providers/claude";
 import { analyzeWithFineTuned } from "@/lib/providers/finetuned";
-import { MIN_WORDS, wordCount, type AnalysisResult } from "@/lib/types";
+import { analyzeWithKeywords } from "@/lib/providers/keyword";
+import { checkRateLimit, clientAddress, scopeFor } from "@/lib/rate-limit";
+import { ENGINES, MIN_WORDS, type EngineId, type ScoreResult, wordCount } from "@/lib/types";
 
+/** Long enough to survive a scale-to-zero cold start (SPEC §2.3 rule 4). */
 export const maxDuration = 120;
 
 const MAX_CHARS = 15_000;
@@ -16,101 +20,278 @@ const MAX_CHARS = 15_000;
 const requestSchema = z.object({
   jobDescription: z.string().max(MAX_CHARS),
   resumeText: z.string().max(MAX_CHARS),
-  /** Claude costs money per call, so it is opt-in rather than fired on every keystroke. */
-  includeClaude: z.boolean().optional(),
+  engine: z.enum(ENGINES),
+  /** Save this run against an application. Requires a session and a configured database;
+   *  omit it and the request persists nothing, which is the guest path. */
+  applicationId: z.uuid().nullish(),
+  /**
+   * Whether the resume being scored is the user's original.
+   *
+   * Defaults to true. Only the Elevate flow sends false, for a resume this product itself
+   * rewrote. The distinction is load-bearing rather than bookkeeping: tailored scores are
+   * excluded from Role Affinity and Career Intelligence, because tailoring exists to raise
+   * a score and feeding it back would have the system grade its own homework
+   * (`lib/career.ts`).
+   */
+  isBaseline: z.boolean().optional(),
 });
 
-export type EngineOutcome<T> =
-  | { ok: true; value: T }
-  | { ok: false; error: string; message: string };
-
-export interface ScoreResponse {
-  ats: ReturnType<typeof analyzeAtsKeywords>;
-  finetuned?: EngineOutcome<AnalysisResult>;
-  baseline?: EngineOutcome<{ rawCosine: number; modelId: string }>;
-  claude?: EngineOutcome<AnalysisResult>;
-  /** What was even attempted, so the UI can explain an absence rather than a failure. */
-  attempted: { finetuned: boolean; baseline: boolean; claude: boolean };
-}
-
 /**
- * Score one pair with every engine that is configured.
+ * Score one pair with ONE engine.
  *
- * `allSettled`, never `all`: the entire value of this page is seeing engines disagree,
- * and losing the fine-tuned model's answer because Claude was rate-limited would defeat
- * that. Each engine reports its own outcome and the UI renders partial results.
+ * SPEC §2.4: "runs one engine per request, on demand. Never fan out." The previous version
+ * of this route ran every configured engine on every request via `Promise.allSettled`. That
+ * was right for a research demo whose entire point was watching engines disagree, and it is
+ * wrong here: it would fire a paid Claude call on a request the user made to run the free
+ * model. A comparison view asks for each engine explicitly.
  *
- * Nothing is persisted. There is no database in this repo any more, a resume is PII and
- * a research demo has no business keeping one.
+ * Guest-accessible (SPEC §5.1) and persists nothing. Everything about a resume that could
+ * leak, namely the text, the score and the gaps, stays in the response body and is never logged.
  */
 export async function POST(request: Request) {
+  const userId = await getUserIdOrNull();
+
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "INVALID_REQUEST", message: "Request body must be JSON." },
-      { status: 400 },
-    );
+    return fail(new AnalyzeError("INVALID_REQUEST", "Request body must be JSON.", 400));
   }
 
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "INVALID_REQUEST", message: parsed.error.issues[0].message },
-      { status: 400 },
+    const issue = parsed.error.issues[0];
+    return fail(
+      new AnalyzeError(
+        "INVALID_REQUEST",
+        `${issue.path.join(".") || "body"}: ${issue.message}`,
+        400,
+      ),
     );
   }
 
-  const { jobDescription, resumeText, includeClaude = false } = parsed.data;
+  const { jobDescription, resumeText, engine, applicationId, isBaseline = true } = parsed.data;
+
+  /** The role the analysis was against, captured for role affinity. Set once ownership of
+   *  the application is confirmed, so it can never name someone else's row. */
+  let ownedRole: string | null = null;
+
+  // Ownership is settled BEFORE the engine runs. Scoring against an application the caller
+  // does not own would spend a model call, and for Claude real money, on a request that
+  // was always going to be refused.
+  if (applicationId) {
+    if (!userId) {
+      return fail(
+        new AnalyzeError(
+          "NOT_CONFIGURED",
+          "Saving a result to an application needs an account. Run the analysis without an applicationId to score without signing in, and nothing is stored that way.",
+          401,
+        ),
+      );
+    }
+
+    if (!isPersistenceConfigured()) {
+      return fail(
+        new AnalyzeError(
+          "NOT_CONFIGURED",
+          "This deployment has no database configured, so there is nowhere to save a result. Scoring still works if you omit applicationId.",
+          503,
+        ),
+      );
+    }
+
+    // Null covers "no such application" and "not yours" alike. 404 rather than 403: a 403
+    // would confirm the id names a real row, which is enough to enumerate ids.
+    const owned = await getApplication(userId, applicationId);
+    if (!owned) {
+      return fail(new AnalyzeError("INVALID_REQUEST", "No such application.", 404));
+    }
+    ownedRole = owned.role;
+  }
+
   if (wordCount(jobDescription) < MIN_WORDS || wordCount(resumeText) < MIN_WORDS) {
-    return NextResponse.json(
-      {
-        error: "TOO_SHORT",
-        message: `Both the job description and the resume need at least ${MIN_WORDS} words. Below that there isn't enough signal for a score worth showing.`,
-      },
-      { status: 400 },
+    return fail(
+      new AnalyzeError(
+        "TOO_SHORT",
+        `Both the job description and the resume need at least ${MIN_WORDS} words. Below that there isn't enough signal for a score worth showing.`,
+        400,
+      ),
     );
   }
 
-  const serviceUp = env.scoringService.isConfigured;
-  const claudeUp = includeClaude && hasAnthropicKey();
+  // The paid engine requires a session. An unauthenticated endpoint that spends API credits
+  // is the surprise invoice SPEC §2.4 warns about, and no per-IP limit fixes it: addresses
+  // are free and a card is not.
+  if (engine === "claude" && !userId) {
+    return fail(
+      new AnalyzeError(
+        "NOT_CONFIGURED",
+        "Written feedback needs an account. The free engines, fine-tuned, base and keyword coverage, work without signing in.",
+        401,
+      ),
+    );
+  }
 
-  const attempted = { finetuned: serviceUp, baseline: serviceUp, claude: claudeUp };
+  const limited = await enforceRateLimit(request, userId, engine);
+  if (limited) return limited;
 
-  const [finetuned, baseline, claude] = await Promise.allSettled([
-    serviceUp ? analyzeWithFineTuned(jobDescription, resumeText) : skipped(),
-    serviceUp ? scoreWithBaseModel(jobDescription, resumeText) : skipped(),
-    claudeUp ? analyzeWithClaude(jobDescription, resumeText) : skipped(),
-  ]);
+  const startedAt = Date.now();
+  let result: ScoreResult;
+  try {
+    result = await runEngine(engine, jobDescription, resumeText);
+  } catch (error) {
+    const analyzeError = toAnalyzeError(error);
+    // SPEC Part 7: engine, model, latency and outcome. Never the input text.
+    console.warn("[score] failed", {
+      engine,
+      code: analyzeError.code,
+      latencyMs: Date.now() - startedAt,
+      guest: !userId,
+    });
+    return fail(analyzeError, engine);
+  }
 
-  // Identical for every engine, a property of the two texts, not of any model.
-  const ats = analyzeAtsKeywords(jobDescription, resumeText);
+  /**
+   * Persist, if asked to, and never at the cost of the response.
+   *
+   * The score is what the user asked for and it has already been computed, at the price of
+   * a model call. A database that refuses the write must not turn that into an error page:
+   * the user would lose a correct result and re-running it would cost another call.
+   *
+   * So a persistence failure is reported IN the successful response rather than instead of
+   * it. `saved: false` says plainly that it was not stored. Returning 200 as though it had
+   * been would be worse than either alternative, because the user would find out later by
+   * looking at an empty pipeline.
+   */
+  let saved: boolean | undefined;
+  if (applicationId && userId) {
+    result.analysisId = await saveAnalysis(userId, applicationId, result, {
+      // `isBaseline` says whether this scored the user's ORIGINAL resume. It feeds the
+      // career profile, so an unflagged run counts as real evidence about them, see
+      // `lib/career.ts`. The Elevate flow is the only caller that sends false.
+      isBaseline,
+      roleTitle: ownedRole,
+    });
+    saved = result.analysisId !== null;
+  }
 
-  const response: ScoreResponse = { ats, attempted };
-  if (attempted.finetuned) response.finetuned = settle(finetuned);
-  if (attempted.baseline) response.baseline = settle(baseline);
-  if (attempted.claude) response.claude = settle(claude);
+  console.info("[score] ok", {
+    engine,
+    modelId: result.modelId,
+    latencyMs: result.latencyMs,
+    calibrated: result.calibrated,
+    degraded: result.degraded,
+    guest: !userId,
+    saved,
+  });
 
-  return NextResponse.json(response);
+  return NextResponse.json(saved === undefined ? result : { ...result, saved });
 }
 
-const SKIP = Symbol("skipped");
-function skipped(): Promise<never> {
-  return Promise.reject(SKIP);
+/** Exactly one engine runs. The switch is exhaustive so adding an engine to `ENGINES`
+ *  without wiring it here is a type error rather than a runtime surprise. */
+async function runEngine(
+  engine: EngineId,
+  jobDescription: string,
+  resumeText: string,
+): Promise<ScoreResult> {
+  switch (engine) {
+    case "finetuned":
+      requireScoringService();
+      return analyzeWithFineTuned(jobDescription, resumeText);
+    case "base":
+      requireScoringService();
+      return scoreWithBaseModel(jobDescription, resumeText);
+    case "claude":
+      if (!hasAnthropicKey()) {
+        throw new AnalyzeError(
+          "NOT_CONFIGURED",
+          "The written-feedback engine is not configured on this deployment (ANTHROPIC_API_KEY is unset).",
+          501,
+        );
+      }
+      return analyzeWithClaude(jobDescription, resumeText);
+    case "keyword":
+      // No service, no key, no network. This is the engine that always works.
+      return analyzeWithKeywords(jobDescription, resumeText);
+  }
 }
 
-function settle<T>(outcome: PromiseSettledResult<T>): EngineOutcome<T> {
-  if (outcome.status === "fulfilled") return { ok: true, value: outcome.value };
-  return { ok: false, ...describe(outcome.reason) };
+function requireScoringService(): void {
+  if (!env.scoringService.isConfigured) {
+    throw new AnalyzeError(
+      "NOT_CONFIGURED",
+      "The scoring service is not configured on this deployment (SCORING_SERVICE_URL is unset). Keyword coverage still works, since it needs no model.",
+      501,
+    );
+  }
 }
 
-function describe(reason: unknown): { error: string; message: string } {
-  if (reason === SKIP) return { error: "NOT_CONFIGURED", message: "Engine not configured." };
-  if (reason instanceof AnalyzeError) return { error: reason.code, message: reason.message };
-  if (reason instanceof MissingEnvError) return { error: "CONFIG_ERROR", message: reason.message };
-  return {
-    error: "PROVIDER_ERROR",
-    message: reason instanceof Error ? reason.message : "Unknown failure.",
-  };
+/**
+ * Bucket the request.
+ *
+ * Signed-in users are keyed on the Clerk id, which survives a changing address. Guests are
+ * keyed on IP, and a guest with no resolvable address is refused rather than waved through
+ * because an unbucketable caller on a free, unauthenticated, compute-spending endpoint is the one
+ * case where failing closed is clearly right.
+ */
+async function enforceRateLimit(
+  request: Request,
+  userId: string | null,
+  engine: EngineId,
+): Promise<NextResponse | null> {
+  let identifier = userId;
+
+  if (!identifier) {
+    const address = clientAddress(request.headers);
+    if (!address) {
+      return fail(
+        new AnalyzeError(
+          "RATE_LIMITED",
+          "Could not identify this request well enough to rate-limit it. Sign in and try again.",
+          429,
+          30,
+        ),
+      );
+    }
+    identifier = `ip:${address}`;
+  }
+
+  const outcome = await checkRateLimit(identifier, scopeFor(!userId, engine));
+  if (outcome.allowed) return null;
+
+  return fail(
+    new AnalyzeError(
+      "RATE_LIMITED",
+      engine === "claude"
+        ? `You have used this deployment's written-feedback allowance. Try again in ${outcome.retryAfter} seconds, or use one of the free engines now.`
+        : `Too many analyses in a short window. Try again in ${outcome.retryAfter} seconds.`,
+      429,
+      outcome.retryAfter,
+    ),
+  );
+}
+
+function toAnalyzeError(error: unknown): AnalyzeError {
+  if (error instanceof AnalyzeError) return error;
+  if (error instanceof MissingEnvError) {
+    return new AnalyzeError("CONFIG_ERROR", error.message, 500);
+  }
+  return new AnalyzeError(
+    "PROVIDER_ERROR",
+    error instanceof Error ? error.message : "Unknown failure.",
+    502,
+  );
+}
+
+function fail(error: AnalyzeError, engine?: EngineId): NextResponse {
+  const body = errorBody(error);
+  if (engine) body.engine = engine;
+
+  const headers: Record<string, string> = {};
+  // Machine-readable alongside the JSON field, so a generic HTTP client backs off correctly
+  // without having to know this API's body shape.
+  if (error.retryAfter !== undefined) headers["Retry-After"] = String(error.retryAfter);
+
+  return NextResponse.json(body, { status: error.status, headers });
 }

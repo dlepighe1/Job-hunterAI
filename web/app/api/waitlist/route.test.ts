@@ -56,7 +56,7 @@ describe("POST /api/waitlist", () => {
     expect(joinWaitlist).not.toHaveBeenCalled();
   });
 
-  it("normalizes the email — trims whitespace and lowercases — before inserting", async () => {
+  it("normalizes the email, trimming whitespace and lowercasing, before inserting", async () => {
     const response = await notify({ email: "  Person@Example.COM ", feature: "network" });
 
     expect(response.status).toBe(200);

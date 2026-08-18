@@ -4,7 +4,7 @@ import { PROVIDERS, PROVIDER_META, type ProviderId } from "@/lib/types";
 
 /**
  * Native radio inputs, visually restyled as cards. Keeps arrow-key navigation,
- * focus rings, and screen-reader grouping for free — a div-with-onClick would
+ * focus rings, and screen-reader grouping for free, and a div-with-onClick would
  * throw all of that away.
  */
 export function ProviderSelect({

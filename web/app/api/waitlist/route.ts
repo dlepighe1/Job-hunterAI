@@ -6,7 +6,7 @@ import { isPersistenceConfigured, joinWaitlist } from "@/lib/db";
 const requestSchema = z.object({
   // Trim + lowercase BEFORE validating, so " Person@Example.COM " both passes email
   // validation and is stored in a single canonical form (future dedupe can't be defeated
-  // by casing or stray whitespace). Bounded at 254 — the RFC 5321 practical maximum — so
+  // by casing or stray whitespace). Bounded at 254, the RFC 5321 practical maximum, so
   // this public, unauthenticated, unmetered write can't be used to stuff huge rows.
   email: z.preprocess(
     (value) => (typeof value === "string" ? value.trim().toLowerCase() : value),
@@ -17,7 +17,7 @@ const requestSchema = z.object({
 
 /**
  * Capture a "notify me" signup from the landing page for a feature that hasn't shipped
- * yet. Public and unauthenticated on purpose — it runs before a visitor has any reason to
+ * yet. Public and unauthenticated on purpose, since it runs before a visitor has any reason to
  * sign in.
  */
 export async function POST(request: Request) {

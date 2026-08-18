@@ -13,7 +13,7 @@ export interface StoredAnalysis {
 }
 
 /**
- * Supabase is optional. Without it the app still analyzes — it just can't offer a
+ * Supabase is optional. Without it the app still analyzes, it just can't offer a
  * shareable link. Checked by reading process.env directly rather than through the env
  * getters, because those throw by design and "not configured" is not an error here.
  */
@@ -69,7 +69,7 @@ export async function saveAnalysis(input: {
   }
 }
 
-/** Read a shared analysis. Returns null for a private or missing row — the caller 404s
+/** Read a shared analysis. Returns null for a private or missing row, and the caller 404s
  *  either way, so a private id is indistinguishable from one that never existed. */
 export async function getSharedAnalysis(id: string): Promise<StoredAnalysis | null> {
   const { data, error } = await serverClient()
@@ -130,7 +130,7 @@ export async function joinWaitlist(input: {
     return true;
   } catch (error) {
     // A rejected insert promise (DNS, network, a thrown client) must still resolve to
-    // false — the route relies on that for its controlled 500, and a marketing form
+    // false, because the route relies on that for its controlled 500, and a marketing form
     // should never leak a raw error to a visitor.
     console.error("Failed to record waitlist signup:", error);
     return false;

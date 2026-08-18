@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     };
 
     // Persistence is optional and best-effort. If Supabase isn't configured, or the
-    // insert fails, the user still gets their analysis — they just don't get a
+    // insert fails, the user still gets their analysis, they just don't get a
     // shareable link. `ephemeral` opts out entirely: nothing is written at all.
     const shouldPersist = !parsed.data.ephemeral && isPersistenceConfigured();
     const id = shouldPersist
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     if (error instanceof AnalyzeError) {
       return fail(error.code, error.message, error.status, error.retryAfter);
     }
-    // A missing key is an operator problem, not a user problem — say which one, and
+    // A missing key is an operator problem, not a user problem, so say which one, and
     // don't dress it up as a provider failure.
     if (error instanceof MissingEnvError) {
       return fail("CONFIG_ERROR", error.message, 500);

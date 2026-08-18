@@ -12,7 +12,7 @@ const TIMEOUT_MS = 90_000;
  * Claude constrains decoding to the schema, so broken JSON simply cannot come back.
  * Free open-weights models offer no such guarantee: they wrap JSON in prose, fence it
  * in markdown, or drop a field. So here we ask for JSON, extract it, validate against
- * the same Zod schema, and — if that fails — hand the model its own validation error
+ * the same Zod schema and, if that fails, hand the model its own validation error
  * and let it fix the output once before giving up.
  */
 export async function analyzeWithOpenRouter(
@@ -32,7 +32,7 @@ export async function analyzeWithOpenRouter(
   let parsed = tryParse(raw);
 
   if (!parsed.ok) {
-    // One repair attempt. Show the model exactly what it got wrong — a bare "that was
+    // One repair attempt. Show the model exactly what it got wrong. A bare "that was
     // invalid, try again" tends to produce the same broken output a second time.
     messages.push(
       { role: "assistant", content: raw },
@@ -48,7 +48,7 @@ export async function analyzeWithOpenRouter(
   if (!parsed.ok) {
     throw new AnalyzeError(
       "INVALID_OUTPUT",
-      `${modelId} did not return valid JSON, even after a repair attempt (${parsed.error}). Free models are unreliable at structured output — try Claude for this pair.`,
+      `${modelId} did not return valid JSON, even after a repair attempt (${parsed.error}). Free models are unreliable at structured output, so try Claude for this pair.`,
       502,
     );
   }
@@ -164,7 +164,7 @@ function tryParse(raw: string): ParseOutcome {
 /**
  * Pull the first complete JSON object out of a response that may be wrapped in prose
  * or markdown fences. Brace-counting rather than a regex, because a regex can't tell
- * a nested closing brace from the final one — and it skips braces inside strings so
+ * a nested closing brace from the final one, and it skips braces inside strings so
  * a `}` in a summary sentence doesn't truncate the object early.
  */
 function extractJsonObject(text: string): string | null {

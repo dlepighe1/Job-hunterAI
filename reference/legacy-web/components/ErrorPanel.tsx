@@ -7,11 +7,11 @@ export interface AnalyzeFailure {
 }
 
 /** What the user should do next, per failure kind. The message from the API says what
- *  went wrong; this says whether it's worth trying again — and those are different
+ *  went wrong; this says whether it's worth trying again, and those are different
  *  questions. A cold model service and a safety refusal must not look alike. */
 const NEXT_STEP: Record<string, string> = {
   MODEL_SERVICE_UNREACHABLE:
-    "The scoring service may be waking from idle. Give it a moment and try again — or switch to Claude.",
+    "The scoring service may be waking from idle. Give it a moment and try again, or switch to Claude.",
   RATE_LIMITED: "Wait a moment and try again, or switch engines.",
   INVALID_OUTPUT:
     "Free models are unreliable at structured output. Claude constrains the format, so it will not fail this way.",

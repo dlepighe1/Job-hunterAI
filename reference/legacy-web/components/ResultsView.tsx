@@ -7,7 +7,7 @@ import { PROVIDER_META, type AnalysisResult } from "@/lib/types";
 /**
  * Keyword coverage. Separate from the model's score on purpose: an applicant tracking
  * system matches literal strings, so this is what decides whether a human ever sees the
- * resume — regardless of how good the semantic fit is.
+ * resume, regardless of how good the semantic fit is.
  */
 function AtsPanel({ ats }: { ats: AtsAnalysis }) {
   const tone =
@@ -27,7 +27,7 @@ function AtsPanel({ ats }: { ats: AtsAnalysis }) {
       </div>
       <p className="mb-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
         Applicant tracking systems filter on literal keywords, not meaning. This is a
-        separate check from the match score — no model involved.
+        separate check from the match score, with no model involved.
       </p>
 
       <div
@@ -81,7 +81,7 @@ function AtsPanel({ ats }: { ats: AtsAnalysis }) {
 }
 
 /**
- * Presentational only — no data fetching, no state. Rendered identically by the
+ * Presentational only: no data fetching, no state. Rendered identically by the
  * analyzer page and by the public /results/[id] share page, so a shared link and
  * the live result can never drift apart.
  */
@@ -122,14 +122,14 @@ export function ResultsView({ result }: { result: AnalysisResult }) {
             /* Honest about what this engine is, instead of leaving a blank panel. */
             <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               {provider.name} is an embedding model, not a language model. It produces a
-              calibrated score and a requirement-by-requirement gap — it does not write prose.
+              calibrated score and a requirement-by-requirement gap, and it does not write prose.
               Run the same pair through Claude for a written critique.
             </p>
           )}
         </div>
       </section>
 
-      {/* A second, independent signal — and the one that decides whether a human ever
+      {/* A second, independent signal, and the one that decides whether a human ever
           reads the resume at all. Deliberately placed before the model's own output. */}
       {result.ats && <AtsPanel ats={result.ats} />}
 
@@ -139,7 +139,7 @@ export function ResultsView({ result }: { result: AnalysisResult }) {
           title="Missing requirements"
           items={result.missingSkills}
           tone="missing"
-          emptyMessage="Nothing significant missing — this resume covers the stated requirements."
+          emptyMessage="Nothing significant missing, this resume covers the stated requirements."
         />
         <SkillList
           title="Matched requirements"
@@ -165,7 +165,7 @@ export function ResultsView({ result }: { result: AnalysisResult }) {
             Suggested bullets
           </h3>
           <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
-            Rewrites grounded in experience the resume already shows — you should be able to
+            Rewrites grounded in experience the resume already shows, so you should be able to
             defend every one of these in an interview.
           </p>
           <ul className="space-y-3">

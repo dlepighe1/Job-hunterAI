@@ -25,7 +25,7 @@ export type ComparisonOutcome =
  * Run one pair through all three engines at once.
  *
  * The whole point of this endpoint is disagreement, so a single provider failing must
- * never fail the request — if Claude is rate limited, you should still get to see what
+ * never fail the request: if Claude is rate limited, you should still get to see what
  * the fine-tuned model said. Hence allSettled and a per-provider outcome, rather than
  * Promise.all, which would throw away two good results because a third was unavailable.
  */
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     PROVIDERS.map((id) => providers[id](jobDescription, resumeText)),
   );
 
-  // Identical for every engine — it's a property of the texts, not of the model.
+  // Identical for every engine, since it's a property of the texts, not of the model.
   const ats = analyzeAtsKeywords(jobDescription, resumeText) ?? undefined;
 
   const results = {} as Record<ProviderId, ComparisonOutcome>;

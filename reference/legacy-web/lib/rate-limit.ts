@@ -5,7 +5,7 @@
  * get a surprise bill. This is the cheap guard.
  *
  * HONEST LIMITATION: the counters live in process memory. On Vercel that means the
- * limit is per serverless instance, not global — someone determined enough to spray
+ * limit is per serverless instance, not global, so someone determined enough to spray
  * requests across cold starts can exceed it. It stops casual abuse and accidental
  * loops, which is the realistic threat for a portfolio project. For a hard guarantee,
  * swap the Map for Upstash Redis (`@upstash/ratelimit`); the call site below does not
@@ -60,7 +60,7 @@ function sweep(now: number) {
 
 /**
  * Identify the caller. On Vercel, x-forwarded-for is set by the platform edge and its
- * FIRST entry is the real client — trusting the last entry would let a caller spoof
+ * FIRST entry is the real client, and trusting the last entry would let a caller spoof
  * their identity by sending their own header.
  */
 export function clientKey(request: Request): string {
@@ -69,7 +69,7 @@ export function clientKey(request: Request): string {
   return request.headers.get("x-real-ip") ?? "unknown";
 }
 
-/** Test seam — the module-level Map would otherwise leak state between tests. */
+/** Test seam: the module-level Map would otherwise leak state between tests. */
 export function resetRateLimits() {
   windows.clear();
 }

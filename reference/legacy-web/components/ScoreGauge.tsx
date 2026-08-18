@@ -53,7 +53,7 @@ export function ScoreGauge({
 
       <p className={`font-mono text-sm font-semibold ${verdict.text}`}>{verdict.label}</p>
 
-      {/* An error band, not a confidence interval — and labelled as what it actually is. */}
+      {/* An error band, not a confidence interval, and labelled as what it actually is. */}
       {errorBand && (
         <p className="max-w-44 text-center text-xs text-slate-500 dark:text-slate-400">
           <span className="tabular font-mono">

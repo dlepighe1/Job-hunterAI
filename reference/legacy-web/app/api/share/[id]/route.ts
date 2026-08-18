@@ -10,7 +10,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * Deliberately an explicit action rather than a side effect of running an analysis: the
  * row contains someone's resume, and it stays private until they ask for a link.
  *
- * Next 16: route params are a Promise and must be awaited — synchronous access was
+ * Next 16: route params are a Promise and must be awaited, since synchronous access was
  * removed in this major version.
  */
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {

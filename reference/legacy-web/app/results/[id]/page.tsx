@@ -7,11 +7,11 @@ import { getSharedAnalysis, isPersistenceConfigured } from "@/lib/db";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Next 16 removed synchronous access to route params — they are a Promise now. */
+/** Next 16 removed synchronous access to route params, so they are a Promise now. */
 type PageProps = { params: Promise<{ id: string }> };
 
 export const metadata: Metadata = {
-  title: "Shared analysis — ResumeAI",
+  title: "Shared analysis: ResumeAI",
   // A shared link contains someone's resume. Keep it out of search results even though
   // the holder of the URL can read it.
   robots: { index: false, follow: false },
@@ -23,7 +23,7 @@ export default async function SharedResultPage({ params }: PageProps) {
   if (!isPersistenceConfigured() || !UUID.test(id)) notFound();
 
   const analysis = await getSharedAnalysis(id);
-  // A private row and a nonexistent row both 404 — a 403 would confirm that the id
+  // A private row and a nonexistent row both 404, since a 403 would confirm that the id
   // exists, which is exactly what someone probing for other people's resumes wants.
   if (!analysis) notFound();
 

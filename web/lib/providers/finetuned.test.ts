@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { scoreWithBaseModel } from "@/lib/providers/baseline";
 import { analyzeWithFineTuned } from "@/lib/providers/finetuned";
 
-const JD = "a ".repeat(60);
-const RESUME = "b ".repeat(60);
+// 60 words each, above MIN_WORDS, and naming skills the ATS vocabulary knows so the
+// keyword block is exercised rather than skipped.
+const JD = `We need an engineer with Python and SQL and Airflow experience. ${"detail ".repeat(50)}`;
+const RESUME = `Built ETL pipelines in Python and SQL at scale. ${"experience ".repeat(50)}`;
 
 const SCORE_RESPONSE = {
   score: 0.72,
@@ -19,18 +22,6 @@ const SCORE_RESPONSE = {
       evidence: "Built ETL pipelines in Python and SQL.",
     },
     {
-      requirement: "Airflow orchestration",
-      status: "covered",
-      similarity: 0.88,
-      evidence: "Built ETL pipelines in Python and SQL.", // duplicate evidence line
-    },
-    {
-      requirement: "Statistics and experimental design",
-      status: "partial",
-      similarity: 0.42,
-      evidence: "Ran some dashboards.",
-    },
-    {
       requirement: "Kubernetes at scale",
       status: "missing",
       similarity: 0.11,
@@ -39,78 +30,139 @@ const SCORE_RESPONSE = {
   ],
 };
 
-function mockScoreService(body: unknown, status = 200) {
-  const fetchMock = vi.fn().mockResolvedValue(
-    new Response(JSON.stringify(body), { status }),
-  );
+function mockService(body: unknown, status = 200) {
+  const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status }));
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 }
 
+function timeoutError() {
+  const error = new Error("timed out");
+  error.name = "TimeoutError";
+  return error;
+}
+
 afterEach(() => vi.unstubAllGlobals());
 
-describe("mapping the scoring service response", () => {
-  it("converts the calibrated 0-1 score to 0-100", async () => {
-    mockScoreService(SCORE_RESPONSE);
+describe("the fine-tuned engine", () => {
+  it("keeps the score in 0-1 units and reports it calibrated", async () => {
+    mockService(SCORE_RESPONSE);
 
     const result = await analyzeWithFineTuned(JD, RESUME);
 
-    expect(result.matchScore).toBe(72);
-    expect(result.meta.calibrated).toBe(true);
-    expect(result.meta.modelId).toBe("dlepighe1/resume-jd-matcher-mpnet");
+    expect(result.score).toBe(0.72);
+    expect(result.calibrated).toBe(true);
+    expect(result.modelId).toBe("dlepighe1/resume-jd-matcher-mpnet");
+    expect(result.engine).toBe("finetuned");
   });
 
-  it("lists only covered requirements as matched", async () => {
-    mockScoreService(SCORE_RESPONSE);
+  it("passes the requirement coverage through with its evidence", async () => {
+    mockService(SCORE_RESPONSE);
 
     const result = await analyzeWithFineTuned(JD, RESUME);
 
-    expect(result.matchedSkills).toEqual([
-      "Three years of Python and SQL",
-      "Airflow orchestration",
-    ]);
+    expect(result.requirements).toHaveLength(2);
+    expect(result.requirements[0]).toMatchObject({
+      requirement: "Three years of Python and SQL",
+      status: "covered",
+      evidence: "Built ETL pipelines in Python and SQL.",
+    });
+    // A missing requirement has nothing to point at, and the blank is the honest answer.
+    expect(result.requirements[1]).toMatchObject({ status: "missing", evidence: "" });
   });
 
-  it("keeps partial coverage in the gap list but labels it distinctly", async () => {
-    mockScoreService(SCORE_RESPONSE);
+  it("produces no generative fields, since this model cannot write prose", async () => {
+    mockService(SCORE_RESPONSE);
 
     const result = await analyzeWithFineTuned(JD, RESUME);
 
-    expect(result.missingSkills).toEqual([
-      "Kubernetes at scale",
-      "Partially covered: Statistics and experimental design",
-    ]);
+    expect(result.summary).toBeNull();
+    expect(result.suggestedBullets).toBeNull();
   });
 
-  it("derives strengths from the model's own evidence lines, deduplicated", async () => {
-    mockScoreService(SCORE_RESPONSE);
+  it("sends the untruncated text, because the service owns preprocessing", async () => {
+    // SPEC §2.3 rule 1: the service applies the exact 350-word truncation the model was
+    // trained under. Truncating here would silently degrade scores.
+    const fetchMock = mockService(SCORE_RESPONSE);
 
-    const result = await analyzeWithFineTuned(JD, RESUME);
+    await analyzeWithFineTuned(JD, RESUME);
 
-    // Two covered requirements matched the same resume sentence, it should appear once.
-    expect(result.strengths).toEqual(["Built ETL pipelines in Python and SQL."]);
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(body).toEqual({ resume: RESUME, jd: JD });
   });
 
-  it("produces no generative fields, this model cannot write prose", async () => {
-    mockScoreService(SCORE_RESPONSE);
+  it("computes keyword coverage alongside the semantic score", async () => {
+    mockService(SCORE_RESPONSE);
 
     const result = await analyzeWithFineTuned(JD, RESUME);
 
-    expect(result.summary).toBeUndefined();
-    expect(result.suggestedBullets).toBeUndefined();
+    expect(result.keywords).not.toBeNull();
+    expect(result.keywords?.matched).toContain("python");
+    expect(result.keywords?.missing).toContain("airflow");
+  });
+});
+
+describe("the calibrator invariant", () => {
+  it("attaches the measured error band only when a calibrator was applied", async () => {
+    mockService(SCORE_RESPONSE);
+
+    const result = await analyzeWithFineTuned(JD, RESUME);
+
+    expect(result.errorBand).toEqual({
+      low: expect.closeTo(0.6, 5),
+      high: expect.closeTo(0.84, 5),
+      basis: "typical error on 106 held-out pairs from unseen postings",
+    });
   });
 
-  it("reports uncalibrated when the service has no calibrator loaded", async () => {
-    mockScoreService({ ...SCORE_RESPONSE, calibrator: null });
+  it("omits the error band when no calibrator is loaded", async () => {
+    // The MAE was measured on the calibrated model. Quoting it beside an uncalibrated
+    // score would borrow credibility that number has not earned.
+    mockService({ ...SCORE_RESPONSE, calibrator: null });
 
     const result = await analyzeWithFineTuned(JD, RESUME);
 
-    expect(result.meta.calibrated).toBe(false);
+    expect(result.calibrated).toBe(false);
+    expect(result.errorBand).toBeNull();
+  });
+
+  it("flags a missing calibrator as degraded, never as a normal score", async () => {
+    mockService({ ...SCORE_RESPONSE, calibrator: null });
+
+    const result = await analyzeWithFineTuned(JD, RESUME);
+
+    expect(result.degraded).toBe(true);
+  });
+
+  it("is not degraded when the calibrator is present", async () => {
+    mockService(SCORE_RESPONSE);
+
+    const result = await analyzeWithFineTuned(JD, RESUME);
+
+    expect(result.degraded).toBe(false);
+  });
+
+  it("clamps a score outside 0-1 rather than propagating it", async () => {
+    mockService({ ...SCORE_RESPONSE, score: 1.4 });
+
+    const result = await analyzeWithFineTuned(JD, RESUME);
+
+    expect(result.score).toBe(1);
   });
 });
 
 describe("service failures", () => {
-  it("reports an unreachable service distinctly, so the UI can say 'still waking up'", async () => {
+  it("reports a cold start as waking, with a retry hint", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(timeoutError()));
+
+    await expect(analyzeWithFineTuned(JD, RESUME)).rejects.toMatchObject({
+      code: "MODEL_SERVICE_WAKING",
+      status: 503,
+      retryAfter: 60,
+    });
+  });
+
+  it("reports a refused connection as unreachable, which is a different problem", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
 
     await expect(analyzeWithFineTuned(JD, RESUME)).rejects.toMatchObject({
@@ -119,11 +171,63 @@ describe("service failures", () => {
     });
   });
 
-  it("surfaces a 500 from the service as a provider error", async () => {
-    mockScoreService({ detail: "model not loaded" }, 500);
+  it("passes a 422 through as TOO_SHORT rather than blaming the model", async () => {
+    mockService({ detail: "too short" }, 422);
+
+    await expect(analyzeWithFineTuned(JD, RESUME)).rejects.toMatchObject({
+      code: "TOO_SHORT",
+      status: 400,
+    });
+  });
+
+  it("surfaces a 500 as a provider error", async () => {
+    mockService({ detail: "model not loaded" }, 500);
 
     await expect(analyzeWithFineTuned(JD, RESUME)).rejects.toMatchObject({
       code: "PROVIDER_ERROR",
+    });
+  });
+});
+
+describe("the base engine", () => {
+  const BASELINE_RESPONSE = { raw_cosine: 0.44, model_id: "sentence-transformers/all-mpnet-base-v2" };
+
+  it("returns a raw cosine and NO score", async () => {
+    // The invariant SPEC §2.3 spells out: the Platt calibrator maps the fine-tuned model's
+    // distribution, so applying it here would produce a confident number that means
+    // nothing. `score` staying null is the guard.
+    mockService(BASELINE_RESPONSE);
+
+    const result = await scoreWithBaseModel(JD, RESUME);
+
+    expect(result.score).toBeNull();
+    expect(result.rawCosine).toBe(0.44);
+    expect(result.calibrated).toBe(false);
+    expect(result.errorBand).toBeNull();
+  });
+
+  it("is not marked degraded, since the base model is the point here", async () => {
+    mockService(BASELINE_RESPONSE);
+
+    const result = await scoreWithBaseModel(JD, RESUME);
+
+    expect(result.degraded).toBe(false);
+    expect(result.engine).toBe("base");
+  });
+
+  it("hits /baseline, not /score", async () => {
+    const fetchMock = mockService(BASELINE_RESPONSE);
+
+    await scoreWithBaseModel(JD, RESUME);
+
+    expect(fetchMock.mock.calls[0][0]).toBe("http://scoring.test/baseline");
+  });
+
+  it("reports a cold start as waking, same as the fine-tuned engine", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(timeoutError()));
+
+    await expect(scoreWithBaseModel(JD, RESUME)).rejects.toMatchObject({
+      code: "MODEL_SERVICE_WAKING",
     });
   });
 });

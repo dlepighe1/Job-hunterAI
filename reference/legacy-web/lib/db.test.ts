@@ -15,7 +15,7 @@ const RESULT: AnalysisResult = {
   meta: { provider: "finetuned", modelId: "test-model", latencyMs: 900, calibrated: true },
 };
 
-/** Records the query the code builds, so we can assert on the filters it applies —
+/** Records the query the code builds, so we can assert on the filters it applies,
  *  which is where the privacy guarantee actually lives. */
 function stubSupabase(rowResult: { data: unknown; error: unknown } = { data: null, error: null }) {
   const calls: { insert?: Record<string, unknown>; eq: Array<[string, unknown]> } = { eq: [] };
@@ -56,7 +56,7 @@ describe("isPersistenceConfigured", () => {
 });
 
 describe("saveAnalysis", () => {
-  it("stores new analyses PRIVATE — a resume is never world-readable by default", async () => {
+  it("stores new analyses PRIVATE, since a resume is never world-readable by default", async () => {
     const calls = stubSupabase({ data: { id: "row-id" }, error: null });
 
     await saveAnalysis({
