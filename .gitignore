@@ -25,6 +25,25 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Agent scratch
+# Agent scratch. None of this is project source: it is local tooling state, and some of it
+# records how the work was done rather than what was built. It stays out of the repository.
 .claude/
 .superpowers/
+.agents/
+.codex/
+.cursor/
+.playwright-mcp/
+.impeccable/
+web/.impeccable/
+skills-lock.json
+
+# Source art and clips kept for reference while designing the hero. The assets that actually
+# ship are committed under web/public/img/hero/; these are the raw generations behind them
+# and are large, numerous, and not needed to build the project. reference/legacy-web/ is
+# deliberately not covered by this, since it is tracked prior work the spec superseded.
+reference/*.png
+reference/*.jpg
+reference/*.jpeg
+reference/*.webp
+reference/*.mp4
+reference/*.mov
