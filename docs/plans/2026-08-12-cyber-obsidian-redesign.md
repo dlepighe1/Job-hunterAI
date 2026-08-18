@@ -1297,10 +1297,10 @@ makes `npm run build` fail outright, by design: the guard in `lib/dev-mode.ts` r
 build with the bypass set. That is the guard doing its job, but it means a build here needs
 `DEV_BYPASS_AUTH= npm run build` until the line leaves `.env.local`.
 
-**Still open, and unchanged by this pass:** `ObsidianBackdrop` is mounted on the marketing
-shell only, counted in the DOM as one on `/` and zero on all seven app screens. The app
-pages render on a flat ground, so the background this redesign is named after is still
-absent from the product itself.
+**Closed since this pass.** `ObsidianBackdrop` was mounted on the marketing shell only,
+leaving all seven app screens on a flat ground. It now renders on `.obsidian-app` too, which
+is what spec section 3 asked for from the start. See `DESIGN.md` for what the mount required
+and what guards it.
 
 - [x] **Step 5: Checkpoint, stop here**
 

@@ -454,10 +454,20 @@ test.
   introduced a foreign-key bug. Nothing called `ensureProfile`, so every new user's first
   save would have failed, and no test caught it because the tests mock the insert. Only a
   real signed-in write would have found it. It is fixed, but the class of bug is not.
-- `ObsidianBackdrop` is mounted on the marketing shell only. `.obsidian-app` still renders
-  on a flat ground. Re-confirmed 2026-08-18 by counting `.obsidian-backdrop` in the DOM: one
-  on `/`, zero on all seven app screens including `/matcher`. This is the largest single
-  piece of the redesign still outstanding.
+- ~~`ObsidianBackdrop` is mounted on the marketing shell only.~~ **Closed 2026-08-18.** The
+  backdrop now renders on `.obsidian-app` as spec §3 always specified, verified on all seven
+  app screens at six widths: fixed, `z-index: -4`, `pointer-events: none`, 30 contours and 10
+  animated currents, and it still collapses under reduced motion. The grid layout is
+  unchanged (sidebar at x=0 w=264, stage at x=264) because the backdrop root is
+  `position: fixed` and so never becomes a grid item.
+
+  Mounting it required splitting the route layout. `ObsidianBackdrop` is a server component
+  that ships no JavaScript, and `app/(app)/layout.tsx` was `"use client"` for its Clerk and
+  `usePathname` hooks — importing one into the other would have pulled the contour field into
+  the client bundle with no visible symptom. The layout is now a server component that passes
+  the backdrop into `components/AppShell.tsx` as a prop. `components/backdrop/mount.test.ts`
+  fails if either shell stops mounting it, or if either file gains a `"use client"`
+  directive.
 - `.hero-showcase__frame` sets `background: none` (`globals.css:3767`), not a token-coloured
   surface. Earlier notes claimed the opposite and were wrong. Nothing rests on it today.
   The obsidian ground shows through the frame, and the eager asset finishes loading 35ms
