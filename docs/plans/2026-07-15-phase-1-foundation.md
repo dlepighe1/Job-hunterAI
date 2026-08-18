@@ -1,14 +1,15 @@
 # Job-Hunt Foundation (Phase 1, Plan 1) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **How to use this plan:** implement it task by task, in order. Steps use checkbox
+> (`- [ ]`) syntax so progress is trackable in the file itself.
 
-**Goal:** Turn the single-page matcher demo into an authenticated app shell — Clerk sign-in (Google + email), a public landing page, a guarded dashboard with navbar/theme, and two "coming soon" screens.
+**Goal:** Turn the single-page matcher demo into an authenticated app shell: Clerk sign-in (Google + email), a public landing page, a guarded dashboard with navbar/theme, and two "coming soon" screens.
 
 **Architecture:** One Next.js 16 app. Route groups split public `(marketing)` from authed `(app)`. Clerk owns identity; a thin server helper (`lib/auth.ts`) resolves the Clerk `userId` for API routes, which keep using the existing service-role Supabase pattern. This plan ships the shell; Plan 2 moves the matcher's behavior in, Plan 3 adds the Applications data.
 
 **Tech Stack:** Next.js 16 (App Router), React 19, Tailwind 4, `@clerk/nextjs`, Supabase (service-role, server-only), Vitest.
 
-**Spec:** `docs/superpowers/specs/2026-07-15-job-hunt-platform-foundation-design.md`
+**Spec:** `docs/design/2026-07-15-job-hunt-platform-foundation-design.md`
 
 ---
 
@@ -17,7 +18,7 @@
 This is **not** the Next.js you may know (see `web/AGENTS.md`). Before writing framework-touching code:
 
 1. Read `web/node_modules/next/dist/docs/` for current App Router, middleware, and route-group conventions.
-2. After installing Clerk, read `web/node_modules/@clerk/nextjs/README.md` (and its `dist/` type declarations) for the **installed** version's API — `clerkMiddleware`, `<ClerkProvider>`, `auth()`, and the `<SignIn>/<SignUp>/<UserButton>` component names/props. **Do not trust API shapes from memory** — verify against the installed package and use exactly what it exports.
+2. After installing Clerk, read `web/node_modules/@clerk/nextjs/README.md` (and its `dist/` type declarations) for the **installed** version's API: `clerkMiddleware`, `<ClerkProvider>`, `auth()`, and the `<SignIn>/<SignUp>/<UserButton>` component names/props. **Do not trust API shapes from memory.** Verify against the installed package and use exactly what it exports.
 
 Where this plan shows Clerk/Next API calls, treat them as the *intended shape*; reconcile with the installed docs before finalizing each file.
 
@@ -29,35 +30,35 @@ All commands run from `web/`.
 
 ```
 web/
-  proxy.ts                            # CREATE — Clerk middleware (Next 16.2 renamed middleware.ts -> proxy.ts); public marketing, guarded app
-  .env.example                        # MODIFY — add Clerk keys
+  proxy.ts                            # CREATE: Clerk middleware (Next 16.2 renamed middleware.ts -> proxy.ts); public marketing, guarded app
+  .env.example                        # MODIFY: add Clerk keys
   app/
-    layout.tsx                        # MODIFY — wrap in <ClerkProvider>
+    layout.tsx                        # MODIFY: wrap in <ClerkProvider>
     (marketing)/
-      page.tsx                        # CREATE — landing page (was app/page.tsx's slot)
+      page.tsx                        # CREATE: landing page (was app/page.tsx's slot)
       _components/Hero.tsx            # CREATE
       _components/FeatureGrid.tsx     # CREATE
       _components/ComingSoonTeaser.tsx# CREATE
     (app)/
-      layout.tsx                      # CREATE — dashboard shell (navbar + theme), guarded
+      layout.tsx                      # CREATE: dashboard shell (navbar + theme), guarded
       matcher/page.tsx                # MOVE from app/page.tsx (behavior refined in Plan 2)
       compare/page.tsx                # MOVE from app/compare/page.tsx
-      network/page.tsx                # CREATE — coming soon
-      outreach/page.tsx               # CREATE — coming soon
-    sign-in/[[...sign-in]]/page.tsx   # CREATE — Clerk <SignIn/>
-    sign-up/[[...sign-up]]/page.tsx   # CREATE — Clerk <SignUp/>
-    api/waitlist/route.ts             # CREATE — "Notify me" capture
+      network/page.tsx                # CREATE: coming soon
+      outreach/page.tsx               # CREATE: coming soon
+    sign-in/[[...sign-in]]/page.tsx   # CREATE: Clerk <SignIn/>
+    sign-up/[[...sign-up]]/page.tsx   # CREATE: Clerk <SignUp/>
+    api/waitlist/route.ts             # CREATE: "Notify me" capture
   components/
-    Navbar.tsx                        # CREATE — logo · menu · theme+avatar
-    NavMenu.tsx                       # CREATE — menu items + active state + "soon" locks
-    ThemeToggle.tsx                   # CREATE — light/dark, persisted
-    ComingSoon.tsx                    # CREATE — reusable locked-screen body
+    Navbar.tsx                        # CREATE: logo · menu · theme+avatar
+    NavMenu.tsx                       # CREATE: menu items + active state + "soon" locks
+    ThemeToggle.tsx                   # CREATE: light/dark, persisted
+    ComingSoon.tsx                    # CREATE: reusable locked-screen body
   lib/
-    auth.ts                           # CREATE — getUserIdOrNull / requireUserId
+    auth.ts                           # CREATE: getUserIdOrNull / requireUserId
     auth.test.ts                      # CREATE
-    nav.ts                            # CREATE — menu item config (single source of truth)
+    nav.ts                            # CREATE: menu item config (single source of truth)
     nav.test.ts                       # CREATE
-  supabase/schema.sql                 # MODIFY (repo root /supabase) — add waitlist table
+  supabase/schema.sql                 # MODIFY (repo root /supabase): add waitlist table
 ```
 
 ---
@@ -93,7 +94,7 @@ Then create real values in `web/.env.local` (never committed). In the Clerk dash
 
 - [ ] **Step 4: Wrap the root layout in `<ClerkProvider>`**
 
-Modify `web/app/layout.tsx` — import the provider from `@clerk/nextjs` and wrap the existing `<html>…</html>` tree. Keep the Fira font variables and metadata intact. (Verify the provider's exact placement requirement in the installed README — some versions wrap `<html>`, others wrap `<body>`'s children.)
+Modify `web/app/layout.tsx`: import the provider from `@clerk/nextjs` and wrap the existing `<html>…</html>` tree. Keep the Fira font variables and metadata intact. (Verify the provider's exact placement requirement in the installed README, since some versions wrap `<html>`, others wrap `<body>`'s children.)
 
 - [ ] **Step 5: Create `web/proxy.ts`** (Next 16.2 renamed `middleware.ts` → `proxy.ts`; verify against installed docs)
 
@@ -120,7 +121,7 @@ export const config = {
 
 - [ ] **Step 6: Verify the app still boots**
 
-Run: `npm run dev` and load `/`. Expected: no Clerk provider errors in the console. (A missing publishable key will error — set `.env.local` first.)
+Run: `npm run dev` and load `/`. Expected: no Clerk provider errors in the console. (A missing publishable key will error, so set `.env.local` first.)
 
 - [ ] **Step 7: Commit**
 
@@ -133,7 +134,7 @@ git commit -m "feat(auth): install and wire Clerk provider + middleware"
 
 ## Task 2: Server auth helper (`lib/auth.ts`)
 
-A single choke point for "who is the user" so every API route resolves identity the same way and no route forgets to scope by user. TDD — mock the Clerk server module.
+A single choke point for "who is the user" so every API route resolves identity the same way and no route forgets to scope by user. TDD: mock the Clerk server module.
 
 **Files:**
 - Create: `web/lib/auth.ts`
@@ -224,7 +225,7 @@ git commit -m "feat(auth): add server auth helper (getUserIdOrNull, requireUserI
 
 ## Task 3: Navigation config (`lib/nav.ts`)
 
-Single source of truth for menu items — used by the navbar and to know which tabs are "coming soon". Pure data + a helper, easy to test.
+Single source of truth for menu items, used by the navbar and to know which tabs are "coming soon". Pure data + a helper, easy to test.
 
 **Files:**
 - Create: `web/lib/nav.ts`
@@ -295,7 +296,7 @@ git commit -m "feat(nav): add navigation config as single source of truth"
 
 ## Task 4: Theme toggle component
 
-Client component; persists to `localStorage` and toggles the `dark` class on `<html>` (Tailwind 4 dark mode). No network — logic is testable.
+Client component; persists to `localStorage` and toggles the `dark` class on `<html>` (Tailwind 4 dark mode). No network, so the logic is testable.
 
 **Files:**
 - Create: `web/components/ThemeToggle.tsx`
@@ -434,7 +435,7 @@ export function NavMenu() {
 
 - [ ] **Step 2: Implement `Navbar.tsx`**
 
-Logo left, `NavMenu` center, `ThemeToggle` + Clerk `<UserButton>` (with `<SignInButton>` fallback for guests) right. NOTE: Clerk 7.5.18 (installed) does **not** export `SignedIn`/`SignedOut` — it exports a single server component `<Show when="signed-in" fallback={…}>`. Verified against `node_modules/@clerk/nextjs/dist/types/index.d.ts`.
+Logo left, `NavMenu` center, `ThemeToggle` + Clerk `<UserButton>` (with `<SignInButton>` fallback for guests) right. NOTE: Clerk 7.5.18 (installed) does **not** export `SignedIn`/`SignedOut`. It exports a single server component `<Show when="signed-in" fallback={…}>`. Verified against `node_modules/@clerk/nextjs/dist/types/index.d.ts`.
 
 ```tsx
 // web/components/Navbar.tsx
@@ -469,7 +470,7 @@ export function Navbar() {
 }
 ```
 
-- [ ] **Step 3: Manual check** — deferred until Task 6 renders the shell. No commit yet, or commit components alone:
+- [ ] **Step 3: Manual check**, deferred until Task 6 renders the shell. No commit yet, or commit components alone:
 
 ```bash
 git add web/components/NavMenu.tsx web/components/Navbar.tsx
@@ -571,12 +572,12 @@ export function ComingSoon({ title, children }: { title: string; children: React
 // web/app/(app)/network/page.tsx
 import { ComingSoon } from "@/components/ComingSoon";
 export default function Page() {
-  return <ComingSoon title="Network — coming soon">Map the people and hierarchy behind a company, with contacts you can reach. We&apos;re designing this to use compliant data sources, not scraping.</ComingSoon>;
+  return <ComingSoon title="Network: coming soon">Map the people and hierarchy behind a company, with contacts you can reach. We&apos;re designing this to use compliant data sources, not scraping.</ComingSoon>;
 }
 ```
 (Mirror for `outreach/page.tsx`: "Compose and send cold-outreach emails to your contacts, with tracking that advances your applications automatically.")
 
-- [ ] **Step 3: Verify** — load `/network` and `/outreach` while signed in; both show the locked screen. Signed-out access redirects to sign-in (they're in `isProtected`).
+- [ ] **Step 3: Verify**: load `/network` and `/outreach` while signed in; both show the locked screen. Signed-out access redirects to sign-in (they're in `isProtected`).
 
 - [ ] **Step 4: Commit**
 
@@ -640,11 +641,11 @@ git commit -m "feat(waitlist): add Notify-me capture API + waitlist table"
 
 - [ ] **Step 1: Hero**
 
-`Hero.tsx`: headline ("Smarter matches. Clearer insights. Better opportunities."), subcopy, two CTAs — **Sign up** (`href="/sign-up"`) and **Try the Matcher** (`href="/matcher"`). Match the existing brand CSS vars and Fira fonts.
+`Hero.tsx`: headline ("Smarter matches. Clearer insights. Better opportunities."), subcopy, two CTAs: **Sign up** (`href="/sign-up"`) and **Try the Matcher** (`href="/matcher"`). Match the existing brand CSS vars and Fira fonts.
 
 - [ ] **Step 2: FeatureGrid**
 
-Three cards: *3 engines, one verdict* (mention **0.86 Spearman / 0.10 MAE on 106 held-out pairs**), *Match score + strengths & gaps*, *Applications pipeline tracker*. Pull real numbers from the spec — do not invent metrics.
+Three cards: *3 engines, one verdict* (mention **0.86 Spearman / 0.10 MAE on 106 held-out pairs**), *Match score + strengths & gaps*, *Applications pipeline tracker*. Pull real numbers from the spec and do not invent metrics.
 
 - [ ] **Step 3: ComingSoonTeaser**
 
@@ -654,7 +655,7 @@ Two teasers (Network, Outreach) each with a one-line description and an email in
 
 Compose Hero + FeatureGrid + ComingSoonTeaser + a short footer (seed the compliance note: outreach will follow CAN-SPAM/GDPR). This page is public (outside `(app)`), so no auth.
 
-- [ ] **Step 5: Verify** — load `/` signed-out: landing renders, "Try the Matcher" reaches `/matcher`, "Sign up" reaches Clerk, "Notify me" returns success and a row lands in `waitlist`.
+- [ ] **Step 5: Verify**: load `/` signed-out: landing renders, "Try the Matcher" reaches `/matcher`, "Sign up" reaches Clerk, "Notify me" returns success and a row lands in `waitlist`.
 
 - [ ] **Step 6: Run test + lint + build**
 

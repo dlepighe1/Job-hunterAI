@@ -319,9 +319,14 @@ Output:
 3. **Keyword gaps**, ranked. Priority comes from the posting alone: how many times a term is
    named, and whether it sits in the requirements section rather than the company blurb. It is
    **not** a prediction of score movement. Do not present it as one.
-4. **The keyword-stuffing warning.** Adding a term the resume cannot evidence reproduces the
-   pattern the model was trained to catch. Hard negatives in the training data are exactly
-   keyword-dense wrong-role resumes. Say so at the point of the suggestion.
+4. **The keyword-stuffing warning.** Adding a term the resume cannot evidence will raise the
+   score, and the product must not pretend otherwise. The model was long assumed to catch
+   stuffing because its hard negatives are keyword-dense wrong-role resumes; the research
+   repository tested that directly and it is false, with unevidenced tool names raising the
+   score on 52 of 52 resumes. A wrong-role resume and a plausible resume with a skills line
+   bolted on are different attacks, and only the first was trained against. The warning is
+   therefore about the human reader, not about the score, and it belongs at the point of the
+   suggestion. No user-facing string may claim the model detects stuffing.
 5. **Written feedback**, only when a language-model engine was selected, and labelled as
    coming from that model.
 

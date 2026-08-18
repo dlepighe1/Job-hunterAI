@@ -1,15 +1,15 @@
-# Job-Hunt Platform — Foundation (Phase 1) Design
+# Job-Hunt Platform: Foundation (Phase 1) Design
 
 **Date:** 2026-07-15
 **Status:** Approved for implementation planning
-**Supersedes nothing** — extends the existing `web/` Next.js app and `analyses` schema.
+**Supersedes nothing.** It extends the existing `web/` Next.js app and `analyses` schema.
 
 ## 1. Summary
 
 Evolve ResumeAI from a single-purpose resume/JD matcher into the foundation of a
 job-hunt platform: a public marketing page, authenticated dashboard, the existing
-matcher moved in, and a job-application pipeline tracker. Two larger subsystems —
-**Network** (company/people graph) and **Outreach** (cold email) — are advertised
+matcher moved in, and a job-application pipeline tracker. Two larger subsystems,
+**Network** (company/people graph) and **Outreach** (cold email), are advertised
 but ship as locked "coming soon" screens; they are intentionally out of scope for
 this phase pending more research (legal/compliance, data sources, ESP integration).
 
@@ -42,7 +42,7 @@ spec → plan → build) add Network, then Outreach.
 | Guest handling | **Try-before-signup** (matcher usable un-authed, nothing saved) | Clerk has no first-class anonymous auth; standard SaaS funnel. |
 | Clerk ↔ Supabase | Clerk owns identity; **Next.js server owns authz** via service-role Supabase scoped to Clerk `userId` | Matches existing `analyses` pattern; avoids wiring Clerk JWT into RLS. |
 | Engine runs | **On-demand, single engine per Analyze** | Cost control; no token burn from auto-parallel. |
-| Default engine | **Local fine-tuned MPNet (free)** | Safe default — a casual analyze never spends API credits. |
+| Default engine | **Local fine-tuned MPNet (free)** | Safe default: a casual analyze never spends API credits. |
 | Menu naming | **Matcher · Applications · Network · Outreach** | Approved scheme B. |
 | Applications view | **Table-first**, Kanban optional later | User preference; inline status dropdown. |
 | Status automation | **Phased**: in-app events now, email detection later | Email detection depends on the parked Outreach/Gmail layer. |
@@ -74,8 +74,8 @@ middleware.ts             # Clerk: (marketing) public; (app) requires auth EXCEP
 - Clerk `<SignIn>` / `<SignUp>` components; providers: **Google + email/password**
   (Facebook and other socials deferred to a later phase).
 - **Guest / try-before-signup:** the Matcher route renders and analyzes without a
-  session. Guarded actions — save to Applications, selecting a paid engine, opening
-  Applications/Network/Outreach — trigger Clerk sign-in.
+  session. Guarded actions (save to Applications, selecting a paid engine, opening
+  Applications/Network/Outreach) trigger Clerk sign-in.
 - **Authorization:** every API route resolves `userId` via Clerk `auth()`. All
   Supabase access is server-side with the **service-role key**, filtered by `userId`.
   Un-authed matcher analyze returns a result but **does not persist**.
@@ -125,7 +125,7 @@ create table applications (
 - **Storage:** private Supabase bucket `resumes`; files reached only via short-lived
   signed URLs issued by the server. RLS unchanged (service-role on server; public
   read only for shared analyses).
-- **Resumes are a library**, not per-application copies — avoids duplicate PDFs.
+- **Resumes are a library**, not per-application copies, which avoids duplicate PDFs.
 - **`analysis_id`** links a saved job back to the match that produced it (score,
   engine, gaps travel with "Save to Applications").
 
@@ -135,7 +135,7 @@ create table applications (
 
 - Inputs: job description + resume (from library, fresh upload, or pasted text).
 - Engine picker (top-right of workspace toolbar), default **fine-tuned MPNet**.
-- **Analyze runs only the selected engine** — one call, one cost.
+- **Analyze runs only the selected engine**: one call, one cost.
 - Results: score gauge, strengths/gaps, per-engine detailed feedback.
 - **Engine Comparison** panel: a row per engine. Un-run engines show **▶ Run**;
   paid engines (Claude, OpenRouter) show a credit note, the free local one does not.
@@ -183,18 +183,18 @@ create table applications (
 
 ## 9. Risks & Open Questions
 
-- **Clerk + service-role authz** puts full trust in the server layer — every route
+- **Clerk + service-role authz** puts full trust in the server layer: every route
   must resolve `userId` and filter by it; a missed filter is a data-leak. Centralize
   the "get userId or 401" + query-scoping helper and test it.
 - **Guest matcher** must be genuinely non-persisting and rate-limited (reuse existing
   `rate-limit.ts`) to avoid abuse.
-- **Coming-soon capture** stores emails — keep it minimal and disclosed.
+- **Coming-soon capture** stores emails, so keep it minimal and disclosed.
 - Phase 1 ships **Google + email/password only**. Additional social providers
   (e.g. Facebook, which needs OAuth app review) are deliberately deferred.
 
 ## 10. Out-of-scope future phases
 
-- **Phase 2 — Network:** compliant company/people data (APIs / opt-in enrichment, not
+- **Phase 2, Network:** compliant company/people data (APIs / opt-in enrichment, not
   scraping), hierarchy graph, contact records. Own spec.
-- **Phase 3 — Outreach:** ESP integration (Resend/SendGrid/Postmark) with SPF/DKIM/
+- **Phase 3, Outreach:** ESP integration (Resend/SendGrid/Postmark) with SPF/DKIM/
   DMARC, CAN-SPAM/GDPR compliance, templates, and email-driven status detection. Own spec.
