@@ -74,10 +74,8 @@ beforeAll(async () => {
   const paths: string[] = Object.keys(((await res.json()) as { paths?: object }).paths ?? {});
   expect(
     paths.includes("/profiles"),
-    "The schema is not applied to this project - every test below would fail with PGRST205.
-" +
-      "Check with:  node scripts/apply-schema.mjs --check
-" +
+    "The schema is not applied to this project - every test below would fail with PGRST205.\n" +
+      "Check with:  node scripts/apply-schema.mjs --check\n" +
       "Apply with:  SUPABASE_ACCESS_TOKEN=sbp_... node scripts/apply-schema.mjs",
   ).toBe(true);
 });
