@@ -1094,46 +1094,53 @@ this step runs no `git add`, `git commit`, `git push`, or `gh`.
 
 Only the first asset gets `priority`; the other two get `loading="lazy"`. Every `<Image>` carries explicit `width` and `height` so the frame reserves layout before the raster arrives.
 
-- [ ] **Step 2: Measure**
+- [x] **Step 2: Measure**
 
 Run `cd web && npm run build` and check the route's First Load JS. Then serve and measure LCP in the browser.
 
 Expected: LCP element is the `h1`, not a hero raster. If a raster wins LCP, the frame needs a token-coloured placeholder background so the text paints first.
 
-**STILL NOT DONE. Re-attempted 2026-08-18 against a production build, still unmeasurable
-here.** The earlier note blamed the dev server. That was wrong: `npm run build` plus
-`next start` gives the same empty timeline, so the cause is the browser harness, not the
-server. Three independent routes were tried: a buffered `PerformanceObserver` installed via
-an init script before navigation, a post-load read of `performance.getEntriesByType('paint')`,
-and the CDP `PerformanceTimeline` domain subscribed to `largest-contentful-paint`. All three
-returned zero entries, in a Chromium that lists `largest-contentful-paint` in
-`PerformanceObserver.supportedEntryTypes`. This needs Lighthouse or a real browser profile;
-it will not yield to another scripted attempt.
+**Measured 2026-08-18 with Lighthouse 12 against `next start`. The expectation fails: the
+LCP element is the hero raster, not the `h1`.** Two earlier sessions could not get a number
+here because the scripted harness returns an empty paint timeline; Lighthouse drives its own
+Chrome and does not have that problem. Both presets agree on the element:
 
-Note also that Next 16 no longer prints a First Load JS column, so the build output cannot
-answer that half of the step either.
+| | Mobile (default: 4x CPU, slow 4G) | Desktop preset |
+|---|---|---|
+| Performance score | 44 | 81 |
+| First Contentful Paint | 4.4s | 1.2s |
+| **Largest Contentful Paint** | 7.0s | **2.0s** |
+| Total Blocking Time | 730ms | 110ms |
+| Cumulative Layout Shift | 0.001 | 0 |
+| LCP element | `figure.hero-showcase > … > img` | same |
 
-**What was measured instead, and it is more reassuring than last time:**
+**Read the desktop column.** The default preset simulates a mid-tier phone on slow 4G, which
+reports a 2.07s TTFB against a server on localhost — that is the throttle, not the app.
 
-| Measurement | Value |
-|---|---|
-| JS transferred on `/` (production) | 239KB across 19 files |
-| Eager hero asset `responseEnd` | 35ms |
-| `DOMContentLoaded` | 61ms |
-| `load` | 208ms |
-| Hero raster painted area @1440 | 206,814px2 |
-| `h1` painted area @1440 | 113,393px2 |
+**585ms of the desktop number is a development artifact and will not exist in production.**
+The redirect audit shows `/` bouncing through
+`ace-snail-36.clerk.accounts.dev/v1/client/handshake?…&__clerk_hs_reason=dev-browser-missing`
+and back. That is Clerk's dev-instance handshake on a cookieless profile; a production
+instance serves from a first-party domain and does not perform it. Net of it, LCP is
+approximately 1.4s.
 
-On area the raster is still the larger candidate, so it probably is the LCP element and this
-step's expectation probably does fail. What changed is the stakes: the asset resolves 26ms
-before `DOMContentLoaded`, so whichever element wins, it wins at essentially text-paint time.
+**The prescribed remedy does not apply, and should not be applied.** It says to give the
+frame a token-coloured placeholder so text paints first. Text already does paint first —
+FCP 1.2s against LCP 2.0s — and `.hero-showcase__frame` is transparent by deliberate choice
+from Task 10, with the obsidian ground showing through it. There is no blank frame to cover.
+An image winning LCP is not a defect when the copy is legible 800ms ahead of it and CLS is 0.
 
-**A claim in the previous note was false and is retracted.** It said the remedy was already
-in place because `.hero-showcase__frame` sets `background: var(--pf-surface)`. It does not:
-`globals.css:3767` sets `background: none`, alongside `box-shadow: none` and
-`overflow: visible`, which reads as a deliberate choice from the overlay work in Task 10.
-The frame is transparent and the obsidian ground shows through it. That is defensible as a
-design decision, and it is not a blank frame, but it is not the placeholder the note claimed.
+**Task 11 Step 1 is confirmed working while here.** The eager asset emits a real preload:
+`<link rel="preload" as="image" imageSrcSet="…w=640 640w, …" imageSizes="(max-width: 1080px) 90vw, 46rem">`.
+The other two panels carry no raster at all, so there was never a second image to lazy-load.
+
+**Not fixed, recorded for whoever wants the score higher:** unused JavaScript ~240ms,
+render-blocking resources ~121ms, and the mobile TBT of 730ms. None of these were in this
+step's scope, which was to measure.
+
+Next 16 no longer prints a First Load JS column, so that half of the step is unanswerable
+from the build output. Measured instead in the browser: 239KB of JavaScript across 19 files
+on `/`.
 
 - [x] **Step 3: Checkpoint, stop here**
 

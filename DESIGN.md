@@ -482,6 +482,14 @@ test.
   The obsidian ground shows through the frame, and the eager asset finishes loading 35ms
   into a production page load, before `DOMContentLoaded` at 61ms, but the frame is not the
   placeholder it was once described as, and any future work assuming one should read this.
+
+  **Measured 2026-08-18 (Lighthouse 12, `next start`).** The hero raster is confirmed to be
+  the LCP element, not the `h1`, on both the mobile and desktop presets. This is recorded as
+  acceptable rather than fixed: desktop FCP is 1.2s against LCP 2.0s, so the copy is legible
+  roughly 800ms before the image lands, and CLS is 0 because the frame reserves its 16/9 box.
+  Around 585ms of that 2.0s is Clerk's dev-instance handshake, which a production instance
+  does not perform. Giving the frame a placeholder background would not improve any of this
+  and would undo a deliberate Task 10 choice.
 - The hero overlays are positioned in the raster's 1120x630 coordinate space by measurement
   against the committed images. Regenerating an asset means re-checking those coordinates,
   because the overlay will not tell you it has drifted, it will just sit slightly off its dial.
