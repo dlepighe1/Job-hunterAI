@@ -25,7 +25,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { APPLICATION_STATUSES } from "@/lib/applications";
-import { OUTREACH_STATUSES } from "@/lib/outreach";
+import { OUTREACH_CHANNELS, OUTREACH_STATUSES } from "@/lib/outreach";
 import { ENGINES } from "@/lib/types";
 
 const ROOT = join(__dirname, "..", "..");
@@ -66,10 +66,15 @@ function schemaChecks(): Map<string, Set<string>> {
 /**
  * A string-literal union from `db.ts`, as a set.
  *
- * `outreach.channel` and `waitlist.feature` have no runtime constant to import — they exist
- * only as types, which vanish at compile time and cannot be asserted against directly. The
- * source text is the only place the vocabulary survives, so it is read the same way
- * `db.schema.test.ts` reads the query text.
+ * `waitlist.feature` has no runtime constant to import — it exists only as a type, which
+ * vanishes at compile time and cannot be asserted against directly. The source text is the
+ * only place that vocabulary survives, so it is read the same way `db.schema.test.ts` reads
+ * the query text.
+ *
+ * `outreach.channel` used to need this too. It was written out three separate times as an
+ * inline union, so there was nothing to import; it is now `OUTREACH_CHANNELS` and is checked
+ * directly. One caller left is not a pattern worth keeping, but a parser that exists anyway
+ * is cheaper than a constant invented solely to be asserted.
  */
 function unionInDbTs(field: string): Set<string> {
   // String.raw, because in a plain template literal `\b` is a backspace character
@@ -114,11 +119,171 @@ describe("lib/ matches the CHECK constraints in supabase/schema.sql", () => {
     expect(new Set(OUTREACH_STATUSES)).toEqual(checks.get("outreach.status"));
   });
 
-  it("outreach.channel matches the union in db.ts", () => {
-    expect(unionInDbTs("channel")).toEqual(checks.get("outreach.channel"));
+  it("outreach.channel matches OUTREACH_CHANNELS", () => {
+    expect(new Set(OUTREACH_CHANNELS)).toEqual(checks.get("outreach.channel"));
   });
 
   it("waitlist.feature matches the union in db.ts", () => {
     expect(unionInDbTs("feature")).toEqual(checks.get("waitlist.feature"));
   });
+});
+
+/**
+ * Every NOT NULL column without a default must be supplied by the insert that writes it.
+ *
+ * The third member of this family, after column names (`db.schema.test.ts`) and CHECK
+ * vocabularies (above). A missing required column is the same shape of bug as both: the
+ * mocked `.insert()` accepts an object with the key absent, and Postgres rejects it. This is
+ * also the exact shape of the `ensureProfile` bug that shipped — a row written before the
+ * row it depends on — caught statically this time instead of in production.
+ *
+ * Columns WITH a default are excluded on purpose: `status`, `created_at`, `is_baseline` and
+ * their kind are NOT NULL precisely so the database can fill them, and requiring the caller
+ * to name them would invert what the default is for.
+ */
+
+/** Column types the schema uses, so a wrapped CHECK line is not mistaken for a column. */
+const COLUMN_TYPE = /^\s{2,}(\w+)\s+(?:text|uuid|integer|boolean|jsonb|timestamptz|date|numeric)\b/;
+
+/** Per table, the columns an insert must name: NOT NULL, no default, not generated. */
+function requiredColumns(): Map<string, Set<string>> {
+  const required = new Map<string, Set<string>>();
+  let table = "";
+
+  for (const line of SQL.split("\n")) {
+    const header = line.match(/create table if not exists\s+(\w+)/i);
+    if (header) {
+      table = header[1];
+      required.set(table, new Set());
+      continue;
+    }
+    if (!table) continue;
+    if (line.startsWith(");")) {
+      table = "";
+      continue;
+    }
+
+    const m = line.match(COLUMN_TYPE);
+    if (!m) continue;
+    if (!/not null/i.test(line)) continue;
+    if (/default/i.test(line)) continue;
+    if (/primary key/i.test(line) && /default/i.test(line)) continue;
+    required.get(table)!.add(m[1]);
+  }
+  return required;
+}
+
+/**
+ * The top-level keys of each `.insert({...})` / `.upsert({...})` in `db.ts`, by table.
+ *
+ * Depth-aware, because `result_json` and `payload` are nested object literals and their
+ * inner keys are not columns. Quoted spans are skipped so a brace inside a string cannot
+ * unbalance the scan.
+ */
+function insertedKeys(): Map<string, Set<string>> {
+  const keys = new Map<string, Set<string>>();
+
+  for (const m of DB_TS.matchAll(/\.from\("(\w+)"\)/g)) {
+    const table = m[1];
+    const rest = DB_TS.slice(m.index! + m[0].length);
+
+    // Only look as far as the next `.from(`, so a select-only chain cannot borrow the
+    // insert belonging to the next statement.
+    const nextFrom = rest.search(/\.from\("/);
+    const chain = nextFrom === -1 ? rest : rest.slice(0, nextFrom);
+
+    const write = chain.match(/\.(?:insert|upsert)\(\s*\{/);
+    if (!write) continue;
+
+    const start = write.index! + write[0].length - 1;
+    const found = new Set<string>();
+    let depth = 0;
+    let quote = "";
+    // Whether the scan is past a `:` and therefore reading a value. Without this, the
+    // identifier in `id: userId,` looks exactly like the shorthand key in `{ id, email }`.
+    let inValue = false;
+
+    for (let i = start; i < chain.length; i++) {
+      const c = chain[i];
+      if (quote) {
+        if (c === "\\") i++;
+        else if (c === quote) quote = "";
+        continue;
+      }
+      if (c === '"' || c === "'" || c === "`") {
+        quote = c;
+        continue;
+      }
+      if (c === "{") depth++;
+      else if (c === "}") {
+        depth--;
+        if (depth === 0) break;
+      } else if (depth === 1 && c === ":") inValue = true;
+      else if (depth === 1 && c === ",") inValue = false;
+      else if (depth === 1 && !inValue) {
+        // `key:` or the shorthand `key,` / `key}`, which `ensureProfile` uses.
+        const key = chain.slice(i).match(/^(\w+)\s*[:,}]/);
+        if (key && !/\w/.test(chain[i - 1] ?? "")) found.add(key[1]);
+      }
+    }
+
+    keys.set(table, new Set([...(keys.get(table) ?? []), ...found]));
+  }
+  return keys;
+}
+
+describe("lib/db.ts supplies every required column", () => {
+  const required = requiredColumns();
+  const inserted = insertedKeys();
+
+  it("reads both sides", () => {
+    // Spot values that prove the parsers found real content rather than nothing.
+    expect(required.get("applications")).toContain("role_title");
+    expect(required.get("analyses")).toContain("model_id");
+    // Defaulted NOT NULLs must NOT be demanded of the caller.
+    expect(required.get("applications")).not.toContain("status");
+    expect(required.get("applications")).not.toContain("created_at");
+
+    expect(inserted.get("applications")).toContain("company");
+    // Nested keys inside result_json are not columns and must not leak into the top level.
+    expect(inserted.get("analyses")).toContain("result_json");
+    expect(inserted.get("analyses")).not.toContain("suggestedBullets");
+  });
+
+  /**
+   * `joinWaitlist` inserts a typed value rather than an object literal, so there are no keys
+   * to read and it is legitimately absent. Named here so its absence stays deliberate: if
+   * another write is ever refactored the same way, this list is what makes it visible.
+   */
+  it("covers every literal insert", () => {
+    expect([...inserted.keys()].sort()).toEqual([
+      "analyses",
+      "application_events",
+      "applications",
+      "contacts",
+      "job_boards",
+      "outreach",
+      "profiles",
+      "resumes",
+    ]);
+    expect(inserted.has("waitlist")).toBe(false);
+  });
+
+  for (const table of [
+    "analyses",
+    "application_events",
+    "applications",
+    "contacts",
+    "job_boards",
+    "outreach",
+    "profiles",
+    "resumes",
+  ]) {
+    it(`${table} inserts name every required column`, () => {
+      const missing = [...(requiredColumns().get(table) ?? [])].filter(
+        (c) => !insertedKeys().get(table)?.has(c),
+      );
+      expect(missing, `${table} insert omits NOT NULL columns`).toEqual([]);
+    });
+  }
 });

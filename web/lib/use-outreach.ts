@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import type { OutreachStatus } from "@/lib/outreach";
+import type { OutreachChannel, OutreachStatus } from "@/lib/outreach";
 import type { LoadState } from "@/lib/use-applications";
 
 export interface OutreachView {
@@ -12,7 +12,7 @@ export interface OutreachView {
   userId: string;
   contactId: string | null;
   applicationId: string | null;
-  channel: "email" | "linkedin" | "referral" | "other";
+  channel: OutreachChannel;
   subject: string | null;
   body: string;
   status: OutreachStatus;

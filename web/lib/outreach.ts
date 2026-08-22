@@ -23,6 +23,17 @@ import type { ApplicationEvent } from "@/lib/applications";
 export const OUTREACH_STATUSES = ["draft", "sent", "replied", "no_reply"] as const;
 export type OutreachStatus = (typeof OUTREACH_STATUSES)[number];
 
+/**
+ * How the user reached out. These strings are the `channel` CHECK constraint on the
+ * `outreach` table.
+ *
+ * Defined here rather than inline where it is used, because it was previously written out
+ * three separate times - in `db.ts`, `dev-fixtures.ts` and `use-outreach.ts` - and a
+ * vocabulary the database enforces should have exactly one place to change.
+ */
+export const OUTREACH_CHANNELS = ["email", "linkedin", "referral", "other"] as const;
+export type OutreachChannel = (typeof OUTREACH_CHANNELS)[number];
+
 export type OutreachAction = "marked_sent" | "reply_received" | "marked_no_reply";
 
 /** A week. Long enough not to nag, short enough that the thread is still warm. */

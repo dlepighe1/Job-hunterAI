@@ -24,7 +24,7 @@ import { type ApplicationStatus } from "@/lib/applications";
 import { env } from "@/lib/env";
 import { devStore, nextFixtureId } from "@/lib/dev-fixtures";
 import { isDevMode } from "@/lib/dev-mode";
-import type { OutreachStatus } from "@/lib/outreach";
+import type { OutreachChannel, OutreachStatus } from "@/lib/outreach";
 import type { EngineId, ScoreResult } from "@/lib/types";
 
 /** The Storage bucket holding uploaded resume files. Objects are keyed `{userId}/{name}`,
@@ -1261,7 +1261,7 @@ export interface OutreachMessage {
   userId: string;
   contactId: string | null;
   applicationId: string | null;
-  channel: "email" | "linkedin" | "referral" | "other";
+  channel: OutreachChannel;
   subject: string | null;
   body: string;
   status: OutreachStatus;

@@ -23,6 +23,7 @@
  */
 
 import type { ApplicationStatus } from "@/lib/applications";
+import type { OutreachChannel } from "@/lib/outreach";
 import type { EngineId } from "@/lib/types";
 import { DEV_USER_ID } from "@/lib/dev-mode";
 
@@ -561,7 +562,7 @@ export interface FixtureOutreach {
   userId: string;
   contactId: string | null;
   applicationId: string | null;
-  channel: "email" | "linkedin" | "referral" | "other";
+  channel: OutreachChannel;
   subject: string | null;
   body: string;
   status: "draft" | "sent" | "replied" | "no_reply";
