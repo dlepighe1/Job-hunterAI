@@ -47,3 +47,6 @@ reference/*.jpeg
 reference/*.webp
 reference/*.mp4
 reference/*.mov
+
+# Supabase CLI local state
+supabase/.temp/
