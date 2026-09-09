@@ -10,7 +10,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { APPLICATION_STATUSES } from "@/lib/applications";
+import { APPLICATION_STATUSES, WORK_MODELS } from "@/lib/applications";
 
 /** A trimmed, non-empty, bounded string. The bound is not decoration: these columns are
  *  `text`, so without one a single request can store a megabyte in a company name. */
@@ -30,6 +30,10 @@ const optionalText = (max: number) =>
 
 export const statusSchema = z.enum(APPLICATION_STATUSES);
 
+/** Mirrors the `work_model` CHECK constraint. An unknown value is a 400 here rather than a
+ *  constraint violation at the database, which surfaces as an opaque 500. */
+export const workModelSchema = z.enum(WORK_MODELS);
+
 /**
  * The create body.
  *
@@ -43,6 +47,8 @@ export const createSchema = z
     company: shortText(200),
     role: shortText(200),
     location: optionalText(200),
+    industry: optionalText(200),
+    workModel: workModelSchema.nullish(),
     postingUrl: z.url().max(2000).nullish(),
     // The largest field a caller can send, and the reason for the cap: it is stored so a
     // score can be recomputed later, and it matches `/api/score`'s own 15k limit.
@@ -63,6 +69,8 @@ export const patchSchema = z
     company: shortText(200).optional(),
     role: shortText(200).optional(),
     location: optionalText(200),
+    industry: optionalText(200),
+    workModel: workModelSchema.nullish(),
     postingUrl: z.url().max(2000).nullish(),
     status: statusSchema.optional(),
     appliedAt: z.iso.date().nullish(),

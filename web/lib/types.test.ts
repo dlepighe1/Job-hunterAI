@@ -66,8 +66,26 @@ describe("engine metadata", () => {
     expect(ENGINE_META.keyword.capabilities.score).toBe(false);
   });
 
-  it("does not offer OpenRouter, which SPEC §2.4 dropped", () => {
-    expect(ENGINES).not.toContain("openrouter");
+  /**
+   * An earlier version of this list dropped OpenRouter outright, and this test asserted its
+   * absence. It is back as `gemma`, deliberately and narrowly: Claude was the only engine
+   * that produced written feedback and it bills per call, so the generative path could not be
+   * worked on without paying for each iteration.
+   *
+   * What has NOT changed is the rule that made dropping it reasonable. An open-weights model
+   * is a second opinion, never a second measurement — so it is uncalibrated like Claude, and
+   * the fine-tuned model remains the only engine allowed to claim otherwise.
+   */
+  it("adds the open-weights engine without adding a second calibrated one", () => {
+    expect(ENGINES).toContain("gemma");
+    expect(ENGINE_META.gemma.capabilities.calibrated).toBe(false);
+    expect(ENGINE_META.gemma.capabilities.generativeFeedback).toBe(true);
+  });
+
+  /** It exists to cost nothing. An engine that quietly starts billing is the surprise
+   *  invoice SPEC §2.4 is written against. */
+  it("keeps the open-weights engine free", () => {
+    expect(ENGINE_META.gemma.cost).toBe("free");
   });
 });
 

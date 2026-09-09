@@ -12,14 +12,18 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { CompanyAvatar } from "@/components/ui/CompanyAvatar";
 import { Drawer } from "@/components/ui/Drawer";
 import {
   APPLICATION_STATUSES,
   type ApplicationStatus,
-  formatMatchScore,
+  engineLabel,
+  matchDisplay,
   statusLabel,
   statusTone,
+  workModelLabel,
 } from "@/lib/applications";
+import { formatAppDate } from "@/lib/format";
 import type { ApplicationView } from "@/lib/use-applications";
 
 interface EventRow {
@@ -60,6 +64,8 @@ export function ApplicationDrawer({
       onClose={onClose}
       title={application.role}
       subtitle={application.company}
+      lead={<CompanyAvatar company={application.company} size="lg" />}
+      aside={<DrawerMatch application={application} />}
       width="wide"
       footer={
         <>
@@ -155,19 +161,27 @@ function ApplicationDetail({
 
       <section className="drawer-section">
         <h3>Overview</h3>
+        {/* Company and role are gone from this list: they are the drawer's own header now,
+            and a detail grid that repeats its title is padding. */}
         <dl className="detail-grid">
-          <div>
-            <dt>Company</dt>
-            <dd>{application.company}</dd>
-          </div>
-          <div>
-            <dt>Role</dt>
-            <dd>{application.role}</dd>
-          </div>
           <div>
             <dt>Location</dt>
             <dd>{application.location || "Not recorded"}</dd>
           </div>
+          {/* Optional context. Both degrade to nothing rather than printing an empty label,
+              because a row reading "Industry —" tells the reader less than no row at all. */}
+          {application.industry && (
+            <div>
+              <dt>Industry / Department</dt>
+              <dd>{application.industry}</dd>
+            </div>
+          )}
+          {application.workModel && (
+            <div>
+              <dt>Work model</dt>
+              <dd>{workModelLabel(application.workModel)}</dd>
+            </div>
+          )}
           <div>
             <dt>Status</dt>
             <dd>
@@ -192,59 +206,71 @@ function ApplicationDetail({
               </select>
             </dd>
           </div>
+          {application.postingUrl && (
+            <div>
+              <dt>Job posting</dt>
+              <dd>
+                <a
+                  className="drawer-link"
+                  href={application.postingUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  View posting ↗
+                </a>
+              </dd>
+            </div>
+          )}
         </dl>
       </section>
 
-      <section className="drawer-section">
-        <h3>Match</h3>
-        <div className="pf-panel">
-          <div className="pf-row">
-            <span>Baseline score</span>
-            <b className="score-cell" data-scored={application.matchScore !== null}>
-              {formatMatchScore(application.matchScore, application.matchCalibrated)}
-            </b>
-          </div>
-          <div className="pf-row">
-            <span>Engine</span>
-            <b>{application.matchEngine ?? "n/a"}</b>
-          </div>
-        </div>
-        {application.matchScore !== null && (
-          <p className="report__note">
-            Relevance of the résumé to this posting. Not a prediction of an interview.
-          </p>
-        )}
-      </section>
+      {application.matchScore !== null && (
+        <p className="report__note drawer-note">
+          Relevance of the résumé to this posting, measured by{" "}
+          {engineLabel(application.matchEngine) ?? "the engine recorded on this row"}. Not a
+          prediction of an interview.
+        </p>
+      )}
 
       <section className="drawer-section">
         <h3>Application</h3>
         <dl className="detail-grid">
           <div>
             <dt>Applied</dt>
-            <dd>{application.appliedAt ?? "Not sent yet"}</dd>
+            <dd>{formatAppDate(application.appliedAt) ?? "Not sent yet"}</dd>
           </div>
           <div>
             <dt>Employer responded</dt>
-            <dd>{application.respondedAt?.slice(0, 10) ?? "No response recorded"}</dd>
+            <dd>{formatAppDate(application.respondedAt) ?? "No response recorded"}</dd>
           </div>
           <div>
             <dt>Last activity</dt>
-            <dd>{application.lastActivityAt.slice(0, 10)}</dd>
+            <dd>{formatAppDate(application.lastActivityAt) ?? "Not recorded"}</dd>
           </div>
         </dl>
       </section>
 
-      {posting && (
-        <section className="drawer-section">
-          <h3>Job description</h3>
-          {/* Collapsed by default: a full posting is a thousand words and would bury
-              everything below it. */}
-          <button type="button" className="row-action" onClick={() => setShowPosting((v) => !v)}>
-            {showPosting ? "Hide posting" : "Show posting"}
-          </button>
-          {showPosting && <pre className="draft__body">{posting}</pre>}
-        </section>
-      )}
+      <section className="drawer-section">
+        <h3>Job description</h3>
+        {posting ? (
+          <>
+            {/* Collapsed by default: a full posting is a thousand words and would bury
+                everything below it. */}
+            <button type="button" className="row-action" onClick={() => setShowPosting((v) => !v)}>
+              {showPosting ? "Hide posting" : "Show posting"}
+            </button>
+            {showPosting && <pre className="draft__body">{posting}</pre>}
+          </>
+        ) : (
+          /* An absent posting is worth saying out loud rather than hiding the section: it is
+             the one field whose absence costs the user something later, since without it the
+             row cannot be rescored. */
+          <p className="report__note">
+            No job description saved. Add one if you want ResumeAI to use it for matching or
+            future reference.
+          </p>
+        )}
+      </section>
 
       <section className="drawer-section">
         <h3>Résumé used</h3>
@@ -324,7 +350,7 @@ function ApplicationDetail({
           <ol className="timeline">
             {events.map((event) => (
               <li key={event.id}>
-                <time dateTime={event.createdAt}>{event.createdAt.slice(0, 10)}</time>
+                <time dateTime={event.createdAt}>{formatAppDate(event.createdAt)}</time>
                 <span>{EVENT_LABELS[event.kind] ?? event.kind}</span>
               </li>
             ))}
@@ -332,5 +358,35 @@ function ApplicationDetail({
         )}
       </section>
     </>
+  );
+}
+
+/**
+ * The score, engine and calibration state, in the drawer header beside the title.
+ *
+ * Here rather than in a Match section further down, because it is the thing the header of the
+ * approved board leads with, and because a number that describes the whole record belongs
+ * with the record's name rather than in a panel two scrolls below it.
+ */
+function DrawerMatch({ application }: { application: ApplicationView }) {
+  const match = matchDisplay(application.matchScore, application.matchCalibrated);
+  const engine = engineLabel(application.matchEngine);
+
+  if (!match.scored) {
+    return (
+      <div className="drawer-match" data-scored="false">
+        <b>{match.label}</b>
+        <small>Not scored yet</small>
+      </div>
+    );
+  }
+
+  return (
+    <div className="drawer-match" data-scored="true">
+      <b>{match.label}</b>
+      <small>
+        {engine} · {match.calibration}
+      </small>
+    </div>
   );
 }

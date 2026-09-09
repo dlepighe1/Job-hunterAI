@@ -5,24 +5,27 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
-import { SpinnerIcon, TrendingUpIcon } from "@/components/icons";
+import { useDevIdentity } from "@/components/DevIdentity";
+import { SettingsIcon, SpinnerIcon, TrendingUpIcon } from "@/components/icons";
 import { AnalysisProgress } from "@/components/matcher/AnalysisProgress";
 import { AnalysisReport } from "@/components/matcher/AnalysisReport";
-import { EngineCards, type EngineAvailability } from "@/components/matcher/EngineCards";
+import type { EngineAvailability } from "@/components/matcher/EngineCards";
+import { EngineSettingsDrawer } from "@/components/matcher/EngineSettingsDrawer";
+import { ResumeInput } from "@/components/matcher/ResumeInput";
 import { ErrorPanel, type AnalyzeFailure } from "@/components/matcher/ErrorPanel";
 import { SaveResult, type SaveOutcome } from "@/components/matcher/SaveResult";
-import { SavedResumePicker } from "@/components/matcher/SavedResumePicker";
 import { TailorWorkspace } from "@/components/matcher/TailorWorkspace";
 import { importantGaps } from "@/lib/analysis-insights";
-import { EXAMPLE_JD, EXAMPLE_RESUME } from "@/lib/examples";
+import { formatAppDate } from "@/lib/format";
 import type { TailorResult } from "@/lib/providers/tailor";
-import { MIN_WORDS, wordCount, type EngineId, type ScoreResult } from "@/lib/types";
+import { ENGINE_META, MIN_WORDS, wordCount, type EngineId, type ScoreResult } from "@/lib/types";
 
 const ASSUME_AVAILABLE: EngineAvailability["available"] = {
   finetuned: true,
   base: true,
   keyword: true,
   claude: true,
+  gemma: true,
 };
 
 const WAKING_AFTER_MS = 8_000;
@@ -49,9 +52,18 @@ function firstAvailable(available: EngineAvailability["available"], isGuest: boo
  */
 function MatcherWorkspace() {
   const { isSignedIn, isLoaded } = useUser();
+  const dev = useDevIdentity();
   const params = useSearchParams();
   const handoffId = params.get("resume");
-  const isGuest = isLoaded && !isSignedIn;
+  /**
+   * Dev mode counts as signed in here.
+   *
+   * `DEV_BYPASS_AUTH` is a server flag: the API routes honour it through `isDevMode()`, but
+   * Clerk's `useUser` knows nothing about it, so this screen used to render its guest state
+   * against a fixture user whose résumés the API would happily return. That made "Choose from
+   * Resumes" unreachable in the one mode built for demonstrating the product.
+   */
+  const isGuest = !dev.active && isLoaded && !isSignedIn;
 
   const [stage, setStage] = useState<Stage>("input");
   const [jobDescription, setJobDescription] = useState("");
@@ -64,6 +76,7 @@ function MatcherWorkspace() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isWaking, setIsWaking] = useState(false);
 
+  const [engineSettingsOpen, setEngineSettingsOpen] = useState(false);
   const [tailoring, setTailoring] = useState(false);
   const [tailorResult, setTailorResult] = useState<TailorResult | null>(null);
   const [tailorError, setTailorError] = useState<string | null>(null);
@@ -83,6 +96,7 @@ function MatcherWorkspace() {
           base: Boolean(health.capabilities.base),
           keyword: Boolean(health.capabilities.keyword),
           claude: Boolean(health.capabilities.claude),
+          gemma: Boolean(health.capabilities.gemma),
         });
       })
       .catch(() => {
@@ -183,6 +197,13 @@ function MatcherWorkspace() {
           jobDescription,
           resumeText,
           gaps: importantGaps(result).map((gap) => gap.label),
+          // Rewrite with the engine that just did the analysis, when that engine can write
+          // at all. Otherwise a user who deliberately chose the free engine would find the
+          // paid one running on their behalf, which is the surprise the whole engine picker
+          // exists to prevent. For a non-generative analysis there is nothing to carry over,
+          // so the server picks.
+          engine:
+            result.engine === "claude" || result.engine === "gemma" ? result.engine : undefined,
         }),
       });
       const data = await response.json();
@@ -209,7 +230,9 @@ function MatcherWorkspace() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          label: `Tailored ${new Date().toISOString().slice(0, 10)}`,
+          // The label is shown in the résumé library, so it uses the same date format
+          // as every other date in the product rather than an ISO slice.
+          label: `Tailored ${formatAppDate(new Date().toISOString())}`,
           content: tailored,
         }),
       });
@@ -248,14 +271,6 @@ function MatcherWorkspace() {
     } catch {
       return { ok: false, message: "Could not reach the server." };
     }
-  }
-
-  function loadExample() {
-    setJobDescription(EXAMPLE_JD);
-    setResumeText(EXAMPLE_RESUME);
-    setResult(null);
-    setFailure(null);
-    setStage("input");
   }
 
   const steps: Array<{ id: Stage; label: string }> = [
@@ -309,83 +324,144 @@ function MatcherWorkspace() {
       </header>
 
       {stage === "input" && (
-        <div className="matcher-grid">
-          <div className="space-y-5">
-            <TextAreaField
-              id="job-description"
-              label="Job description"
-              hint="Paste the full posting, including the requirements section, since that's where the ranking gets its signal."
-              value={jobDescription}
-              onChange={setJobDescription}
-              words={jdWords}
-              disabled={isAnalyzing}
-            />
+        <>
+          {/*
+            One horizontal row: the engine, its settings, and the primary action pushed right.
+            It replaces a column of four engine cards plus a Match Setup summary panel, which
+            between them described three engines the user had not picked and restated inputs
+            already visible beside them.
 
-            {!isGuest && (
-              <SavedResumePicker
-                onLoad={setResumeText}
+            Load Example is gone with them. It filled both boxes with a fixture, which is a
+            demo affordance on a screen whose whole job is the user's own documents.
+          */}
+          <div className="engine-row">
+            <div className="engine-row__picker">
+              <label htmlFor="matcher-engine">Engine</label>
+              <select
+                id="matcher-engine"
+                className="nm-input"
+                value={activeEngine}
                 disabled={isAnalyzing}
-                fieldIsEmpty={resumeText.length === 0}
-              />
-            )}
+                onChange={(event) => setEngine(event.target.value as EngineId)}
+              >
+                {/*
+                  Names only, which is what the brief asks for. The one exception is an
+                  engine that cannot run: selecting it would silently fall back to another
+                  and score with something the user did not choose, so it says so and is
+                  disabled. The engine cards this replaced disabled them too.
+                */}
+                {(Object.keys(ENGINE_META) as EngineId[]).map((engine) => {
+                  const blocked =
+                    !available[engine] || (engine === "claude" && isGuest);
+                  return (
+                    <option key={engine} value={engine} disabled={blocked}>
+                      {ENGINE_META[engine].name}
+                      {blocked ? " (unavailable)" : ""}
+                    </option>
+                  );
+                })}
+              </select>
 
-            <TextAreaField
-              id="resume"
-              label="Résumé"
-              hint="Paste the résumé text, or choose a saved one above. Upload a PDF on the Résumés screen."
+              <button
+                type="button"
+                className="icon-button"
+                aria-label="Engine settings"
+                title="Engine settings"
+                onClick={() => setEngineSettingsOpen(true)}
+                disabled={isAnalyzing}
+              >
+                <SettingsIcon />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={analyze}
+              disabled={!canAnalyze}
+              className="button button--primary engine-row__action"
+            >
+              {isAnalyzing ? (
+                <>
+                  <SpinnerIcon className="h-4 w-4 animate-spin" />
+                  Analyzing…
+                </>
+              ) : (
+                <>
+                  <TrendingUpIcon className="h-4 w-4" />
+                  Analyze match
+                </>
+              )}
+            </button>
+          </div>
+
+          {/*
+            Two things the dropdown alone cannot say, and both change how the next click
+            behaves. Neither existed while four engine cards carried their own descriptions
+            beside the workspace; compressing that into a name-only picker dropped them, and
+            a user whose engine was swapped out from under them deserves to be told.
+          */}
+          {engine !== activeEngine && (
+            <p className="engine-row__note" data-tone="warn" role="status">
+              {ENGINE_META[engine].name} is unavailable right now, so{" "}
+              {ENGINE_META[activeEngine].name} will run instead.
+            </p>
+          )}
+
+          {!ENGINE_META[activeEngine].capabilities.score && (
+            <p className="engine-row__note" role="status">
+              {ENGINE_META[activeEngine].name} reports requirement coverage and keyword gaps
+              rather than a score. Nothing here will produce a number.
+            </p>
+          )}
+
+          <div className="matcher-workspace">
+            <section className="matcher-field">
+              <div className="field__head">
+                <h2>Job description</h2>
+                <span className="field__count" data-short={jdWords > 0 && jdWords < MIN_WORDS}>
+                  {jdWords} {jdWords === 1 ? "word" : "words"}
+                </span>
+              </div>
+              <p className="field__hint">
+                Paste the full posting, including the requirements section, since that&apos;s
+                where the ranking gets its signal.
+              </p>
+              <textarea
+                id="job-description"
+                className="nm-textarea"
+                rows={14}
+                value={jobDescription}
+                onChange={(event) => setJobDescription(event.target.value)}
+                disabled={isAnalyzing}
+                placeholder="Paste the job description here…"
+                aria-label="Job description"
+              />
+            </section>
+
+            <ResumeInput
               value={resumeText}
               onChange={setResumeText}
               words={resumeWords}
               disabled={isAnalyzing}
+              isGuest={isGuest}
             />
           </div>
 
-          <div className="space-y-5">
-            <EngineCards
-              value={activeEngine}
-              onChange={setEngine}
-              availability={{ available, isGuest }}
-              disabled={isAnalyzing}
-            />
+          {!canAnalyze && !isAnalyzing && (jdWords > 0 || resumeWords > 0) && (
+            <p className="field__hint">
+              Both texts need at least {MIN_WORDS} words. Below that there isn&apos;t enough
+              signal to score honestly.
+            </p>
+          )}
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={analyze}
-                disabled={!canAnalyze}
-                className="button button--primary"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <SpinnerIcon className="h-4 w-4 animate-spin" />
-                    Analyzing…
-                  </>
-                ) : (
-                  <>
-                    <TrendingUpIcon className="h-4 w-4" />
-                    Analyze match
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={loadExample}
-                disabled={isAnalyzing}
-                className="button button--ghost"
-              >
-                Load example
-              </button>
-            </div>
-
-            {!canAnalyze && !isAnalyzing && (jdWords > 0 || resumeWords > 0) && (
-              <p className="field__hint">
-                Both texts need at least {MIN_WORDS} words. Below that there isn&apos;t enough
-                signal to score honestly.
-              </p>
-            )}
-          </div>
-        </div>
+          <EngineSettingsDrawer
+            open={engineSettingsOpen}
+            onClose={() => setEngineSettingsOpen(false)}
+            value={activeEngine}
+            onChange={setEngine}
+            availability={{ available, isGuest }}
+          />
+        </>
       )}
 
       {stage === "analysis" && (
@@ -455,53 +531,6 @@ function MatcherWorkspace() {
         </div>
       )}
     </>
-  );
-}
-
-function TextAreaField({
-  id,
-  label,
-  hint,
-  value,
-  onChange,
-  words,
-  disabled,
-}: {
-  id: string;
-  label: string;
-  hint: string;
-  value: string;
-  onChange: (value: string) => void;
-  words: number;
-  disabled: boolean;
-}) {
-  const short = words > 0 && words < MIN_WORDS;
-
-  return (
-    <div>
-      <div className="field__head">
-        <label htmlFor={id}>{label}</label>
-        <span className="field__count" data-short={short}>
-          {words} {words === 1 ? "word" : "words"}
-          {short && ` , need ${MIN_WORDS} in total`}
-        </span>
-      </div>
-
-      <textarea
-        id={id}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        disabled={disabled}
-        rows={12}
-        aria-describedby={`${id}-hint`}
-        className="nm-textarea"
-        placeholder={`Paste the ${label.toLowerCase()} here…`}
-      />
-
-      <p id={`${id}-hint`} className="field__hint">
-        {hint}
-      </p>
-    </div>
   );
 }
 

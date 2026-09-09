@@ -33,6 +33,26 @@ export interface ResumeView {
   updatedAt: string;
 }
 
+/**
+ * The stored document, in the form the viewer can actually display.
+ *
+ * A discriminated union rather than a URL, because the three formats need three different
+ * mechanisms: a browser renders PDF from a link, renders nothing at all from a DOCX, and
+ * renders TXT as an unstyled page. The server decides which and sends what is needed.
+ */
+export type ResumeDocument =
+  | { kind: "pdf"; url: string }
+  | { kind: "docx"; html: string }
+  | { kind: "txt"; text: string };
+
+/** What the extraction gate decided, carried back so the UI can ask for a look at the text
+ *  only when there is a reason to. Mirrors `ExtractionQuality` without importing the
+ *  server-only module that produces it. */
+export interface ExtractionNotice {
+  verdict: "good" | "degraded" | "failed";
+  reason: string | null;
+}
+
 const UNREACHABLE = "Could not reach the server. Check your connection and try again.";
 
 async function readError(response: Response, fallback: string): Promise<string> {
@@ -122,6 +142,74 @@ export function useResumes() {
     [],
   );
 
+  /**
+   * Create a résumé from an uploaded file.
+   *
+   * Multipart, and one request: the server extracts, assesses, stores the row and stores the
+   * file. Sending the file to an extract endpoint and then posting the text back would put a
+   * 10 MB body on the wire twice, or leave an orphaned object in the bucket whenever someone
+   * changed their mind between the two calls.
+   *
+   * A `degraded` verdict comes back alongside the saved résumé rather than as an error,
+   * because the text is usable and the user is being told to check it, not stopped.
+   */
+  const createFromFile = useCallback(
+    async (input: {
+      file: File;
+      label: string;
+      targetRole?: string | null;
+      note?: string | null;
+    }): Promise<
+      { resume: ResumeView; quality: ExtractionNotice } | { error: string }
+    > => {
+      const form = new FormData();
+      form.append("file", input.file, input.file.name);
+      form.append("label", input.label);
+      if (input.targetRole) form.append("targetRole", input.targetRole);
+      if (input.note) form.append("note", input.note);
+
+      try {
+        // No Content-Type header: the browser sets it, and must, because only it knows the
+        // multipart boundary it generated.
+        const response = await fetch("/api/resumes", { method: "POST", body: form });
+        if (!response.ok) {
+          return { error: await readError(response, "Could not save that résumé.") };
+        }
+        const body = await response.json();
+        const resume = body.resume as ResumeView;
+        setResumes((current) => [resume, ...current]);
+        return {
+          resume,
+          quality: (body.quality as ExtractionNotice) ?? { verdict: "good", reason: null },
+        };
+      } catch {
+        return { error: UNREACHABLE };
+      }
+    },
+    [],
+  );
+
+  /**
+   * The original document, ready to display, or null when none is stored.
+   *
+   * Not cached in state: a PDF's URL expires, and a stale one in a re-render produces a
+   * preview that silently fails. The drawer fetches when it opens.
+   */
+  const fetchDocument = useCallback(async (id: string): Promise<ResumeDocument | null> => {
+    try {
+      const response = await fetch(`/api/resumes/${id}/file`);
+      if (!response.ok) return null;
+      const body = await response.json();
+
+      if (body?.kind === "pdf" && typeof body.url === "string") return { kind: "pdf", url: body.url };
+      if (body?.kind === "docx" && typeof body.html === "string") return { kind: "docx", html: body.html };
+      if (body?.kind === "txt" && typeof body.text === "string") return { kind: "txt", text: body.text };
+      return null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   /** The full text of one resume. The list never carries it, so this is a real fetch. */
   const fetchContent = useCallback(async (id: string): Promise<string | null> => {
     try {
@@ -207,5 +295,15 @@ export function useResumes() {
     }
   }, []);
 
-  return { resumes, state, reload, create, update, remove, fetchContent };
+  return {
+    resumes,
+    state,
+    reload,
+    create,
+    createFromFile,
+    update,
+    remove,
+    fetchContent,
+    fetchDocument,
+  };
 }

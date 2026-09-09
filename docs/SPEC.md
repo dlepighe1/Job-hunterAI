@@ -155,6 +155,16 @@ API credits on every keystroke is how a side project generates a surprise invoic
 | Base MPNet | Free | Raw similarity, for the before-and-after comparison |
 | Keyword coverage | Free, no model | Literal ATS-style matching and ranked gaps |
 | Claude | Per call | Written feedback, suggested bullet rewrites |
+| Gemma (OpenRouter) | Free | Written feedback, suggested bullet rewrites, from an open-weights model |
+
+The open-weights engine is an evaluation engine and is described as one. It exists because
+Claude was the only engine producing written feedback, which made every iteration on the
+generative path — prompt, parsing, panel, stored row — cost money. It runs on a free
+OpenRouter endpoint and is subject to every rule the paid engine is: opt-in per analysis,
+signed-in only, its own rate-limit bucket, and its score labelled uncalibrated wherever it
+appears. It does not replace the fine-tuned model and cannot — a language model asked for a
+percentage returns a number with no fitted relationship to anything, which is the same reason
+the base model reports no score at all.
 
 ---
 

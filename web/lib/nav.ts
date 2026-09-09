@@ -2,8 +2,9 @@ export type NavItem = {
   label: string;
   href: string;
   icon: string;
-  /** Phase 2 and 3 features, which SPEC §1.1 ships as locked screens in Phase 1. Labelled
-   *  in the nav so nobody clicks through twice wondering why the page looks empty. */
+  /** A screen that is advertised but not built. Labelled in the nav so nobody clicks
+   *  through twice wondering why the page looks empty. Nothing carries it today; it stays
+   *  because the next feature to be announced before it exists will need it again. */
   comingSoon: boolean;
 };
 
@@ -15,14 +16,21 @@ export type NavItem = {
  * do to a user. That reasoning expired: Applications, Resumes and the Dashboard all carry
  * real data now, and the Dashboard is the authenticated home, the page that answers "how is
  * the search going and where should I look next" before the user picks a tool.
+ *
+ * Network and Outreach are no longer marked. They were locked screens under SPEC §1.1, and
+ * they are not locked any more: both have a page, an API route pair and a table behind them.
+ * Each ships a deliberately smaller feature than the one the locked screen advertised, for
+ * the reasons FEATURES.md §6 and §7 give, and each says so in a banner at the top of its own
+ * page. A "soon" badge on a screen that works sends the user somewhere else, and the badge's
+ * tooltip read "Not built yet" over a built feature.
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard", comingSoon: false },
   { label: "Matcher", href: "/matcher", icon: "Target", comingSoon: false },
   { label: "Applications", href: "/applications", icon: "Briefcase", comingSoon: false },
   { label: "Resumes", href: "/resumes", icon: "FileText", comingSoon: false },
-  { label: "Network", href: "/network", icon: "Users", comingSoon: true },
-  { label: "Outreach", href: "/outreach", icon: "Mail", comingSoon: true },
+  { label: "Network", href: "/network", icon: "Users", comingSoon: false },
+  { label: "Outreach", href: "/outreach", icon: "Mail", comingSoon: false },
 ] as const;
 
 /**

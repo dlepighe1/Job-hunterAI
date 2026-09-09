@@ -7,14 +7,15 @@ import { useMemo, useState } from "react";
 import { CareerIntelligence } from "@/components/dashboard/CareerIntelligence";
 import { HuntDrawer } from "@/components/dashboard/HuntDrawer";
 import { KpiCards } from "@/components/dashboard/KpiCards";
-import { MatchDistribution } from "@/components/dashboard/MatchDistribution";
-import { PipelineChart } from "@/components/dashboard/PipelineChart";
+import { MatchPipelineSwitcher } from "@/components/dashboard/MatchPipelineSwitcher";
+import { Notifications } from "@/components/dashboard/Notifications";
 import { PriorityTargets } from "@/components/dashboard/PriorityTargets";
 import { RecentIntelligence } from "@/components/dashboard/RecentIntelligence";
 import { RoleLandscape } from "@/components/dashboard/RoleLandscape";
 import { VelocityChart } from "@/components/dashboard/VelocityChart";
 import { useDevIdentity } from "@/components/DevIdentity";
 import { useDashboard } from "@/lib/use-dashboard";
+import { useResumes } from "@/lib/use-resumes";
 import { useNow } from "@/lib/use-now";
 
 /**
@@ -25,8 +26,8 @@ import { useNow } from "@/lib/use-now";
  *
  *   KPI cards:           how much am I doing?
  *   Velocity:            how is that changing over time?
- *   Match Distribution: how strong are the roles I am targeting?
- *   Pipeline:            where do my live opportunities stand?
+ *   Match / Pipeline:    how strong are my targets, or where do they stand? (one card, switched)
+ *   Notifications:       what is waiting on me?
  *   Role Landscape:      what else does my experience support?
  *   Priority Targets:    what have I decided to focus on?
  *   Recent Intelligence: what just happened?
@@ -45,6 +46,9 @@ export default function DashboardPage() {
   const { user } = useUser();
   const dev = useDevIdentity();
   const { data, state, reload } = useDashboard();
+  // The notifications rail needs to know whether a résumé exists and whether one is the
+  // default. Both are setup gaps with a real consequence for the matcher.
+  const { resumes } = useResumes();
   const [huntOpen, setHuntOpen] = useState(false);
   const now = useNow();
 
@@ -148,32 +152,44 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/*
+        75/25. The main column carries the analytics; the rail is deliberately subordinate
+        and never competes with Job Hunt Velocity for attention.
+      */}
       {state.kind === "ready" && (
-        <div className="dash-grid">
-          <KpiCards
-            contacts={counts.contacts}
-            applications={counts.applications}
-            interviews={derived.interviews}
-            upcomingInterviews={derived.offers}
-            resumes={counts.resumes}
-            tailored={counts.tailored}
-            appliedThisWeek={derived.appliedThisWeek}
-            contactsThisMonth={derived.contactsThisMonth}
-          />
+        <div className="dash-layout">
+          <div className="dash-main">
+            <KpiCards
+              contacts={counts.contacts}
+              applications={counts.applications}
+              interviews={derived.interviews}
+              upcomingInterviews={derived.offers}
+              resumes={counts.resumes}
+              tailored={counts.tailored}
+              appliedThisWeek={derived.appliedThisWeek}
+              contactsThisMonth={derived.contactsThisMonth}
+            />
 
-          <div className="dash-row dash-row--analytics">
+            {/* Velocity is the dominant visualisation on this page and gets the width to be
+                one. Match Distribution and Application Pipeline share the card beneath it. */}
             <VelocityChart applications={applications} />
-            <MatchDistribution applications={applications} />
-            <PipelineChart applications={applications} />
-          </div>
 
-          <div className="dash-row dash-row--landscape">
+            <MatchPipelineSwitcher applications={applications} />
+
+            {/* Role Landscape takes a full row of its own: it is a chart, a ranked list and a
+                filter set, and none of the three survived being squeezed into a third. */}
             <RoleLandscape affinities={affinities} baselineCount={counts.baselineAnalyses} />
-            <PriorityTargets applications={applications} contacts={contacts} />
-            <RecentIntelligence applications={applications} resumeCount={counts.resumes} />
+
+            <div className="dash-row dash-row--pair">
+              <PriorityTargets applications={applications} contacts={contacts} />
+              <CareerIntelligence insights={insights} />
+            </div>
           </div>
 
-          <CareerIntelligence insights={insights} />
+          <aside className="dash-rail" aria-label="Activity">
+            <Notifications applications={applications} resumes={resumes} />
+            <RecentIntelligence applications={applications} resumeCount={counts.resumes} />
+          </aside>
         </div>
       )}
 

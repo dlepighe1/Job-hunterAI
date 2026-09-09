@@ -24,6 +24,7 @@ const BADGES: Record<EngineId, { text: string; tone: string } | null> = {
   base: null,
   finetuned: { text: "Recommended", tone: "cyan" },
   claude: { text: "Premium", tone: "gold" },
+  gemma: { text: "Evaluation", tone: "teal" },
 };
 
 const DESCRIPTIONS: Record<EngineId, string> = {
@@ -33,6 +34,8 @@ const DESCRIPTIONS: Record<EngineId, string> = {
   finetuned:
     "MPNet fine-tuned and calibrated on this project's labelled data. The best-measured option.",
   claude: "Deep contextual reading of both documents, with written feedback and suggested rewrites.",
+  gemma:
+    "The same written feedback from a free open-weights model. Slower, and not held to the output format the way Claude is.",
 };
 
 export function EngineCards({

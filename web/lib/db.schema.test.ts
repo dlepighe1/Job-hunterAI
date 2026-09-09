@@ -223,14 +223,10 @@ describe("lib/db.ts matches supabase/schema.sql", () => {
     const columns = tables.get("waitlist")!;
     for (const field of fields) expect(columns.has(field)).toBe(true);
 
-    // The union and the CHECK constraint have to agree too: a value TypeScript accepts and
-    // Postgres rejects fails at insert time, which is the same class of bug one layer down.
-    const union = /feature:\s*([^;]+);/.exec(shape![1]);
-    const allowed = [...(union?.[1] ?? "").matchAll(/"(\w+)"/g)].map((m) => m[1]).sort();
-    const check = /feature\s+text not null check \(feature in \(([^)]*)\)\)/.exec(SQL);
-    const sqlAllowed = [...(check?.[1] ?? "").matchAll(/'(\w+)'/g)].map((m) => m[1]).sort();
-    expect(allowed.length).toBeGreaterThan(0);
-    expect(allowed).toEqual(sqlAllowed);
+    // The union and the CHECK constraint have to agree too, but that is no longer checked
+    // by reading source text here: `feature` was an inline union in three files and is now
+    // `WAITLIST_FEATURES`, so `db.constraints.test.ts` asserts the constant against the
+    // constraint directly. This test keeps the half that is still about field names.
   });
 
   it("references only columns that exist", () => {

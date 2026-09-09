@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { env } from "@/lib/env";
 import { AnalyzeError } from "@/lib/errors";
+import { completeJson } from "@/lib/providers/openrouter";
 
 /**
  * Rewrite a résumé for one posting, without inventing anything.
@@ -83,7 +84,96 @@ function userPrompt(jobDescription: string, resumeText: string, gaps: string[]):
   ].join("\n");
 }
 
+/**
+ * The JSON contract for the engines that are not constrained to the schema.
+ *
+ * Claude never sees this: `zodOutputFormat` makes the shape unbreakable, so describing it in
+ * prose would be words the model does not need. An open-weights model on a free endpoint gets
+ * JSON mode, which guarantees only that the reply parses, so the fields have to be asked for.
+ *
+ * The safety rules are NOT repeated here. They live in `SYSTEM_PROMPT`, which every engine
+ * receives, and stating them twice in different words is how two versions of a prohibition
+ * end up disagreeing.
+ */
+const TAILOR_JSON_INSTRUCTION = `Reply with a single JSON object and nothing else. No markdown, no code fence, no commentary before or after it.
+
+{
+  "changes": [
+    {
+      "section": "<the résumé section this touches, in the candidate's own words>",
+      "kind": "<one of: rewrite, reorder, condense, emphasise>",
+      "original": "<the exact original text, copied character for character from the résumé>",
+      "proposed": "<your replacement for it>",
+      "reason": "<why, in terms of this posting>"
+    }
+  ],
+  "notAdded": ["<something the posting wants that the résumé does not evidence, which you therefore did NOT write in>"]
+}
+
+"original" must appear in the résumé exactly as you quote it. A change whose original cannot be found is discarded, because the candidate cannot verify what they cannot locate.`;
+
+/** The engines that can rewrite. The others produce no prose, so they cannot be asked. */
+export type TailorEngine = "claude" | "gemma";
+
+/**
+ * Propose changes, from whichever engine was asked for.
+ *
+ * The engine choice changes who writes the proposals and nothing else about the contract:
+ * both go through the same prompt, the same schema, and — the part that matters — the same
+ * grounding filter below. An open-weights model is the MORE likely of the two to invent a
+ * sentence, so a safety net that only covered the paid path would be protecting the wrong one.
+ */
 export async function tailorResume(
+  jobDescription: string,
+  resumeText: string,
+  gaps: string[],
+  engine: TailorEngine = "claude",
+): Promise<TailorResult> {
+  const parsed =
+    engine === "gemma"
+      ? await tailorWithGemma(jobDescription, resumeText, gaps)
+      : await tailorWithClaude(jobDescription, resumeText, gaps);
+
+  /**
+   * The last line of defence: drop any change whose `original` is not actually in the
+   * résumé.
+   *
+   * A change that cannot be located is one the user cannot verify, and it is also the
+   * shape a hallucinated edit takes, the model inventing a sentence to "improve". The
+   * prompt forbids it and the schema cannot express the constraint, so it is checked here.
+   */
+  const grounded = parsed.changes.filter((change) => resumeText.includes(change.original.trim()));
+
+  if (grounded.length < parsed.changes.length) {
+    console.warn("[tailor] dropped ungrounded changes", {
+      engine,
+      proposed: parsed.changes.length,
+      kept: grounded.length,
+    });
+  }
+
+  return { changes: grounded, notAdded: parsed.notAdded };
+}
+
+/** Same prompt, same schema, no schema enforcement. See `openrouter.ts`. */
+function tailorWithGemma(
+  jobDescription: string,
+  resumeText: string,
+  gaps: string[],
+): Promise<TailorResult> {
+  return completeJson({
+    system: SYSTEM_PROMPT,
+    user: userPrompt(jobDescription, resumeText, gaps),
+    shapeInstruction: TAILOR_JSON_INSTRUCTION,
+    schema: tailorSchema,
+    // Higher than the analysis flow's: this returns up to twelve changes, each quoting an
+    // original and a replacement, so the reply is several times longer.
+    maxTokens: 8192,
+    label: "rewrite",
+  });
+}
+
+async function tailorWithClaude(
   jobDescription: string,
   resumeText: string,
   gaps: string[],
@@ -120,24 +210,7 @@ export async function tailorResume(
     throw new AnalyzeError("INVALID_OUTPUT", "The rewrite came back unreadable.", 502);
   }
 
-  /**
-   * The last line of defence: drop any change whose `original` is not actually in the
-   * résumé.
-   *
-   * A change that cannot be located is one the user cannot verify, and it is also the
-   * shape a hallucinated edit takes, the model inventing a sentence to "improve". The
-   * prompt forbids it and the schema cannot express the constraint, so it is checked here.
-   */
-  const grounded = parsed.changes.filter((change) => resumeText.includes(change.original.trim()));
-
-  if (grounded.length < parsed.changes.length) {
-    console.warn("[tailor] dropped ungrounded changes", {
-      proposed: parsed.changes.length,
-      kept: grounded.length,
-    });
-  }
-
-  return { changes: grounded, notAdded: parsed.notAdded };
+  return parsed;
 }
 
 function toAnalyzeError(error: unknown): AnalyzeError {

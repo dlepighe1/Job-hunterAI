@@ -11,6 +11,11 @@ export default defineConfig({
       "lib/**/*.test.ts",
       "app/**/*.test.ts",
       "components/**/*.test.ts?(x)",
+      // Root-level specs, for the files that live at the root because a framework requires
+      // it: `proxy.ts` is Next's middleware and cannot move into a directory. Without this
+      // pattern `proxy.test.ts` would be collected by nothing and "pass" by never running,
+      // which is the failure this include list has already been bitten by once.
+      "*.test.ts",
     ],
     // SPEC Part 7: every test runs offline. No model downloads, no API calls, no live
     // database. The scoring service is reached through `fetch` and Claude through the

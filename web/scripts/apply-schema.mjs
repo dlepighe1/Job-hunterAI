@@ -30,6 +30,8 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { describeTransportFailure, probeProject, projectRef } from "./supabase-probe.mjs";
+
 const WEB = dirname(dirname(fileURLToPath(import.meta.url)));
 const ROOT = dirname(WEB);
 const SCHEMA_PATH = join(ROOT, "supabase", "schema.sql");
@@ -65,25 +67,84 @@ function tablesInSchema(sql) {
 }
 
 /**
- * Which of those tables the project actually exposes.
+ * Which of those tables the project actually exposes, or a printed reason and a non-zero
+ * exit.
  *
- * PostgREST's OpenAPI document at `/rest/v1/` lists one path per table it can see. That is
- * the same schema cache the failing writes consult, so it answers the exact question the
- * PGRST205 errors were raising, rather than a question adjacent to it.
+ * `probeProject` asks PostgREST's own schema cache, which is the cache the failing writes
+ * consult, so this answers the exact question a PGRST205 raises rather than one adjacent to
+ * it. It also classifies the ways the question cannot be answered, which is what this script
+ * previously did not: a deleted project produced an unhandled `TypeError: fetch failed` and
+ * a Node stack trace, from a script whose only job is to report state.
  */
 async function tablesOnProject(url, serviceKey) {
-  const res = await fetch(`${url}/rest/v1/`, {
-    headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
-  });
-  if (!res.ok) {
-    throw new Error(`PostgREST introspection failed: ${res.status} ${await res.text()}`);
+  const probe = await probeProject(url, serviceKey);
+  if (!probe.ok) {
+    console.error(`\n${probe.message}`);
+    process.exit(1);
   }
-  const doc = await res.json();
-  return new Set(
-    Object.keys(doc.paths ?? {})
-      .filter((p) => p.startsWith("/") && p !== "/" && !p.startsWith("/rpc/"))
-      .map((p) => p.slice(1)),
-  );
+  return probe.tables;
+}
+
+/**
+ * The same question, asked until the answer settles.
+ *
+ * PostgREST caches the schema and reloads on a notification that arrives shortly after the
+ * DDL commits, so "the tables are not there" and "the tables are not there YET" look
+ * identical for a second or two right after an apply. Only the apply path needs this;
+ * `--check` on its own is asking about a project nobody just changed.
+ */
+async function tablesOnProjectEventually(url, serviceKey, expected, attempts = 6) {
+  let present = new Set();
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    present = await tablesOnProject(url, serviceKey);
+    if (expected.every((table) => present.has(table))) return present;
+    if (attempt < attempts) {
+      if (attempt === 1) console.log("waiting for the schema cache to reload...");
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  }
+  return present;
+}
+
+/**
+ * Whether the `resumes` Storage bucket exists.
+ *
+ * Reported separately from the tables because it is created by a guarded block in
+ * `schema.sql`: the `storage` schema is owned by another role, so bucket creation can be
+ * skipped with a notice while every table still lands. Without this check that skip is
+ * invisible until an upload silently stores no file.
+ */
+async function bucketExists(url, serviceKey) {
+  try {
+    const res = await fetch(`${url.replace(/\/$/, "")}/storage/v1/bucket/resumes`, {
+      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+    });
+    if (!res.ok) return false;
+    const body = await res.json().catch(() => null);
+    return body?.name === "resumes" ? { public: body.public === true } : false;
+  } catch {
+    return false;
+  }
+}
+
+function reportBucket(bucket) {
+  if (!bucket) {
+    console.log('  MISSING  storage bucket "resumes"');
+    console.log(
+      "\n  Résumé uploads store text but no document until this exists.\n" +
+        '  Create it in Storage: name "resumes", NOT public, 10 MB limit.',
+    );
+    return false;
+  }
+  if (bucket.public) {
+    console.log('  WARNING  storage bucket "resumes" is PUBLIC');
+    console.log(
+      "\n  A résumé carries a home address and a phone number. Set the bucket to private.",
+    );
+    return false;
+  }
+  console.log('  present  storage bucket "resumes" (private)');
+  return true;
 }
 
 function report(expected, present) {
@@ -92,6 +153,13 @@ function report(expected, present) {
   console.log(
     `\n${expected.length - missing.length}/${expected.length} tables present on the project.`,
   );
+
+  // Nine missing tables and one missing table are different situations. All nine means the
+  // project answered normally and its public schema is empty, which is the state that once
+  // went unnoticed long enough for every write in the app to fail against it.
+  if (missing.length === expected.length) {
+    console.log("The project is reachable and its public schema is empty: nothing was ever applied.");
+  }
   return missing;
 }
 
@@ -111,15 +179,19 @@ async function main() {
 
   // The project ref is the first label of the Supabase hostname. Printed so that a schema
   // applied to the wrong project is visible here rather than discovered later.
-  const ref = new URL(url).hostname.split(".")[0];
+  const ref = projectRef(url);
   console.log(`project ${ref}, schema ${expected.length} tables\n`);
 
   if (checkOnly) {
     const missing = report(expected, await tablesOnProject(url, serviceKey));
+    console.log("");
+    const bucketOk = reportBucket(await bucketExists(url, serviceKey));
+
     if (missing.length) {
       console.log("\nApply them with:  node scripts/apply-schema.mjs");
       process.exit(1);
     }
+    if (!bucketOk) process.exit(1);
     return;
   }
 
@@ -136,11 +208,18 @@ async function main() {
   }
 
   console.log(`applying ${SCHEMA_PATH}`);
-  const res = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ query: sql }),
-  });
+  let res;
+  try {
+    res = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query: sql }),
+    });
+  } catch (error) {
+    // The Management API is a different host from the project, so it can fail on its own.
+    console.error(`\n${describeTransportFailure(error, "https://api.supabase.com").message}`);
+    process.exit(1);
+  }
 
   if (!res.ok) {
     console.error(`\nfailed: ${res.status}\n${await res.text()}`);
@@ -150,10 +229,29 @@ async function main() {
 
   // Verify against PostgREST rather than trusting the 200. A statement can succeed while
   // the schema cache has not yet picked the tables up, and it is that cache the app reads.
-  const missing = report(expected, await tablesOnProject(url, serviceKey));
+  //
+  // Which is exactly why this waits. PostgREST reloads on a NOTIFY it receives moments after
+  // the DDL commits, and the first run of this against a real project reported 0/9 and exited
+  // 1 — over tables that were already there, and a bucket the same transaction had just
+  // created. A verification that fails on its own timing teaches the reader to distrust it.
+  const present = await tablesOnProjectEventually(url, serviceKey, expected);
+  const missing = report(expected, present);
+  console.log("");
+  const bucketOk = reportBucket(await bucketExists(url, serviceKey));
+
   if (missing.length) {
-    console.error("\nStatements succeeded but PostgREST still cannot see every table.");
+    console.error(
+      "\nStatements succeeded, and PostgREST still cannot see every table after waiting for a\n" +
+        "reload. That is no longer a timing question: check the Management API response above.",
+    );
     process.exit(1);
+  }
+
+  // Not fatal. The tables are what the app cannot run without, and the bucket is thirty
+  // seconds of dashboard work, so a run that created all nine tables should not report
+  // itself as a failure over one guarded block that the role was not allowed to execute.
+  if (!bucketOk) {
+    console.log("\nEverything else applied. Sort the bucket above and uploads will store files.");
   }
 }
 

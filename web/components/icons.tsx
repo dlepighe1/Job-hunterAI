@@ -172,3 +172,113 @@ export function ArrowUpRightIcon({ className }: IconProps) {
     </Svg>
   );
 }
+
+/* ---------------------------------------------------------------------------
+ * Added for the approved redesign: view switching, overflow menus, uploads and
+ * the drawer chrome. Same Lucide 24x24 stroke-2 vocabulary as everything above.
+ * ------------------------------------------------------------------------- */
+
+/** Table view. Paired with GridIcon in the icon-only view toggle, which carries
+ *  `aria-label` on the buttons because the icons themselves are decorative. */
+export function TableIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </Svg>
+  );
+}
+
+export function GridIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </Svg>
+  );
+}
+
+/** The overflow trigger. Horizontal, matching the boards' `•••`. */
+export function MoreIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <circle cx="5" cy="12" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+    </Svg>
+  );
+}
+
+export function UploadCloudIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M4 14.9A5 5 0 0 1 7 6a6 6 0 0 1 11.3 1.5 4.5 4.5 0 0 1 1.2 8.6" />
+      <path d="m9 14 3-3 3 3" />
+      <path d="M12 11v9" />
+    </Svg>
+  );
+}
+
+export function SettingsIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 5 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9.5a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+    </Svg>
+  );
+}
+
+export function SearchIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </Svg>
+  );
+}
+
+export function XIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M18 6 6 18M6 6l12 12" />
+    </Svg>
+  );
+}
+
+export function TrashIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+      <path d="M19 6v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6" />
+    </Svg>
+  );
+}
+
+export function PencilIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+    </Svg>
+  );
+}
+
+export function EyeIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </Svg>
+  );
+}
+
+export function FileIcon({ className }: IconProps) {
+  return (
+    <Svg className={className}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+      <path d="M14 2v6h6" />
+    </Svg>
+  );
+}

@@ -91,22 +91,71 @@ describe("ensureProfile", () => {
 
     await expect(ensureProfile("user_123", "person@example.com")).resolves.toBe(false);
   });
+
+  /**
+   * Called before every authenticated write, so the second round-trip is one this process
+   * already knows the answer to. A Clerk id is permanent and the row is deleted only by
+   * `deleteAccount`, which forgets it.
+   */
+  it("writes the row once per process, not once per save", async () => {
+    await ensureProfile("user_123", "person@example.com");
+    await ensureProfile("user_123", "person@example.com");
+    await ensureProfile("user_123", "person@example.com");
+
+    expect(table("profiles").upsert).toHaveBeenCalledTimes(1);
+  });
+
+  /** The property the cache must not cost: a Clerk-side email change still propagates. */
+  it("goes back to the database when the address changes", async () => {
+    await ensureProfile("user_123", "person@example.com");
+    await ensureProfile("user_123", "moved@example.com");
+
+    expect(table("profiles").upsert).toHaveBeenCalledTimes(2);
+    expect(table("profiles").upsert).toHaveBeenLastCalledWith(
+      { id: "user_123", email: "moved@example.com" },
+      { onConflict: "id" },
+    );
+  });
+
+  /** Caching an attempt would turn one failed upsert into a process that never retries and
+   *  reports success to every later save. */
+  it("remembers only a write that succeeded", async () => {
+    table("profiles").upsert.mockResolvedValueOnce({ error: { code: "08006" } });
+
+    await expect(ensureProfile("user_123", "person@example.com")).resolves.toBe(false);
+    await expect(ensureProfile("user_123", "person@example.com")).resolves.toBe(true);
+
+    expect(table("profiles").upsert).toHaveBeenCalledTimes(2);
+  });
+
+  /** Otherwise the next write in this process skips the upsert and fails on the foreign
+   *  key, which is the bug the live suite exists to catch. */
+  it("forgets a user whose account was deleted", async () => {
+    await ensureProfile("user_123", "person@example.com");
+    expect(await deleteAccount("user_123")).toBe(true);
+
+    await ensureProfile("user_123", "person@example.com");
+
+    expect(table("profiles").upsert).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe("joinWaitlist", () => {
-  it("inserts the signup", async () => {
+  /** Against the unique index on (email, feature): a second "notify me" from the same person
+   *  is a success that writes no second row, not an error shown to a visitor. */
+  it("records the signup without duplicating it", async () => {
     await expect(joinWaitlist({ email: "person@example.com", feature: "network" })).resolves.toBe(
       true,
     );
 
-    expect(table("waitlist").insert).toHaveBeenCalledWith({
-      email: "person@example.com",
-      feature: "network",
-    });
+    expect(table("waitlist").upsert).toHaveBeenCalledWith(
+      { email: "person@example.com", feature: "network" },
+      { onConflict: "email,feature", ignoreDuplicates: true },
+    );
   });
 
   it("reports failure rather than throwing", async () => {
-    table("waitlist").insert.mockResolvedValue({ error: { code: "22001" } });
+    table("waitlist").upsert.mockResolvedValue({ error: { code: "22001" } });
 
     await expect(joinWaitlist({ email: "person@example.com", feature: "general" })).resolves.toBe(
       false,

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-export type WaitlistFeature = "network" | "outreach" | "general";
+import type { WaitlistFeature } from "@/lib/waitlist";
+
 export type WaitlistState = "idle" | "sending" | "done" | "error";
 
 /**

@@ -10,6 +10,8 @@ function application(overrides: Partial<ApplicationView> = {}): ApplicationView 
     company: "Atlas Systems",
     role: "Data engineer",
     location: null,
+    industry: null,
+    workModel: null,
     postingUrl: null,
     status: "applied",
     matchScore: null,

@@ -1,6 +1,11 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { NAV_ITEMS, TOOL_ITEMS, comingSoonHrefs } from "@/lib/nav";
+
+const WEB = join(__dirname, "..");
 
 describe("nav config", () => {
   /**
@@ -12,12 +17,14 @@ describe("nav config", () => {
     expect(NAV_ITEMS[0]).toMatchObject({ href: "/dashboard", comingSoon: false });
   });
 
-  it("puts the four working surfaces above the two that are not built", () => {
-    expect(NAV_ITEMS.slice(0, 4).map((item) => item.href)).toEqual([
+  it("orders the workspace from home outwards", () => {
+    expect(NAV_ITEMS.map((item) => item.href)).toEqual([
       "/dashboard",
       "/matcher",
       "/applications",
       "/resumes",
+      "/network",
+      "/outreach",
     ]);
   });
 
@@ -36,10 +43,27 @@ describe("nav config", () => {
     }
   });
 
-  it("marks Network and Outreach as coming soon", () => {
-    // SPEC §1.1: "Phases 2 and 3 ship as locked screens in Phase 1. They are advertised,
-    // not built."
-    expect(comingSoonHrefs()).toEqual(["/network", "/outreach"]);
+  /**
+   * Network and Outreach carried this flag long after they stopped being locked screens,
+   * so the sidebar offered a "soon" badge whose tooltip said "Not built yet" beside two
+   * features with a page, a route pair and a table each.
+   */
+  it("marks nothing as coming soon, because every screen in the nav is built", () => {
+    expect(comingSoonHrefs()).toEqual([]);
+  });
+
+  /**
+   * The check that keeps the line above honest.
+   *
+   * A badge is a claim about what exists, and the only way it drifts is by nobody looking.
+   * An unmarked item must have a page behind it; a marked one is a promise, so it must not.
+   */
+  it("backs every unmarked destination with a page, and no marked one", () => {
+    for (const item of [...NAV_ITEMS, ...TOOL_ITEMS]) {
+      const segment = item.href.split("#")[0];
+      const page = join(WEB, "app", "(app)", segment, "page.tsx");
+      expect(existsSync(page), `${item.href} -> ${page}`).toBe(!item.comingSoon);
+    }
   });
 
   it("gives every item an href, a label and an icon", () => {

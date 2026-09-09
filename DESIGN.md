@@ -177,7 +177,11 @@ a three-line wrap.
 
 These come from SPEC Appendix B and are not style preferences.
 
-1. **No percentage fit.** The score renders as "72 out of 100", never "72%".
+1. **No percentage fit.** The score renders as `72/100`, never `72%`. It read "72 out of
+   100" until the redesign compressed it to fit a table cell and a progress ring at the
+   density the approved boards ask for. The denominator staying visible is the part the rule
+   is about; `lib/applications.test.ts` asserts both the absence of `%` and the presence of
+   `/100`. `matchDisplay()` is the single place it is formatted.
 2. **Calibration is always stated.** An uncalibrated number is not comparable to a calibrated
    one, and the UI says which it is every time.
 3. **Never invent data to fill a layout.** The pre-redesign pages showed fabricated pipelines,
@@ -224,8 +228,9 @@ easier. The panel edge and the row text carry identification.
 Selected rows use the ring: `inset 0 0 0 1px` at ~55% cyan plus a 7% tint. No left bar.
 
 Two details in that table are content rules wearing visual clothes. The score cell renders
-`72 out of 100 · calibrated`, never a percentage, and the calibration state never drops off
-in a narrow column. An unscored row renders an em dash at `--muted` rather than a `0` at
+`72/100` with `calibrated` beneath it, never a percentage, and the calibration state never
+drops off in a narrow column: it moved to the adjacent Engine cell, which is where the thing
+that produced the number is named. An unscored row renders an em dash at `--muted` rather than a `0` at
 `--text`, so a column of "not measured yet" can never be mistaken for a column of readings.
 
 ### Selected state: ring, never a side bar

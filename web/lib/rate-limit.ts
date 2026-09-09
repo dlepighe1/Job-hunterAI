@@ -130,6 +130,11 @@ export const LIMITS = {
   freeUser: { limit: 40, windowMs: HOUR },
   freeGuest: { limit: 12, windowMs: HOUR },
   claudeUser: { limit: 8, windowMs: HOUR },
+  // Its own bucket, and a small one. The endpoint is free to this deployment but the
+  // allowance behind the key is shared by every user of it, and a free open-weights model
+  // queues rather than scaling, so a generous limit here would be a limit nobody actually
+  // gets. Draining it must also not touch what a user can do with the local engines.
+  gemmaUser: { limit: 15, windowMs: HOUR },
 } as const;
 
 export type RateLimitScope = keyof typeof LIMITS;
@@ -137,13 +142,15 @@ export type RateLimitScope = keyof typeof LIMITS;
 /**
  * Which bucket a request falls into.
  *
- * Guests never reach `claudeUser`: the Claude engine requires a session. An
+ * Guests never reach `claudeUser` or `gemmaUser`: both language-model engines require a
+ * session. An
  * unauthenticated endpoint that spends API credits is precisely the "surprise invoice"
  * SPEC §2.4 warns about, and no per-IP limit fixes it, because IPs are cheap and a card is not.
  * `/api/score` rejects that combination before it gets here.
  */
 export function scopeFor(isGuest: boolean, engine: string): RateLimitScope {
   if (engine === "claude") return "claudeUser";
+  if (engine === "gemma") return "gemmaUser";
   return isGuest ? "freeGuest" : "freeUser";
 }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { isPersistenceConfigured, joinWaitlist } from "@/lib/db";
+import { WAITLIST_FEATURES } from "@/lib/waitlist";
 
 const requestSchema = z.object({
   // Trim + lowercase BEFORE validating, so " Person@Example.COM " both passes email
@@ -12,7 +13,9 @@ const requestSchema = z.object({
     (value) => (typeof value === "string" ? value.trim().toLowerCase() : value),
     z.email().max(254),
   ),
-  feature: z.enum(["network", "outreach", "general"]),
+  // Derived from the shared vocabulary rather than repeated, so this gate and the CHECK
+  // constraint it guards cannot drift apart.
+  feature: z.enum(WAITLIST_FEATURES),
 });
 
 /**

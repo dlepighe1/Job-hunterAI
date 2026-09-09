@@ -13,15 +13,19 @@
 import Link from "next/link";
 import { useMemo } from "react";
 
+import { ResumeDocumentViewer } from "@/components/resumes/ResumeDocumentViewer";
+import { FileIcon } from "@/components/icons";
 import { Drawer } from "@/components/ui/Drawer";
-import { formatMatchScore } from "@/lib/applications";
+import { engineLabel, matchDisplay, statusLabel, statusTone } from "@/lib/applications";
+import { formatAppDate } from "@/lib/format";
 import type { ApplicationView } from "@/lib/use-applications";
-import type { ResumeView } from "@/lib/use-resumes";
+import type { ResumeDocument, ResumeView } from "@/lib/use-resumes";
 
 export function ResumeDrawer({
   resume,
   versions,
   applications,
+  fetchDocument,
   onClose,
   onUseInMatcher,
   onMakeDefault,
@@ -31,6 +35,7 @@ export function ResumeDrawer({
   resume: (ResumeView & { content: string }) | null;
   versions: ResumeView[];
   applications: ApplicationView[];
+  fetchDocument: (id: string) => Promise<ResumeDocument | null>;
   onClose: () => void;
   onUseInMatcher: (resume: ResumeView & { content: string }) => void;
   onMakeDefault: (id: string) => void;
@@ -66,6 +71,11 @@ export function ResumeDrawer({
       onClose={onClose}
       title={resume.label}
       subtitle={resume.isTailored ? "Tailored version" : "Master résumé"}
+      lead={
+        <span className="company-avatar" data-size="lg" aria-hidden="true">
+          <FileIcon />
+        </span>
+      }
       width="wide"
       footer={
         <>
@@ -103,13 +113,12 @@ export function ResumeDrawer({
             <dt>Target role</dt>
             <dd>{resume.targetRole || "Not set"}</dd>
           </div>
-          <div>
-            <dt>Source</dt>
-            <dd>{resume.filePath ? "Uploaded PDF" : "Pasted text"}</dd>
-          </div>
+          {/* "Source: pasted text" is deliberately gone. It described how the row was
+              created rather than anything about the résumé, and it read as a defect on every
+              record made before uploads stored the file. */}
           <div>
             <dt>Updated</dt>
-            <dd>{resume.updatedAt.slice(0, 10)}</dd>
+            <dd>{formatAppDate(resume.updatedAt) ?? "Not recorded"}</dd>
           </div>
           <div>
             <dt>Used in</dt>
@@ -122,44 +131,78 @@ export function ResumeDrawer({
         {resume.note && <p className="resume-note">{resume.note}</p>}
       </section>
 
-      {medianMatch !== null && (
-        <section className="drawer-section">
-          <h3>Match history</h3>
-          <div className="pf-panel">
-            <div className="pf-stat">
-              <small>MEDIAN BASELINE MATCH</small>
-              <strong>{formatMatchScore(medianMatch, true).split(" ")[0]}</strong>
-              <p>
-                Out of 100, the middle value across {usedIn.length} scored{" "}
-                {usedIn.length === 1 ? "application" : "applications"} that used this résumé.
-                A median rather than an average, because one unusual posting should not
+      <section className="drawer-section">
+        <h3>Match history</h3>
+
+        {usedIn.length === 0 ? (
+          /* The brief's wording, and it applies to tailored versions exactly as it does to
+             masters: a document nothing has been scored against has no history, and inventing
+             a number to fill the panel is the thing this product exists not to do. */
+          <p className="report__note">
+            N/A — this résumé has not been matched with anything yet.
+          </p>
+        ) : (
+          <>
+            <div className="pf-panel">
+              <table className="pf-table match-history">
+                <caption className="sr-only">
+                  Applications this résumé was sent to, with the score each one recorded.
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Company</th>
+                    <th scope="col">Role</th>
+                    <th scope="col" data-numeric="true">Match</th>
+                    <th scope="col">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usedIn.map((application) => {
+                    const match = matchDisplay(
+                      application.matchScore,
+                      application.matchCalibrated,
+                    );
+                    return (
+                      <tr key={application.id}>
+                        <td>
+                          <Link href={`/applications?open=${application.id}`}>
+                            {application.company}
+                          </Link>
+                        </td>
+                        <td>{application.role}</td>
+                        <td data-numeric="true">
+                          <span className="score-cell" data-scored={match.scored}>
+                            {match.scored ? match.label : "N/A"}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className="status-chip"
+                            data-tone={statusTone(application.status)}
+                          >
+                            {statusLabel(application.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {medianMatch !== null && (
+              <p className="report__note">
+                Median {matchDisplay(medianMatch, true).label} across the scored applications
+                that used this résumé, measured by{" "}
+                {engineLabel(usedIn.find((a) => a.matchEngine)?.matchEngine ?? null) ??
+                  "the engine recorded on each row"}
+                . A median rather than an average, because one unusual posting should not
                 redefine how a document generally performs.
               </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {usedIn.length > 0 && (
-        <section className="drawer-section">
-          <h3>Applications</h3>
-          <ul className="target-list">
-            {usedIn.map((application) => (
-              <li key={application.id}>
-                <Link href={`/applications?open=${application.id}`}>
-                  <span className="target-list__main">
-                    <b>{application.role}</b>
-                    <small>{application.company}</small>
-                  </span>
-                  <span className="score-cell" data-scored={application.matchScore !== null}>
-                    {formatMatchScore(application.matchScore, application.matchCalibrated)}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+            )}
+          </>
+        )}
+      </section>
 
       {versions.length > 0 && (
         <section className="drawer-section">
@@ -170,7 +213,7 @@ export function ResumeDrawer({
                 <div className="target-list__row">
                   <span className="target-list__main">
                     <b>{version.label}</b>
-                    <small>Created {version.createdAt.slice(0, 10)}</small>
+                    <small>Created {formatAppDate(version.createdAt) ?? "recently"}</small>
                   </span>
                 </div>
               </li>
@@ -185,7 +228,16 @@ export function ResumeDrawer({
 
       <section className="drawer-section">
         <h3>Preview</h3>
-        <pre className="draft__body resume-preview">{resume.content}</pre>
+        {/* The actual uploaded document, through a signed URL. Not the extracted text in a
+            page-shaped box, which would look like a document and be a claim about what is
+            stored that is not true. */}
+        <ResumeDocumentViewer
+          key={resume.id}
+          resumeId={resume.id}
+          label={resume.label}
+          hasFile={resume.filePath !== null}
+          fetchDocument={fetchDocument}
+        />
       </section>
     </Drawer>
   );

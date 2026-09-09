@@ -6,11 +6,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { MAX_RESUME_CHARS } from "@/lib/extraction/files";
 import { MIN_WORDS, wordCount } from "@/lib/types";
 
-/** Matches the cap `/api/score` enforces. A resume that cannot be scored is not worth
- *  storing, and the two limits disagreeing would let one in that the other rejects. */
-export const MAX_RESUME_CHARS = 15_000;
+/** Re-exported so existing importers keep working. It is DEFINED in the extraction layer,
+ *  beside the upload limits, since that is what produces the text it bounds. */
+export { MAX_RESUME_CHARS };
 
 export const resumeSchema = z
   .object({

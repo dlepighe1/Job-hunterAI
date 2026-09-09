@@ -22,8 +22,8 @@
  * Supabase configured at all, which is the situation it exists to cover.
  */
 
-import type { ApplicationStatus } from "@/lib/applications";
-import type { OutreachChannel } from "@/lib/outreach";
+import type { ApplicationStatus, WorkModel } from "@/lib/applications";
+import type { OutreachChannel, OutreachStatus } from "@/lib/outreach";
 import type { EngineId } from "@/lib/types";
 import { DEV_USER_ID } from "@/lib/dev-mode";
 
@@ -66,6 +66,8 @@ export interface FixtureApplication {
   company: string;
   role: string;
   location: string | null;
+  industry: string | null;
+  workModel: WorkModel | null;
   postingUrl: string | null;
   postingText: string | null;
   status: ApplicationStatus;
@@ -81,7 +83,8 @@ export interface FixtureApplication {
   lastActivityAt: string;
 }
 
-const SAMPLE_POSTING = `We are looking for a Senior Backend Engineer to join our platform team.
+/** Exported so the engine harnesses can score a real-shaped pair that belongs to nobody. */
+export const SAMPLE_POSTING = `We are looking for a Senior Backend Engineer to join our platform team.
 
 Requirements:
 - 5+ years building production services in Python or Go
@@ -104,6 +107,8 @@ function seedApplications(): FixtureApplication[] {
       company: "Atlas Systems",
       role: "Software Engineer",
       location: "Remote",
+      industry: "Infrastructure / Platform",
+      workModel: "remote",
       status: "interview",
       matchScore: 0.85,
       matchEngine: "finetuned",
@@ -116,7 +121,9 @@ function seedApplications(): FixtureApplication[] {
     {
       company: "Meridian Data",
       role: "Data Scientist",
-      location: "Hybrid · Chicago",
+      location: "Chicago, IL",
+      industry: "Analytics / Data",
+      workModel: "hybrid",
       status: "screening",
       matchScore: 0.78,
       matchEngine: "finetuned",
@@ -235,6 +242,8 @@ function seedApplications(): FixtureApplication[] {
     id: id("a", index + 1),
     userId: DEV_USER_ID,
     location: null,
+    industry: null,
+    workModel: null,
     postingUrl: null,
     postingText: SAMPLE_POSTING,
     matchScore: null,
@@ -267,7 +276,9 @@ export interface FixtureResume {
   updatedAt: string;
 }
 
-const RESUME_TEXT = `ALEX MORGAN
+/** A person who does not exist, with a career that does not exist. The evaluation harness in
+ *  `scripts/gemma-live.test.ts` scores this rather than anybody's real document. */
+export const RESUME_TEXT = `ALEX MORGAN
 Senior Software Engineer · Remote
 
 SUMMARY
@@ -565,7 +576,7 @@ export interface FixtureOutreach {
   channel: OutreachChannel;
   subject: string | null;
   body: string;
-  status: "draft" | "sent" | "replied" | "no_reply";
+  status: OutreachStatus;
   sentAt: string | null;
   repliedAt: string | null;
   createdAt: string;
@@ -651,18 +662,76 @@ function seedJobBoards(): FixtureJobBoard[] {
  * changing a status, starring a row and adding an application all behave. It resets on
  * server restart, which is the right lifetime for a demo.
  */
-export const devStore = {
-  applications: seedApplications(),
-  resumes: seedResumes(),
-  analyses: seedAnalyses(),
-  contacts: seedContacts(),
-  outreach: seedOutreach(),
-  jobBoards: seedJobBoards(),
-  events: [] as Array<{ id: string; applicationId: string; kind: string; payload: Record<string, unknown>; createdAt: string }>,
+/**
+ * The store, shared across every route bundle in the process.
+ *
+ * Without the `globalThis` cache each route file gets its OWN module instance of this file
+ * and therefore its own fixture arrays, so a write through one route is invisible to every
+ * other. That produced a genuinely confusing class of bug: `PATCH /api/resumes/[id]` returned
+ * 200 and the list from `GET /api/resumes` still showed the old value, because the two routes
+ * were editing different objects. Uploading a résumé and then previewing it failed the same
+ * way, since the bytes were held by the route that received them and looked for by a route
+ * that had never seen them.
+ *
+ * This is the standard Next dev-server singleton pattern, and it is the same reason a
+ * database client is cached this way. Dev mode only: `isDevMode()` is false in every
+ * production build, so nothing here is ever constructed there.
+ */
+const GLOBAL_KEY = Symbol.for("resumeai.devStore");
+
+type DevStore = {
+  applications: FixtureApplication[];
+  resumes: FixtureResume[];
+  analyses: ReturnType<typeof seedAnalyses>;
+  contacts: ReturnType<typeof seedContacts>;
+  outreach: ReturnType<typeof seedOutreach>;
+  jobBoards: ReturnType<typeof seedJobBoards>;
+  events: Array<{
+    id: string;
+    applicationId: string;
+    kind: string;
+    payload: Record<string, unknown>;
+    createdAt: string;
+  }>;
+  resumeFiles: Map<string, { bytes: Uint8Array; contentType: string; extension: string }>;
 };
 
-/** Seed a couple of timeline entries so the application drawer is not empty. */
-devStore.events = [
+const globalCache = globalThis as unknown as { [GLOBAL_KEY]?: DevStore };
+
+function createDevStore(): DevStore {
+  return {
+    applications: seedApplications(),
+    resumes: seedResumes(),
+    analyses: seedAnalyses(),
+    contacts: seedContacts(),
+    outreach: seedOutreach(),
+    jobBoards: seedJobBoards(),
+    events: [] as Array<{ id: string; applicationId: string; kind: string; payload: Record<string, unknown>; createdAt: string }>,
+    /**
+     * Uploaded résumé files, held in memory for the life of the dev server.
+     *
+     * Dev mode has no Storage bucket, and the upload path used to simply drop the bytes, which
+     * meant the document preview showed its "no original file stored" state for every résumé
+     * anyone uploaded locally. The feature was unreachable in the one mode that exists to make
+     * the product examinable without infrastructure.
+     *
+     * Keyed by résumé id. Bounded by the upload cap and by the fact that it dies with the
+     * process, which is the right lifetime for a demo.
+     */
+    resumeFiles: new Map<string, { bytes: Uint8Array; contentType: string; extension: string }>(),
+  };
+}
+
+export const devStore: DevStore = (globalCache[GLOBAL_KEY] ??= createDevStore());
+
+/**
+ * Seed a couple of timeline entries so the application drawer is not empty.
+ *
+ * Guarded, because this file is evaluated once per route bundle while the store behind it is
+ * now shared. Without the check, every newly-loaded route would reset the events array and
+ * discard anything written since the server started.
+ */
+if (devStore.events.length === 0) devStore.events = [
   {
     id: id("e", 1),
     applicationId: id("a", 1),

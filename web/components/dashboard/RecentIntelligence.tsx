@@ -16,6 +16,7 @@
 import Link from "next/link";
 
 import { statusLabel } from "@/lib/applications";
+import { formatAppDate } from "@/lib/format";
 import { useNow } from "@/lib/use-now";
 import type { ApplicationView } from "@/lib/use-applications";
 
@@ -41,7 +42,7 @@ interface Event {
 function relative(iso: string, now: number): string {
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) return "";
-  if (now === 0) return iso.slice(0, 10);
+  if (now === 0) return formatAppDate(iso) ?? "";
   const minutes = Math.round((now - then) / 60000);
 
   if (minutes < 1) return "just now";
@@ -51,7 +52,9 @@ function relative(iso: string, now: number): string {
   const days = Math.round(hours / 24);
   if (days === 1) return "yesterday";
   if (days < 7) return `${days} days ago`;
-  return iso.slice(0, 10);
+  // Past a week the absolute date is easier to place than "23 days ago", and it uses the
+  // same MMM d, yyyy the rest of the redesigned surfaces do rather than an ISO slice.
+  return formatAppDate(iso) ?? "";
 }
 
 export function RecentIntelligence({

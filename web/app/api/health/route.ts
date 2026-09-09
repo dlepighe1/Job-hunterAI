@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { isPersistenceConfigured } from "@/lib/db";
-import { hasAnthropicKey } from "@/lib/env";
+import { hasAnthropicKey, hasOpenRouterKey } from "@/lib/env";
 import { checkScoringService } from "@/lib/providers/health";
 
 /** Never cached: a health check that answers from last week's cache is worse than none. */
@@ -43,6 +43,7 @@ export async function GET() {
       base: scoring.reachable,
       keyword: true, // pure string matching, no service and no key
       claude: hasAnthropicKey(),
+      gemma: hasOpenRouterKey(),
       persistence: isPersistenceConfigured(),
     },
   };

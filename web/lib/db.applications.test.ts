@@ -221,6 +221,8 @@ describe("listApplications", () => {
       company: "Atlas Systems",
       role: "Data engineer",
       location: "Remote",
+      industry: null,
+      workModel: null,
       postingUrl: null,
       status: "saved",
       matchScore: 0.61,

@@ -1,6 +1,7 @@
 "use client";
 
-import { useWaitlist, type WaitlistFeature } from "@/lib/use-waitlist";
+import { useWaitlist } from "@/lib/use-waitlist";
+import type { WaitlistFeature } from "@/lib/waitlist";
 
 /**
  * A locked screen for a feature that has not been built.

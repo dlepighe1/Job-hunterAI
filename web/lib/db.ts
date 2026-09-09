@@ -20,11 +20,12 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-import { type ApplicationStatus } from "@/lib/applications";
+import { type ApplicationStatus, type WorkModel } from "@/lib/applications";
 import { env } from "@/lib/env";
 import { devStore, nextFixtureId } from "@/lib/dev-fixtures";
 import { isDevMode } from "@/lib/dev-mode";
 import type { OutreachChannel, OutreachStatus } from "@/lib/outreach";
+import type { WaitlistFeature } from "@/lib/waitlist";
 import type { EngineId, ScoreResult } from "@/lib/types";
 
 /** The Storage bucket holding uploaded resume files. Objects are keyed `{userId}/{name}`,
@@ -32,6 +33,45 @@ import type { EngineId, ScoreResult } from "@/lib/types";
 export const RESUME_BUCKET = "resumes";
 
 let client: SupabaseClient | null = null;
+
+/**
+ * The email each Clerk user id was last written with, for ids this process has upserted.
+ *
+ * Process-local and deliberately not shared: it is a way to skip a round-trip that is known
+ * to be redundant, not a source of truth about who exists. A cold start, another instance,
+ * or a restart simply does the upsert again, which is what `onConflict` is for.
+ */
+const profiled = new Map<string, string>();
+
+/** A ceiling so a long-lived instance cannot grow this without bound. Reaching it costs one
+ *  extra upsert per user afterwards, which is the state this started in. */
+const PROFILE_CACHE_LIMIT = 10_000;
+
+/**
+ * The most rows any list query returns.
+ *
+ * Every list below is a whole table scoped to one user, and none of them had a bound. That
+ * is fine for a new account and grows without a ceiling for an old one: the dashboard alone
+ * fans out four of these and serialises all of it into a single JSON response, so an
+ * account that has been used for two years pays for two years of rows on every page load.
+ *
+ * A cap is not pagination and does not pretend to be. It is the guard that keeps one
+ * request bounded until the screens can ask for a page at a time, and it is deliberately
+ * high enough that reaching it means an account well past anything the UI renders well.
+ * Hitting it is logged rather than swallowed, because rows the user owns and cannot see are
+ * exactly the kind of quiet wrongness that should leave a trace.
+ */
+export const LIST_LIMIT = 1_000;
+
+/** Log a list that came back full, since the rows beyond it are invisible to the caller. */
+function capped<T>(rows: T[], query: string, scope: string): T[] {
+  if (rows.length >= LIST_LIMIT) {
+    console.warn(`[db] ${query} hit the ${LIST_LIMIT}-row cap; older rows are not in this response`, {
+      scope,
+    });
+  }
+  return rows;
+}
 
 /**
  * The service-role client, created once.
@@ -64,9 +104,11 @@ export function isPersistenceConfigured(): boolean {
   return env.supabase.isConfigured;
 }
 
-/** Reset the memoized client. Tests only. Production has exactly one process-wide client. */
+/** Reset the memoized client and the profile cache. Tests only. Production has exactly one
+ *  process-wide client. */
 export function __resetClientForTests(): void {
   client = null;
+  profiled.clear();
 }
 
 // ---------------------------------------------------------------------------
@@ -90,9 +132,22 @@ export interface Profile {
  *
  * `onConflict: "id"` makes it idempotent, and `email` is refreshed on every call so a
  * Clerk-side email change propagates without a separate sync path.
+ *
+ * Called before every authenticated write, at six route handlers, which made every save two
+ * sequential round-trips where one would do. `profiled` collapses that: a Clerk id is
+ * permanent and a profile row is never deleted except by `deleteAccount`, so once this
+ * process has written the row it does not need to write it again.
+ *
+ * The address is held alongside the id rather than the id alone, which is what preserves
+ * the propagation above: a changed email does not match what was written and goes to the
+ * database like a first call. What this cannot see is another process, or `deleteAccount` —
+ * the first is harmless, since it re-upserts, and the second forgets the id where it happens.
  */
 export async function ensureProfile(userId: string, email: string): Promise<boolean> {
   if (isDevMode()) return true;
+
+  if (profiled.get(userId) === email) return true;
+
   const { error } = await getClient()
     .from("profiles")
     .upsert({ id: userId, email }, { onConflict: "id" });
@@ -101,6 +156,11 @@ export async function ensureProfile(userId: string, email: string): Promise<bool
     console.error("[db] ensureProfile failed", { userId, code: error.code });
     return false;
   }
+
+  // Only a confirmed write is remembered. Caching the attempt would turn one failed upsert
+  // into a process that never tries again and reports success to every later save.
+  if (profiled.size >= PROFILE_CACHE_LIMIT) profiled.clear();
+  profiled.set(userId, email);
   return true;
 }
 
@@ -163,6 +223,12 @@ export async function deleteAccount(userId: string): Promise<boolean> {
     console.error("[db] deleteAccount failed", { userId, code: error.code });
     return false;
   }
+
+  // The row this user's cache entry vouches for no longer exists. Left behind, the next
+  // write in this process would skip `ensureProfile` and fail on the foreign key instead —
+  // which is the precise bug the whole live suite was written to catch.
+  profiled.delete(userId);
+
   return true;
 }
 
@@ -229,7 +295,7 @@ export interface ResumeInput {
 }
 
 export type ResumePatch = Partial<
-  Pick<ResumeInput, "label" | "content" | "targetRole" | "note">
+  Pick<ResumeInput, "label" | "content" | "targetRole" | "note" | "filePath">
 >;
 
 /** The list view renders labels and dates. Selecting `content` here would pull the full
@@ -266,14 +332,15 @@ export async function listResumes(userId: string): Promise<Resume[]> {
     .from("resumes")
     .select(RESUME_LIST_COLUMNS)
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(LIST_LIMIT);
 
   if (error) {
     console.error("[db] listResumes failed", { userId, code: error.code });
     return [];
   }
 
-  return ((data as Record<string, unknown>[] | null) ?? []).map(toResume);
+  return capped((data as Record<string, unknown>[] | null) ?? [], "listResumes", userId).map(toResume);
 }
 
 /** One resume with its full text, or null when it does not exist or is not the caller's. */
@@ -389,6 +456,9 @@ export async function updateResume(
   if (patch.content !== undefined) update.content = patch.content;
   if (patch.targetRole !== undefined) update.target_role = patch.targetRole;
   if (patch.note !== undefined) update.note = patch.note;
+  // Written once, right after the object lands in Storage. The row is created first so the
+  // resume id can key the object, which means the path is known only after the insert.
+  if (patch.filePath !== undefined) update.file_path = patch.filePath;
 
   const { data, error } = await getClient()
     .from("resumes")
@@ -492,6 +562,142 @@ export async function deleteResume(userId: string, id: string): Promise<boolean>
   return true;
 }
 
+/**
+ * Store the ORIGINAL uploaded file behind a resume.
+ *
+ * The extracted text is what the matcher scores; this is what a person looks at in the
+ * preview. Before this existed the bytes were parsed and discarded, `resumes.file_path` was
+ * never written by anything, and the preview had only text to show.
+ *
+ * Keyed `{userId}/{resumeId}.{ext}` so account deletion stays a prefix listing rather than a
+ * join, and so one resume can only ever own one file: re-uploading `upsert`s over the old
+ * object instead of accumulating orphans nothing points at.
+ *
+ * Returns the object key to persist on the row, or null when the upload failed. A failed
+ * upload is NOT a failed save: the caller keeps the text and leaves `file_path` null, since
+ * a resume that scores but cannot be previewed is worth more than no resume.
+ */
+export async function uploadResumeFile(
+  userId: string,
+  resumeId: string,
+  bytes: Uint8Array,
+  contentType: string,
+  extension: string,
+): Promise<string | null> {
+  if (isDevMode()) {
+    /**
+     * Held in memory rather than dropped.
+     *
+     * This used to return null, on the reasoning that dev mode has no bucket. The
+     * consequence was that every résumé uploaded locally reported no stored file and the
+     * document preview showed its empty state forever, so the one mode built for examining
+     * the product without infrastructure was the one mode where this feature did not work.
+     *
+     * The returned path is deliberately marked, so a value from here can never be mistaken
+     * for a real Storage key if it somehow reaches one.
+     */
+    devStore.resumeFiles.set(resumeId, { bytes, contentType, extension });
+    return `dev-memory/${resumeId}.${extension}`;
+  }
+  if (!isPersistenceConfigured()) return null;
+
+  const path = `${userId}/${resumeId}.${extension}`;
+
+  const { error } = await getClient()
+    .storage.from(RESUME_BUCKET)
+    .upload(path, bytes as Uint8Array<ArrayBuffer>, { contentType, upsert: true });
+
+  if (error) {
+    console.error("[db] uploadResumeFile failed", { userId, message: error.message });
+    return null;
+  }
+
+  return path;
+}
+
+/**
+ * The stored file's bytes, from wherever it lives.
+ *
+ * Needed because DOCX and TXT cannot be previewed by pointing the browser at a URL: the
+ * first no browser renders, and the second is nicer read through the app's own typography
+ * than as a bare text/plain page. Both have to be converted server-side, which means reading
+ * the bytes back rather than just signing a link to them.
+ *
+ * PDF deliberately does NOT come through here. It is served by URL so the browser's own
+ * viewer handles it and the bytes never pass through this server twice.
+ */
+export async function getResumeFileBytes(
+  userId: string,
+  resumeId: string,
+): Promise<{ bytes: Uint8Array; extension: string } | null> {
+  const resume = await getResume(userId, resumeId);
+  if (!resume?.filePath) return null;
+
+  if (isDevMode()) {
+    const held = devStore.resumeFiles.get(resumeId);
+    return held ? { bytes: held.bytes, extension: held.extension } : null;
+  }
+
+  if (!isPersistenceConfigured()) return null;
+
+  const { data, error } = await getClient().storage.from(RESUME_BUCKET).download(resume.filePath);
+  if (error || !data) {
+    console.error("[db] getResumeFileBytes failed", { userId, message: error?.message });
+    return null;
+  }
+
+  return {
+    bytes: new Uint8Array(await data.arrayBuffer()),
+    extension: resume.filePath.split(".").pop() ?? "",
+  };
+}
+
+/** The in-memory file behind a dev-mode résumé, or null. Dev mode only; returns nothing in
+ *  every other configuration. */
+export function getDevResumeFile(
+  resumeId: string,
+): { bytes: Uint8Array; contentType: string; extension: string } | null {
+  if (!isDevMode()) return null;
+  return devStore.resumeFiles.get(resumeId) ?? null;
+}
+
+/**
+ * A short-lived signed URL for a stored resume file.
+ *
+ * The bucket is private, so this is the only way to read an object. Ownership is checked by
+ * reading the row FIRST rather than by trusting the path: a caller who could pass an
+ * arbitrary `filePath` could mint a URL for somebody else's resume, and the object key
+ * contains their user id, which makes it guessable rather than secret.
+ *
+ * Ten minutes is long enough to open and read a document, short enough that a URL copied out
+ * of devtools and pasted somewhere is dead before it travels.
+ */
+export async function getResumeFileUrl(userId: string, resumeId: string): Promise<string | null> {
+  if (!isPersistenceConfigured()) return null;
+
+  const resume = await getResume(userId, resumeId);
+  if (!resume?.filePath) return null;
+
+  // Dev mode serves its own bytes back through the same route, since there is no bucket to
+  // sign against. Ownership was already established by the `getResume` above.
+  if (isDevMode()) {
+    return devStore.resumeFiles.has(resumeId)
+      ? `/api/resumes/${resumeId}/file?raw=1`
+      : null;
+  }
+
+  const { data, error } = await getClient()
+    .storage.from(RESUME_BUCKET)
+    .createSignedUrl(resume.filePath, 600);
+
+  if (error) {
+    console.error("[db] getResumeFileUrl failed", { userId, message: error.message });
+    return null;
+  }
+
+  return data?.signedUrl ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Applications
 // ---------------------------------------------------------------------------
@@ -514,6 +720,10 @@ export interface Application {
   company: string;
   role: string;
   location: string | null;
+  /** Free text, entered by the user. Never inferred from the company name. */
+  industry: string | null;
+  /** Constrained so it can drive a filter. Null when the user did not say. */
+  workModel: WorkModel | null;
   postingUrl: string | null;
   status: ApplicationStatus;
   /** 0 to 1. Null until an analysis has been saved against this application. */
@@ -541,6 +751,8 @@ export interface ApplicationInput {
   company: string;
   role: string;
   location?: string | null;
+  industry?: string | null;
+  workModel?: WorkModel | null;
   postingUrl?: string | null;
   /** Kept so a score can be recomputed later without asking for the posting again. */
   postingText?: string | null;
@@ -558,7 +770,7 @@ export type ApplicationPatch = Partial<Omit<ApplicationInput, "postingText">>;
 /** The columns every read selects. `posting_text` is excluded because it is the largest column
  *  on the row and the list view has no use for it. */
 const APPLICATION_COLUMNS =
-  "id, user_id, company, role_title, location, posting_url, status, match_score, match_engine, match_calibrated, applied_at, responded_at, priority, resume_id, notes, created_at, updated_at";
+  "id, user_id, company, role_title, location, industry, work_model, posting_url, status, match_score, match_engine, match_calibrated, applied_at, responded_at, priority, resume_id, notes, created_at, updated_at";
 
 /**
  * PostgREST may hand back a `numeric` as a string to preserve precision beyond what a
@@ -578,6 +790,8 @@ function toApplication(row: Record<string, unknown>): Application {
     company: String(row.company),
     role: String(row.role_title),
     location: (row.location as string | null) ?? null,
+    industry: (row.industry as string | null) ?? null,
+    workModel: (row.work_model as WorkModel | null) ?? null,
     postingUrl: (row.posting_url as string | null) ?? null,
     status: row.status as ApplicationStatus,
     matchScore: toNumber(row.match_score),
@@ -609,14 +823,17 @@ export async function listApplications(userId: string): Promise<Application[]> {
     .from("applications")
     .select(APPLICATION_COLUMNS)
     .eq("user_id", userId)
-    .order("updated_at", { ascending: false });
+    .order("updated_at", { ascending: false })
+    .limit(LIST_LIMIT);
 
   if (error) {
     console.error("[db] listApplications failed", { userId, code: error.code });
     return [];
   }
 
-  return ((data as Record<string, unknown>[] | null) ?? []).map(toApplication);
+  return capped((data as Record<string, unknown>[] | null) ?? [], "listApplications", userId).map(
+    toApplication,
+  );
 }
 
 /**
@@ -704,6 +921,8 @@ export async function createApplication(
       company: input.company,
       role: input.role,
       location: input.location ?? null,
+      industry: input.industry ?? null,
+      workModel: input.workModel ?? null,
       postingUrl: input.postingUrl ?? null,
       postingText: input.postingText ?? null,
       status: input.status ?? ("saved" as ApplicationStatus),
@@ -731,6 +950,8 @@ export async function createApplication(
       company: input.company,
       role_title: input.role,
       location: input.location ?? null,
+      industry: input.industry ?? null,
+      work_model: input.workModel ?? null,
       posting_url: input.postingUrl ?? null,
       posting_text: input.postingText ?? null,
       status: input.status ?? "saved",
@@ -779,6 +1000,8 @@ export async function updateApplication(
   if (patch.company !== undefined) update.company = patch.company;
   if (patch.role !== undefined) update.role_title = patch.role;
   if (patch.location !== undefined) update.location = patch.location;
+  if (patch.industry !== undefined) update.industry = patch.industry;
+  if (patch.workModel !== undefined) update.work_model = patch.workModel;
   if (patch.postingUrl !== undefined) update.posting_url = patch.postingUrl;
   if (patch.status !== undefined) update.status = patch.status;
   if (patch.appliedAt !== undefined) update.applied_at = patch.appliedAt;
@@ -1050,19 +1273,22 @@ export async function listEvents(
     .from("application_events")
     .select("id, kind, payload, created_at")
     .eq("application_id", applicationId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(LIST_LIMIT);
 
   if (error) {
     console.error("[db] listEvents failed", { userId, code: error.code });
     return [];
   }
 
-  return ((data as Record<string, unknown>[] | null) ?? []).map((row) => ({
-    id: String(row.id),
-    kind: String(row.kind),
-    payload: (row.payload as Record<string, unknown>) ?? {},
-    createdAt: String(row.created_at),
-  }));
+  return capped((data as Record<string, unknown>[] | null) ?? [], "listEvents", applicationId).map(
+    (row) => ({
+      id: String(row.id),
+      kind: String(row.kind),
+      payload: (row.payload as Record<string, unknown>) ?? {},
+      createdAt: String(row.created_at),
+    }),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1136,14 +1362,15 @@ export async function listContacts(userId: string): Promise<Contact[]> {
     .from("contacts")
     .select(CONTACT_COLUMNS)
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(LIST_LIMIT);
 
   if (error) {
     console.error("[db] listContacts failed", { userId, code: error.code });
     return [];
   }
 
-  return ((data as Record<string, unknown>[] | null) ?? []).map(toContact);
+  return capped((data as Record<string, unknown>[] | null) ?? [], "listContacts", userId).map(toContact);
 }
 
 export async function createContact(
@@ -1316,14 +1543,15 @@ export async function listOutreach(userId: string): Promise<OutreachMessage[]> {
     .from("outreach")
     .select(OUTREACH_COLUMNS)
     .eq("user_id", userId)
-    .order("updated_at", { ascending: false });
+    .order("updated_at", { ascending: false })
+    .limit(LIST_LIMIT);
 
   if (error) {
     console.error("[db] listOutreach failed", { userId, code: error.code });
     return [];
   }
 
-  return ((data as Record<string, unknown>[] | null) ?? []).map(toOutreach);
+  return capped((data as Record<string, unknown>[] | null) ?? [], "listOutreach", userId).map(toOutreach);
 }
 
 export async function createOutreach(
@@ -1565,7 +1793,7 @@ export async function listJobBoardsSeeded(userId: string): Promise<JobBoard[]> {
 
 export interface WaitlistSignup {
   email: string;
-  feature: "network" | "outreach" | "general";
+  feature: WaitlistFeature;
 }
 
 /**
@@ -1576,7 +1804,13 @@ export interface WaitlistSignup {
  * a feature name and nothing else.
  */
 export async function joinWaitlist(signup: WaitlistSignup): Promise<boolean> {
-  const { error } = await getClient().from("waitlist").insert(signup);
+  // Upsert rather than insert, against the unique index on (email, feature). Clicking
+  // "notify me" twice is a thing people do, and it is not an error to report back to them:
+  // ignoring the conflict makes the second click a success that writes no second row, so the
+  // count of people waiting stays a count of people.
+  const { error } = await getClient()
+    .from("waitlist")
+    .upsert(signup, { onConflict: "email,feature", ignoreDuplicates: true });
 
   if (error) {
     // The email is the whole payload here, so it cannot go in the log line.

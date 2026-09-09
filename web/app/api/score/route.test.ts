@@ -9,6 +9,7 @@ const analyzeWithFineTuned = vi.fn();
 const scoreWithBaseModel = vi.fn();
 const analyzeWithClaude = vi.fn();
 const analyzeWithKeywords = vi.fn();
+const analyzeWithGemma = vi.fn();
 
 vi.mock("@/lib/providers/finetuned", () => ({
   analyzeWithFineTuned: (...args: unknown[]) => analyzeWithFineTuned(...args),
@@ -21,6 +22,9 @@ vi.mock("@/lib/providers/claude", () => ({
 }));
 vi.mock("@/lib/providers/keyword", () => ({
   analyzeWithKeywords: (...args: unknown[]) => analyzeWithKeywords(...args),
+}));
+vi.mock("@/lib/providers/gemma", () => ({
+  analyzeWithGemma: (...args: unknown[]) => analyzeWithGemma(...args),
 }));
 
 const isPersistenceConfigured = vi.fn();
@@ -82,11 +86,17 @@ beforeEach(() => {
   scoreWithBaseModel.mockResolvedValue(result({ engine: "base", score: null, calibrated: false }));
   analyzeWithClaude.mockResolvedValue(result({ engine: "claude", calibrated: false }));
   analyzeWithKeywords.mockReturnValue(result({ engine: "keyword", score: null, calibrated: false }));
+  analyzeWithGemma.mockResolvedValue(result({ engine: "gemma", calibrated: false }));
+  // Absent from vitest.config.ts on purpose, so an engine that needs a key has to say so.
+  vi.stubEnv("OPENROUTER_API_KEY", "openrouter-test-key");
   vi.spyOn(console, "info").mockImplementation(() => {});
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
 
 describe("one engine per request", () => {
   it("runs only the engine that was asked for, and never fans out", async () => {
@@ -119,6 +129,9 @@ describe("one engine per request", () => {
 
     await score({ ...VALID, engine: "claude" });
     expect(analyzeWithClaude).toHaveBeenCalledTimes(1);
+
+    await score({ ...VALID, engine: "gemma" });
+    expect(analyzeWithGemma).toHaveBeenCalledTimes(1);
   });
 
   it("returns the engine result unchanged", async () => {
@@ -338,6 +351,34 @@ describe("guest access", () => {
 
     expect(response.status).toBe(401);
     expect(analyzeWithClaude).not.toHaveBeenCalled();
+  });
+
+  /** Free to this deployment, not free to the shared daily allowance behind the key — which
+   *  one anonymous caller could drain for everybody. */
+  it("refuses the open-weights engine to a guest too", async () => {
+    getUserIdOrNull.mockResolvedValue(null);
+
+    const response = await score({ ...VALID, engine: "gemma" });
+
+    expect(response.status).toBe(401);
+    expect(analyzeWithGemma).not.toHaveBeenCalled();
+  });
+
+  it("says which key is missing rather than failing at the provider", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "");
+
+    const response = await score({ ...VALID, engine: "gemma" });
+
+    expect(response.status).toBe(501);
+    await expect(response.json()).resolves.toMatchObject({ error: "NOT_CONFIGURED" });
+    expect(analyzeWithGemma).not.toHaveBeenCalled();
+  });
+
+  it("drains the open-weights bucket without touching the free one", async () => {
+    for (let i = 0; i < 16; i++) await score({ ...VALID, engine: "gemma" });
+    expect((await score({ ...VALID, engine: "gemma" })).status).toBe(429);
+
+    expect((await score(VALID)).status).toBe(200);
   });
 
   it("refuses a guest it cannot bucket, rather than waving them through", async () => {

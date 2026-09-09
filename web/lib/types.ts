@@ -5,15 +5,26 @@ import type { AtsAnalysis } from "@/lib/ats";
 import { BANDS, bandFor } from "@/lib/benchmark";
 
 /**
- * The four engines from SPEC §2.4.
+ * The engines from SPEC §2.4.
  *
  * These strings are also the `engine` CHECK constraint on the `analyses` table, so adding
- * one here without a migration will fail on insert rather than silently storing junk.
+ * one here without updating `supabase/schema.sql` will fail on insert rather than silently
+ * storing junk. `db.constraints.test.ts` compares the two and fails offline instead.
  *
- * OpenRouter is gone. It was a research-repo affordance for comparing against a free
- * open-weights model, and SPEC §2.4 replaced that lineup with these four.
+ * `gemma` is an open-weights model served over OpenRouter, and it is a deliberate partial
+ * reversal of an earlier decision: a previous version of this list dropped OpenRouter as a
+ * research-repo affordance. It comes back for one reason, which is that `claude` is the only
+ * engine that can produce written feedback and it costs money per call, so there was no way
+ * to exercise the generative path — the prompt, the parsing, the UI, the stored row — without
+ * paying for every iteration. It is an evaluation engine, and it is labelled as one.
+ *
+ * What it is NOT is a substitute for the fine-tuned model. That engine's number comes from a
+ * cosine similarity mapped through a Platt calibrator fitted on labelled pairs. A language
+ * model asked for a percentage returns a confident number with no fitted relationship to
+ * anything, which is why `calibrated` is false here exactly as it is for Claude, and why the
+ * `base` engine below reports no score at all rather than an uncalibrated lookalike.
  */
-export const ENGINES = ["finetuned", "base", "keyword", "claude"] as const;
+export const ENGINES = ["finetuned", "base", "keyword", "claude", "gemma"] as const;
 export type EngineId = (typeof ENGINES)[number];
 
 export interface EngineCapabilities {
@@ -66,6 +77,16 @@ export const ENGINE_META: Record<EngineId, EngineMeta> = {
     name: "Claude",
     tagline: "Written feedback and suggested bullet rewrites",
     cost: "per-call",
+    capabilities: { score: true, requirements: false, generativeFeedback: true, calibrated: false },
+  },
+  gemma: {
+    id: "gemma",
+    name: "Gemma (OpenRouter)",
+    // Says what it is for. The same capabilities as Claude at none of the cost is a claim
+    // that would be doing the reader a disservice: an open-weights model on a free endpoint
+    // is slower, queues under load, and is not constrained to the output schema.
+    tagline: "Open-weights written feedback, for trying the generative path without a bill",
+    cost: "free",
     capabilities: { score: true, requirements: false, generativeFeedback: true, calibrated: false },
   },
 };

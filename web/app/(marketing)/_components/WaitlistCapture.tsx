@@ -1,7 +1,8 @@
 "use client";
 
 import { UsersIcon, SendIcon } from "@/components/icons";
-import { useWaitlist, type WaitlistFeature } from "@/lib/use-waitlist";
+import { useWaitlist } from "@/lib/use-waitlist";
+import type { WaitlistFeature } from "@/lib/waitlist";
 
 /**
  * "Notify me" capture for the two deferred features (SPEC §5.3, §5.4: "Ship a locked screen

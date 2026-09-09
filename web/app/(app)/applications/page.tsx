@@ -7,7 +7,7 @@ import { Suspense, useState } from "react";
 import { ApplicationDrawer } from "@/components/applications/ApplicationDrawer";
 import { ApplicationsTable, type ViewMode } from "@/components/applications/ApplicationsTable";
 import { NewApplicationForm } from "@/components/applications/NewApplicationForm";
-import { ArrowUpRightIcon } from "@/components/icons";
+import { ArrowUpRightIcon, GridIcon, TableIcon } from "@/components/icons";
 import { isApplicationStatus, type ApplicationStatus } from "@/lib/applications";
 import { type ApplicationView, type NewApplication, useApplications } from "@/lib/use-applications";
 
@@ -99,17 +99,28 @@ function ApplicationsView() {
               <ArrowUpRightIcon />
             </Link>
 
-            <div className="view-toggle" role="group" aria-label="View">
-              {(["table", "grid"] as ViewMode[]).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  aria-pressed={view === mode}
-                  onClick={() => setView(mode)}
-                >
-                  {mode === "table" ? "Table" : "Grid"}
-                </button>
-              ))}
+            {/* Icon-only, and aligned right by `.page-actions` pushing it with margin-left.
+                The icons are decorative, so each button carries the label a sighted user
+                reads from the glyph. */}
+            <div className="view-toggle view-toggle--icons" role="group" aria-label="View">
+              <button
+                type="button"
+                aria-pressed={view === "table"}
+                aria-label="Table view"
+                title="Table view"
+                onClick={() => setView("table")}
+              >
+                <TableIcon />
+              </button>
+              <button
+                type="button"
+                aria-pressed={view === "grid"}
+                aria-label="Grid view"
+                title="Grid view"
+                onClick={() => setView("grid")}
+              >
+                <GridIcon />
+              </button>
             </div>
           </div>
         )}

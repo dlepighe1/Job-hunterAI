@@ -53,6 +53,34 @@ export const env = {
     },
   },
 
+  openRouter: {
+    get apiKey() {
+      return required(
+        "OPENROUTER_API_KEY",
+        "Create one at https://openrouter.ai/keys and add it to web/.env.local",
+      );
+    },
+    /**
+     * A free open-weights model by default.
+     *
+     * The `:free` suffix is not decoration — it selects the no-cost endpoint, and dropping
+     * it silently moves the same model onto a paid one. Anything OpenRouter serves can be
+     * named here, but this engine exists to cost nothing, so the default says so out loud.
+     *
+     * Free ids are not stable. `google/gemma-3-27b-it:free` was this default for about an
+     * hour and does not exist: OpenRouter lists the 3-series only as paid now, and the free
+     * Gemma endpoints are the 4-series. `scripts/gemma-live.test.ts` checks the configured id
+     * against OpenRouter's public catalogue so the next disappearance is a failing test
+     * rather than a 404 on somebody's analysis.
+     */
+    get model() {
+      return optional("OPENROUTER_MODEL", "google/gemma-4-31b-it:free");
+    },
+    get isConfigured() {
+      return isSet("OPENROUTER_API_KEY");
+    },
+  },
+
   scoringService: {
     /** The FastAPI service hosting the fine-tuned MPNet + Platt calibrator. */
     get url() {
@@ -92,4 +120,10 @@ export const env = {
  */
 export function hasAnthropicKey(): boolean {
   return env.anthropic.isConfigured;
+}
+
+/** Whether the open-weights evaluation engine can run at all. Same shape as
+ *  `hasAnthropicKey`, and it reads the same way at the call site. */
+export function hasOpenRouterKey(): boolean {
+  return env.openRouter.isConfigured;
 }

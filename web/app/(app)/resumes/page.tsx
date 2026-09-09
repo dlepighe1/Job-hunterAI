@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { AddResumeForm } from "@/components/resumes/AddResumeForm";
+import { ResumeCard } from "@/components/resumes/ResumeCard";
 import { ResumeDrawer } from "@/components/resumes/ResumeDrawer";
 import { ResumeEditor } from "@/components/resumes/ResumeEditor";
 import { useApplications } from "@/lib/use-applications";
@@ -12,40 +14,56 @@ import { useResumes, type ResumeView } from "@/lib/use-resumes";
 /**
  * Saved résumés (FEATURES.md §5).
  *
- * The library shows MASTERS. Tailored versions are version history reached through their
- * master, not entries beside it, because a library of forty near-identical documents is not a
- * library, and the master is the thing the user actually reuses.
+ * **The library now lists masters AND tailored versions**, filtered by a Mode dropdown, where
+ * it previously showed masters only and reached tailored versions through their parent. That
+ * reverses a documented decision, deliberately and at the brief's instruction: a tailored
+ * résumé is a real document that was really sent, and a library that hides it cannot answer
+ * "what did I actually send them" without first knowing which master it came from.
+ *
+ * What has NOT changed is the lineage: `parent_id` still records what a tailored version came
+ * from, elevating still never overwrites a master, and the preview drawer still shows a
+ * master's versions. Listing them side by side is a presentation change, not a data one.
  *
  * The list never carries résumé text: `listResumes` does not select `content`, so it is not
- * merely hidden here: it never leaves the database. Opening one is an explicit fetch.
+ * merely hidden here, it never leaves the database. Opening one is an explicit fetch.
  */
+type Mode = "all" | "master" | "tailored";
+
+const MODES: Array<{ value: Mode; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "master", label: "Master" },
+  { value: "tailored", label: "Tailored" },
+];
+
 export default function ResumesPage() {
   const router = useRouter();
-  const { resumes, state, reload, create, update, remove, fetchContent } = useResumes();
+  const { resumes, state, reload, create, createFromFile, update, remove, fetchContent, fetchDocument } =
+    useResumes();
   const { applications } = useApplications();
 
   const [composing, setComposing] = useState(false);
   const [editing, setEditing] = useState<ResumeView | null>(null);
   const [previewing, setPreviewing] = useState<(ResumeView & { content: string }) | null>(null);
   const [query, setQuery] = useState("");
-  const [showTailored, setShowTailored] = useState(false);
+  const [mode, setMode] = useState<Mode>("all");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const masters = useMemo(
-    () => resumes.filter((resume) => !resume.isTailored),
-    [resumes],
-  );
   const tailored = useMemo(() => resumes.filter((resume) => resume.isTailored), [resumes]);
 
-  const shown = (showTailored ? tailored : masters).filter((resume) => {
+  const shown = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return true;
-    return (
-      resume.label.toLowerCase().includes(needle) ||
-      (resume.targetRole ?? "").toLowerCase().includes(needle)
-    );
-  });
+    return resumes.filter((resume) => {
+      if (mode === "master" && resume.isTailored) return false;
+      if (mode === "tailored" && !resume.isTailored) return false;
+      if (!needle) return true;
+      return (
+        resume.label.toLowerCase().includes(needle) ||
+        (resume.targetRole ?? "").toLowerCase().includes(needle)
+      );
+    });
+  }, [resumes, mode, query]);
 
   const usageCount = (id: string) =>
     applications.filter((application) => application.resumeId === id).length;
@@ -74,6 +92,7 @@ export default function ResumesPage() {
     setEditing({ ...resume, content });
   }
 
+  /** The editor path, reached by renaming or by correcting a flagged extraction. */
   async function save(input: { label: string; content: string }): Promise<string | null> {
     if (editing) {
       const failure = await update(editing.id, input);
@@ -89,9 +108,8 @@ export default function ResumesPage() {
   /**
    * Hand the résumé to the matcher.
    *
-   * Passes the ID, never the text. A résumé is personal data and SPEC Part 7 keeps it out
-   * of URLs; a uuid is not the document, and the matcher still has to be signed in to
-   * fetch it.
+   * Passes the ID, never the text. A résumé is personal data and SPEC Part 7 keeps it out of
+   * URLs; a uuid is not the document, and the matcher still has to be signed in to fetch it.
    */
   function useInMatcher(resume: ResumeView) {
     router.push(`/matcher?resume=${resume.id}`);
@@ -103,7 +121,7 @@ export default function ResumesPage() {
     <>
       <header className="page-header">
         <span className="page-kicker">RESUMES</span>
-        <h1>Manage your master résumés and tailored versions</h1>
+        <h1>Manage your master and tailored résumés</h1>
         <p>
           Keep more than one, label them so you can tell them apart, and pick the default the
           matcher reaches for. Each saved analysis records which résumé produced it, so a
@@ -117,23 +135,38 @@ export default function ResumesPage() {
               className="button button--primary"
               onClick={() => {
                 setEditing(null);
-                setComposing(true);
+                setComposing((value) => !value);
               }}
+              aria-expanded={composing}
             >
-              Upload résumé
+              {composing ? "Close" : "Upload résumé"}
             </button>
 
-            <div className="view-toggle" role="group" aria-label="Library">
-              <button type="button" aria-pressed={!showTailored} onClick={() => setShowTailored(false)}>
-                Masters ({masters.length})
-              </button>
-              <button type="button" aria-pressed={showTailored} onClick={() => setShowTailored(true)}>
-                Tailored ({tailored.length})
-              </button>
+            {/* Filtering moved right, and the Masters | Tailored tabs are gone. */}
+            <div className="field field--inline resumes__mode">
+              <label htmlFor="resume-mode">Mode</label>
+              <select
+                id="resume-mode"
+                value={mode}
+                onChange={(event) => setMode(event.target.value as Mode)}
+              >
+                {MODES.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         )}
       </header>
+
+      {notice && (
+        <p className="notice" data-tone="warn" role="status" style={{ marginBottom: 22 }}>
+          <strong>Worth a look</strong>
+          {notice}
+        </p>
+      )}
 
       {error && (
         <p className="notice" data-tone="error" role="alert" style={{ marginBottom: 22 }}>
@@ -181,104 +214,84 @@ export default function ResumesPage() {
 
       {state.kind === "ready" && (
         <div className="space-y-6">
-          {editorOpen && (
+          {/* One state at a time: the add form, the editor, or the library. */}
+          {editing !== null ? (
             <ResumeEditor
-              key={editing?.id ?? "new"}
+              key={editing.id}
               editing={editing}
               onSave={save}
-              onCancel={() => {
+              onCancel={() => setEditing(null)}
+            />
+          ) : composing ? (
+            <AddResumeForm
+              onCancel={() => setComposing(false)}
+              onCreate={async (input) => {
+                const outcome = await createFromFile(input);
+                if ("error" in outcome) return outcome;
+
                 setComposing(false);
-                setEditing(null);
+                setNotice(
+                  outcome.quality.verdict === "degraded" ? outcome.quality.reason : null,
+                );
+                return { quality: outcome.quality };
               }}
             />
-          )}
-
-          {!editorOpen && resumes.length > 0 && (
-            <div className="applications__controls">
-              <div className="field">
-                <label htmlFor="resume-search">Search</label>
-                <input
-                  id="resume-search"
-                  type="search"
-                  className="nm-input"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Label or target role…"
-                />
-              </div>
-            </div>
-          )}
-
-          {shown.length === 0 && !editorOpen ? (
-            <div className="empty-state">
-              <div>
-                <p>
-                  {showTailored ? "No tailored versions yet" : "Add your first master résumé."}
-                </p>
-                <p>
-                  {showTailored
-                    ? "Elevating a résumé in the matcher creates a version here. Your master is never overwritten."
-                    : "Paste one or upload a PDF. Nothing is stored until you save it, and you can correct the extracted text first, because PDF extraction is reliably imperfect."}
-                </p>
-              </div>
-            </div>
           ) : (
-            shown.length > 0 && (
-              <ul className="resume-grid">
-                {shown.map((resume) => {
-                  const uses = usageCount(resume.id);
-                  return (
-                    <li key={resume.id} className="pf-panel resume-tile">
-                      <button
-                        type="button"
-                        className="resume-tile__open"
-                        onClick={() => open(resume)}
-                        disabled={busyId === resume.id}
-                      >
-                        <span className="resume-tile__doc" aria-hidden="true">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
-                            <path d="M6 2h8l4 4v16H6z" />
-                            <path d="M14 2v5h5M9 12h6M9 16h6" />
-                          </svg>
-                        </span>
+            <>
+              {resumes.length > 0 && (
+                <div className="applications__controls">
+                  <div className="field">
+                    <label htmlFor="resume-search">Search</label>
+                    <input
+                      id="resume-search"
+                      type="search"
+                      className="nm-input"
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder="Résumé name or target role…"
+                    />
+                  </div>
+                  <p className="applications__count" aria-live="polite">
+                    {shown.length} of {resumes.length}
+                  </p>
+                </div>
+              )}
 
-                        <span className="resume-tile__body">
-                          <b>{resume.label}</b>
-                          {resume.isDefault && (
-                            <span className="resume-card__default">DEFAULT</span>
-                          )}
-                          <small>{resume.targetRole || "No target role set"}</small>
-                          <small>
-                            Updated {resume.updatedAt.slice(0, 10)} ·{" "}
-                            {uses === 0 ? "not used yet" : `used in ${uses}`}
-                          </small>
-                          {resume.note && <em>{resume.note}</em>}
-                        </span>
-                      </button>
-
-                      <div className="resume-tile__actions">
-                        <button
-                          type="button"
-                          className="row-action"
-                          onClick={() => open(resume)}
-                          disabled={busyId === resume.id}
-                        >
-                          {busyId === resume.id ? "Opening…" : "Preview"}
-                        </button>
-                        <button
-                          type="button"
-                          className="row-action"
-                          onClick={() => openForEdit(resume)}
-                          disabled={busyId === resume.id}
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )
+              {shown.length === 0 ? (
+                <div className="empty-state">
+                  <div>
+                    <p>
+                      {resumes.length === 0
+                        ? "No résumés yet. Upload one to start matching jobs."
+                        : "No résumé matches that search and filter."}
+                    </p>
+                    <p>
+                      {resumes.length === 0
+                        ? "Upload a PDF, DOCX or TXT. The text is read out of it for matching, and the document itself is kept so you can look at what you actually sent."
+                        : "Clear the search, or switch Mode back to All."}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <ul className="resume-grid">
+                  {shown.map((resume) => (
+                    <ResumeCard
+                      key={resume.id}
+                      resume={resume}
+                      usedIn={usageCount(resume.id)}
+                      busy={busyId === resume.id}
+                      onPreview={() => open(resume)}
+                      onRename={() => openForEdit(resume)}
+                      onDelete={async () => {
+                        setBusyId(resume.id);
+                        setError(await remove(resume.id));
+                        setBusyId(null);
+                      }}
+                    />
+                  ))}
+                </ul>
+              )}
+            </>
           )}
         </div>
       )}
@@ -287,6 +300,7 @@ export default function ResumesPage() {
         resume={previewing}
         versions={tailored.filter((version) => version.parentId === previewing?.id)}
         applications={applications}
+        fetchDocument={fetchDocument}
         onClose={() => setPreviewing(null)}
         onUseInMatcher={useInMatcher}
         onMakeDefault={async (id) => {

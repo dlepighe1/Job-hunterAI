@@ -6562,6 +6562,75 @@ em {
    Auth drawer
    --------------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------------
+   /sign-in and /sign-up, the routed versions
+
+   Where `proxy.ts` sends someone it turns away from a protected page, so it is a
+   destination rather than an overlay and gets a centred panel instead of a drawer. The
+   panel repeats the drawer's surface treatment on purpose: arriving here by redirect and
+   arriving there by clicking Sign in should not feel like two different products.
+   --------------------------------------------------------------------------- */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  /* flex-start plus an auto block margin on the panel, rather than `center`: auto margins
+     centre when there is room and collapse to zero when there is not, so a panel taller
+     than the viewport starts at the top and scrolls instead of having its head clipped
+     off with no way to reach it. */
+  align-items: flex-start;
+  padding: 48px 20px;
+}
+
+.auth-page__panel {
+  margin-block: auto;
+  width: min(440px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-lg);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  padding: 34px 30px 28px;
+}
+
+.auth-page__intro {
+  margin-bottom: 22px;
+}
+
+.auth-page__intro h1 {
+  font-size: 1.65rem;
+  margin: 10px 0 9px;
+}
+
+.auth-page__intro p {
+  font-size: 0.875rem;
+  line-height: 1.66;
+  color: var(--text-dim);
+}
+
+/* The way out for someone who does not want an account. SPEC §5.1 keeps the matcher open
+   to guests, and a sign-in wall that does not say so reads as though it were not. */
+.auth-page__aside {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--edge-soft);
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+}
+
+.auth-page__aside a {
+  color: var(--cyan);
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 24px 14px;
+  }
+
+  .auth-page__panel {
+    padding: 26px 20px 22px;
+  }
+}
+
 .auth-scrim {
   position: fixed;
   inset: 0;
@@ -6859,4 +6928,1578 @@ em {
   .obsidian-backdrop__spot {
     display: none;
   }
+}
+
+/* ===========================================================================
+ * Redesign primitives: company mark and score ring
+ *
+ * Both are readouts by the rule in DESIGN.md ("if the element carries a value
+ * or a state, it is flat"), but the avatar is a container for a glyph rather
+ * than a value, so it takes the icon-well treatment the system already repeats
+ * in .feature-icon and the sidebar nav: an inset socket with a raised,
+ * accent-coloured mark inside it.
+ * ========================================================================= */
+
+.company-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--cyan);
+  /* The monogram is a single glyph in a small box; without this it sits a hair
+     left of centre because the mono face reserves side bearing for wider ones. */
+  text-indent: 0.04em;
+  user-select: none;
+}
+
+.company-avatar[data-size="sm"] {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  font-size: 0.6875rem;
+}
+
+.company-avatar[data-size="lg"] {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  font-size: 1.0625rem;
+}
+
+.company-avatar img {
+  width: 58%;
+  height: 58%;
+  object-fit: contain;
+}
+
+/* --- Match ring --------------------------------------------------------- */
+
+.match-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+}
+
+.match-ring[data-size="sm"] {
+  width: 40px;
+  height: 40px;
+}
+
+.match-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Start the sweep at twelve o'clock rather than three. */
+  transform: rotate(-90deg);
+}
+
+.match-ring circle {
+  fill: none;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.match-ring__track {
+  stroke: var(--edge-soft);
+}
+
+.match-ring__arc {
+  stroke: var(--cyan);
+  transition: stroke-dasharray 0.42s var(--ease);
+}
+
+.match-ring__value {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text);
+}
+
+.match-ring[data-size="sm"] .match-ring__value {
+  font-size: 0.75rem;
+}
+
+/* An unscored ring is a dashed outline holding an em dash: visibly a slot with
+   nothing measured in it, rather than a reading of zero. */
+.match-ring[data-scored="false"] .match-ring__track {
+  stroke-dasharray: 3 4;
+}
+
+.match-ring[data-scored="false"] .match-ring__value {
+  color: var(--muted);
+}
+
+/* The arc draws itself once on mount. Short, and only on the element that just
+   changed, which is the "optional short load animation" the brief allows. */
+@media (prefers-reduced-motion: no-preference) {
+  .match-ring__arc {
+    animation: match-ring-draw 0.62s var(--ease) both;
+  }
+}
+
+@keyframes match-ring-draw {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}
+
+/* ===========================================================================
+ * Applications: redesigned table and grid
+ *
+ * Overrides rather than edits-in-place, so the original block above stays
+ * readable as what the screen used to be. Both vocabularies are still
+ * precision-flat; what changed is density and column order.
+ * ========================================================================= */
+
+/* The icon-only view switch sits hard right of the action row. */
+.page-actions .view-toggle--icons {
+  margin-left: auto;
+}
+
+.view-toggle--icons button {
+  display: grid;
+  place-items: center;
+  padding: 7px 11px;
+}
+
+.view-toggle--icons svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* --- Table -------------------------------------------------------------- */
+
+.cell-company {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* The engine and its calibration state stack, so the row stays one line tall
+   while still carrying both. Losing the calibration in a narrow column is the
+   one thing FEATURES.md §2.2 does not permit. */
+.engine-cell {
+  display: grid;
+  gap: 1px;
+  line-height: 1.25;
+}
+
+.engine-cell b {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.engine-cell small {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.applications__table td {
+  vertical-align: middle;
+}
+
+/* --- Employer response, unanswered -------------------------------------- */
+
+/* Deliberately quiet. This means "something happened here worth a look", not
+   "something is wrong", so it is a tint and a dot rather than a border or a
+   colour the palette reserves for failure. The dot carries an sr-only label,
+   because a tint alone would make colour the sole carrier of meaning. */
+.attention-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 18%, transparent);
+  flex: 0 0 auto;
+}
+
+.pf-table tbody tr[data-attention="true"] {
+  background: color-mix(in srgb, var(--cyan) 4%, transparent);
+}
+
+.pf-table tbody tr[data-attention="true"]:hover {
+  background: color-mix(in srgb, var(--cyan) 7%, transparent);
+}
+
+.app-card[data-attention="true"] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 28%, transparent);
+}
+
+.app-card .attention-dot {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+}
+
+/* --- Grid --------------------------------------------------------------- */
+
+/* Three across on a desktop stage, per the approved layout. The cards carry a
+   ring and four lines now, so the old 260px track produced a cramped card
+   rather than a dense one. */
+.app-grid {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+@media (min-width: 1180px) {
+  .app-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.app-card {
+  position: relative;
+  /* So the button fills the grid cell and the footer can be pinned. Without this
+     a card carrying a location sits its date and status ~23px lower than the
+     card beside it, and a row of three reads as three different components. */
+  display: flex;
+}
+
+.app-card__open {
+  flex: 1;
+  gap: 14px;
+  padding: 17px 18px;
+  grid-template-rows: auto 1fr auto;
+}
+
+.app-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.app-card__ident {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  /* Takes the slack so the ring stays pinned right. */
+  flex: 1 1 auto;
+}
+
+.app-card__ident b {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text);
+  /* A long company name truncates rather than wrapping into the ring. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-card__ident small {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-card__mid {
+  display: grid;
+  gap: 3px;
+  min-height: 1.2em;
+}
+
+.app-card__where {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.app-card__engine {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--edge);
+}
+
+.app-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--edge-soft);
+}
+
+.app-card__applied {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.app-card__star {
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  font-size: 0.6875rem;
+  color: var(--gold);
+}
+
+/* The star and the attention dot both live in the top corners, so a card that
+   is starred AND unanswered does not stack them. */
+.app-card[data-attention="true"] .app-card__star {
+  left: auto;
+  right: 30px;
+}
+
+/* Eight columns is more than the old six, so every cell that can stay on one
+   line must. Wrapping "Software Engineer" over two lines cost ~30px of row
+   height across the whole table and pushed Last activity off the right edge. */
+.applications__table th,
+.applications__table td {
+  white-space: nowrap;
+}
+
+/* The three that can genuinely be long truncate instead. The caps are what let
+   nine columns fit 918px of content at a 1280 viewport, which is an ordinary
+   laptop; the drawer carries the untruncated value. */
+.applications__table .cell-company b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.applications__table {
+  table-layout: fixed;
+  /* What eight columns of real values actually need. Under this the panel
+     scrolls; over it the percentages spread to fill. */
+  min-width: 1040px;
+}
+
+/* Fixed layout truncates a cell only if it is told to, so every column that can
+   receive a long value says so once, here. */
+.applications__table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The header labels are the other thing that set a minimum under auto layout.
+   They wrap rather than widen now. */
+.applications__table th button {
+  white-space: normal;
+  text-align: left;
+}
+
+/* Tighter than the shared .pf-table rhythm: eight data columns need the room
+   more than they need the breathing space. */
+.applications__table th,
+.applications__table td {
+  padding-left: 9px;
+  padding-right: 9px;
+}
+
+.applications__table .status-select {
+  min-width: 0;
+}
+
+/* Below this the eight columns genuinely do not fit, so the panel scrolls
+   rather than the page. Spec: tables may scroll horizontally on medium. */
+.applications__scroll {
+  overflow-x: auto;
+}
+
+
+
+
+/* ===========================================================================
+ * Application drawer header
+ *
+ * The mark, the title and the score sit on one line, which is what the approved
+ * board leads with. The Drawer's own head was a title block plus a close button;
+ * `lead` and `aside` are optional slots so the other three drawers that use this
+ * component render exactly as they did.
+ * ========================================================================= */
+
+.drawer__head-ident {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.drawer__head-ident h2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-match {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  text-align: right;
+  flex: 0 0 auto;
+  margin-right: 4px;
+}
+
+.drawer-match b {
+  font-family: var(--font-mono);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  line-height: 1;
+}
+
+.drawer-match[data-scored="false"] b {
+  color: var(--muted);
+}
+
+.drawer-match small {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Belongs to the score in the header above it, not to the section below, so it
+   sits closer to what it explains than to what follows. */
+.drawer-note {
+  margin: -4px 0 26px;
+  padding-bottom: 2px;
+}
+
+.drawer-link {
+  color: var(--cyan);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--cyan) 35%, transparent);
+}
+
+.drawer-link:hover {
+  border-bottom-color: var(--cyan);
+}
+
+
+/* Add Application: the Link field spans the row, and the posting textarea and
+   the disclosure sit below the grid rather than inside it. */
+.new-application__wide {
+  grid-column: 1 / -1;
+}
+
+.new-application__posting {
+  margin-top: 16px;
+}
+
+.new-application__posting .nm-textarea {
+  width: 100%;
+}
+
+.new-application__more {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--edge-soft);
+}
+
+.new-application__more .new-application__grid {
+  margin-top: 14px;
+}
+
+/* Cancel sits left of the primary, matching the approved board and the résumé
+   form, so the destructive-adjacent choice is never the one under the thumb. */
+.new-application__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* ===========================================================================
+ * Résumés: library cards, overflow menu, drop zone, document viewer
+ *
+ * The library is roomier than the old tile grid because a card now carries a
+ * title, a badge, three metadata fields and a note. Everything stays flat, in
+ * the precision vocabulary: these are records with values on them.
+ * ========================================================================= */
+
+.resumes__mode {
+  margin-left: auto;
+}
+
+.field--inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.field--inline label {
+  margin: 0;
+}
+
+.field__optional {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.resume-grid {
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+}
+
+@media (min-width: 1180px) {
+  .resume-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.resume-card {
+  position: relative;
+  display: flex;
+  /* Explicit, because the panel this shares a class with centres its child. Without it a
+     card carrying no note sits its whole content 16px lower than the two beside it, and a
+     row of three reads as three different components. */
+  align-items: stretch;
+  padding: 0;
+  transition: box-shadow 0.18s var(--ease), background 0.18s var(--ease);
+}
+
+.resume-card__open {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  flex: 1;
+  width: 100%;
+  padding: 17px 18px 34px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.resume-card__head {
+  display: block;
+  /* Room for the overflow button, which is positioned in the corner. */
+  padding-right: 30px;
+}
+
+.resume-card__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.resume-card__badges {
+  display: flex;
+  gap: 6px;
+}
+
+/* Master and tailored are named in words. The colour beside the word is
+   reinforcement, never the carrier: FEATURES.md section 2.6. */
+.kind-badge {
+  padding: 2px 8px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.kind-badge[data-kind="master"] {
+  border-color: color-mix(in srgb, var(--cyan) 45%, var(--edge-soft));
+  color: var(--cyan);
+}
+
+.kind-badge[data-kind="tailored"] {
+  border-color: color-mix(in srgb, var(--violet) 45%, var(--edge-soft));
+  color: var(--violet);
+}
+
+/* Two columns, not three. Three gave each value 70px inside a 297px card, which
+   truncated "Backend Engineer" to "Backend E…" and every date to "Aug 12, 2…".
+   The target role takes a full row because it is the longest of the three and
+   the one a reader is actually scanning for. */
+.resume-card__meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px 12px;
+  margin-top: 2px;
+}
+
+.resume-card__field:first-child {
+  grid-column: 1 / -1;
+}
+
+.resume-card__field {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.resume-card__field small {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.resume-card__field span {
+  font-size: 0.8125rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Truncated in the card, complete in the drawer. One line, so a long note can
+   never make one card taller than the two beside it. */
+.resume-card__note {
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resume-card__corner {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+/* Bottom-right, per the board, rather than under the title where it competed
+   with the document name. */
+.resume-card__default {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--teal) 45%, var(--edge-soft));
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+/* The interactive colour language. Cyan for a master, violet for a tailored
+   version, and only on hover or focus: a library where every card is a lit
+   panel tells the reader nothing about any of them. */
+.resume-card[data-kind="master"]:hover,
+.resume-card[data-kind="master"]:focus-within {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 45%, transparent);
+  background: color-mix(in srgb, var(--cyan) 4%, transparent);
+}
+
+.resume-card[data-kind="tailored"]:hover,
+.resume-card[data-kind="tailored"]:focus-within {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--violet) 45%, transparent);
+  background: color-mix(in srgb, var(--violet) 4%, transparent);
+}
+
+/* --- Overflow menu ------------------------------------------------------ */
+
+.overflow-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.overflow-menu__trigger {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.18s var(--ease), background 0.18s var(--ease);
+}
+
+.overflow-menu__trigger:hover,
+.overflow-menu__trigger[aria-expanded="true"] {
+  background: var(--nm-face-inset);
+  color: var(--text);
+}
+
+.overflow-menu__trigger svg {
+  width: 16px;
+  height: 16px;
+}
+
+.overflow-menu__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  display: grid;
+  min-width: 152px;
+  padding: 5px;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  box-shadow: 0 18px 44px rgb(0 0 0 / 0.5);
+}
+
+.overflow-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font-size: 0.8125rem;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.overflow-menu__item svg {
+  width: 15px;
+  height: 15px;
+  color: var(--muted);
+}
+
+.overflow-menu__item:hover,
+.overflow-menu__item:focus-visible {
+  outline: none;
+  background: var(--nm-face-inset);
+}
+
+/* Delete sits behind a divider, so it is never the item a fast hand lands on
+   while reaching for Rename. */
+.overflow-menu__item[data-destructive] {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--edge-soft);
+  border-radius: 0 0 8px 8px;
+  color: var(--rose);
+}
+
+.overflow-menu__item[data-destructive] svg {
+  color: var(--rose);
+}
+
+/* --- Drop zone ---------------------------------------------------------- */
+
+.dropzone-field {
+  display: grid;
+  gap: 10px;
+}
+
+.dropzone {
+  display: grid;
+  place-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 34px 20px;
+  border: 1px dashed var(--edge);
+  border-radius: var(--r-sm);
+  background: none;
+  cursor: pointer;
+  transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+
+.dropzone:hover,
+.dropzone[data-dragging="true"] {
+  border-color: var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 5%, transparent);
+}
+
+.dropzone[data-filled="true"] {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--cyan) 45%, var(--edge));
+}
+
+.dropzone:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
+.dropzone__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--cyan);
+}
+
+.dropzone__icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.dropzone__title {
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.dropzone__hint {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.add-resume {
+  display: grid;
+  gap: 16px;
+}
+
+.add-resume .nm-input,
+.add-resume .nm-textarea {
+  width: 100%;
+}
+
+.add-resume__privacy {
+  margin: -4px 0 0;
+}
+
+/* --- Document viewer ---------------------------------------------------- */
+
+.doc-viewer {
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.doc-viewer__frame {
+  display: block;
+  width: 100%;
+  /* Roughly the aspect of a page, so the viewer is not a letterbox. */
+  height: min(70vh, 720px);
+  border: 0;
+}
+
+.doc-viewer--message {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 46px 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.doc-viewer__icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+  color: var(--cyan);
+}
+
+.doc-viewer__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.doc-viewer__note {
+  max-width: 44ch;
+  font-size: 0.8125rem;
+  color: var(--edge);
+}
+
+.doc-viewer__bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 10px;
+  border-top: 1px solid var(--edge-soft);
+}
+
+/* --- Match history table ------------------------------------------------ */
+
+.match-history {
+  min-width: 0;
+}
+
+.match-history td a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.match-history td a:hover {
+  text-decoration: underline;
+}
+
+
+
+/* ===========================================================================
+ * Matcher: the engine row, the two-column workspace, engine settings
+ *
+ * The row is the redesign's central move on this screen: engine, its settings,
+ * and the primary action on one line, replacing a side column of four engine
+ * cards and a Match Setup panel.
+ * ========================================================================= */
+
+.engine-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.engine-row__picker {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.engine-row__picker label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.engine-row__picker select {
+  min-width: 208px;
+}
+
+/* Pushed hard right, per the approved layout: the action is the end of the row,
+   not another control in it. */
+.engine-row__action {
+  margin-left: auto;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-sm);
+  background: var(--nm-face);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.icon-button:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--cyan) 45%, var(--edge-soft));
+  color: var(--cyan);
+}
+
+.icon-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.icon-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* Two equal columns: the posting and the resume are the same kind of thing and
+   the comparison between them is the task. */
+.matcher-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 1020px) {
+  .matcher-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .engine-row {
+    flex-wrap: wrap;
+  }
+
+  .engine-row__action {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.matcher-field {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.matcher-field h2 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* The mode switch, sized to this column rather than to the shared segmented
+   control's 150px minimum. Three tracks at that minimum need 462px and the
+   résumé column has 457, so the third option wrapped onto its own row and the
+   control stopped reading as one switch. Flex lets the labels size themselves,
+   which matters because "Choose from Resumes" is three times the width of
+   "Paste". */
+.matcher-field .nm-segment__options {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.matcher-field .nm-option {
+  flex: 1 1 auto;
+  align-items: center;
+  padding: 9px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.matcher-field .nm-textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.matcher-field .field__hint {
+  margin: 0;
+}
+
+/* --- Engine settings drawer --------------------------------------------- */
+
+.engine-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+}
+
+.engine-option {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  padding: 15px 16px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.engine-option:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--cyan) 40%, var(--edge-soft));
+}
+
+/* Selected is a ring plus a tint, the same treatment every selected state in
+   this product uses. Never a left bar. */
+.engine-option[aria-checked="true"] {
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cyan) 55%, transparent);
+  background: color-mix(in srgb, var(--cyan) 7%, transparent);
+}
+
+.engine-option:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.engine-option__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.engine-option__head b {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.engine-option__badges {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* A badge is a word first. Colour reinforces it and never carries it alone. */
+.engine-badge {
+  padding: 2px 7px;
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.engine-badge[data-tone="cyan"] {
+  border-color: color-mix(in srgb, var(--cyan) 45%, var(--edge-soft));
+  color: var(--cyan);
+}
+
+.engine-badge[data-tone="teal"] {
+  border-color: color-mix(in srgb, var(--teal) 45%, var(--edge-soft));
+  color: var(--teal);
+}
+
+.engine-badge[data-tone="gold"] {
+  border-color: color-mix(in srgb, var(--gold) 45%, var(--edge-soft));
+  color: var(--gold);
+}
+
+.engine-option__body {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.engine-option__cost {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+
+.engine-option__cost[data-tone="muted"] {
+  color: var(--edge);
+}
+
+
+
+/* ===========================================================================
+ * Dashboard: 75/25 layout, the analytics switcher, the activity rail
+ *
+ * The page was one column of full-width panels. It is now a wide analytics
+ * column with a subordinate rail, which is what lets Job Hunt Velocity be the
+ * dominant visualisation rather than one card among equals.
+ * ========================================================================= */
+
+.dash-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.dash-main {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.dash-rail {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  align-content: start;
+}
+
+/* Below this the rail is narrower than its own content, so it goes under the
+   analytics rather than being squeezed beside them. */
+@media (max-width: 1160px) {
+  .dash-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-row--pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .dash-row--pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The rail is quieter than the main column by construction: smaller type, less
+   padding, and no chart. It is context, not analysis. */
+.rail-panel .feed__body b {
+  font-size: 0.8125rem;
+}
+
+.rail-panel .feed__body small {
+  font-size: 0.75rem;
+}
+
+.feed__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.feed__row:hover .feed__body b {
+  color: var(--cyan);
+}
+
+.feed__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* One line each. The rail is ~280px and the timestamp takes a fixed slice of
+   it, so without this "Employer responded" breaks across two lines and the row
+   reads as two separate notifications stacked. */
+.feed__body b {
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed__body small {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed__when {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.04em;
+  color: var(--edge);
+  white-space: nowrap;
+}
+
+/* A dot, not a coloured row. Each tone also has a word beside it, so colour is
+   never the only thing carrying the difference. */
+.feed__mark[data-tone] {
+  width: 7px;
+  height: 7px;
+  margin-top: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.feed__mark[data-tone="action"] {
+  background: var(--cyan);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 18%, transparent);
+}
+
+.feed__mark[data-tone="progress"] {
+  background: var(--violet);
+}
+
+.feed__mark[data-tone="setup"] {
+  background: var(--edge);
+}
+
+/* --- Match Distribution / Application Pipeline switcher ------------------ */
+
+.switcher {
+  position: relative;
+}
+
+/* Sits over the panel's own header row, which is why the panels below keep
+   their headings for the accessibility tree while the tabs carry the label a
+   sighted reader uses. */
+.switcher__tabs {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  z-index: 2;
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: var(--nm-face-inset);
+  box-shadow: var(--nm-inset);
+}
+
+.switcher__tabs button {
+  padding: 6px 13px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.switcher__tabs button[aria-pressed="true"] {
+  background: var(--nm-face);
+  box-shadow: var(--nm-sm);
+  color: var(--cyan);
+}
+
+.switcher__tabs button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--cyan) 60%, transparent);
+}
+
+/* The panel's own title is redundant once the active tab names the view, but it
+   stays in the markup for structure and is simply not painted twice. */
+.switcher__body .dash-panel__head {
+  padding-right: 260px;
+}
+
+@media (max-width: 620px) {
+  .switcher__tabs {
+    position: static;
+    margin-bottom: 12px;
+  }
+
+  .switcher__body .dash-panel__head {
+    padding-right: 0;
+  }
+}
+
+/* The engine row's honesty line: an engine that was substituted, or one that
+   produces no score. Sits between the row and the workspace so it is read
+   before the analyse click, not after it. */
+.engine-row__note {
+  margin: -12px 0 18px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.engine-row__note[data-tone="warn"] {
+  color: var(--gold);
+}
+
+/* ===========================================================================
+ * Wider stage
+ *
+ * `.app-content` capped every authenticated page at 1080px with up to 44px of
+ * side padding, so on a 1600px display roughly 500px sat empty either side of
+ * a data table that wanted the room. The cap made sense when these screens
+ * were prose; they are instruments now.
+ *
+ * The cap is raised rather than removed. Past about 1560px a table row becomes
+ * a horizontal eye-scan across a metre of screen, and the eight-column
+ * applications table is already the widest thing here. `--shell` and the
+ * marketing pages are untouched: reading measure is a different problem from
+ * instrument density, and the landing page is still prose.
+ *
+ * Every mobile rule above this point stands. Nothing here changes what is
+ * hidden below 760, 819 or 900px: the marketing nav's text links, the radar
+ * chart, and the section vectors all still drop out exactly where they did.
+ * ========================================================================= */
+
+.app-content {
+  width: min(1560px, 100%);
+  /* Vertical rhythm kept; horizontal trimmed, since the sidebar already
+     provides the left-hand breathing room the old padding was duplicating. */
+  padding: clamp(24px, 3vw, 40px) clamp(16px, 2vw, 28px);
+}
+
+/* --- Tighter gaps -------------------------------------------------------
+ * 18px between cards was tuned for a 1080px column. At 1560 the same gap
+ * reads as drift rather than grouping, so the scale steps down one notch.
+ * The cards themselves keep their internal padding: density between
+ * components, not inside them.
+ * --------------------------------------------------------------------- */
+
+.dash-layout,
+.dash-main,
+.dash-rail,
+.dash-grid,
+.dash-row,
+.dash-row--pair,
+.matcher-workspace {
+  gap: 14px;
+}
+
+.kpi-row {
+  gap: 12px;
+  /* Four across on a wide stage instead of auto-fitting to five or six
+     narrow ones, which is what made them read as a strip of chips. */
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.app-grid,
+.resume-grid {
+  gap: 12px;
+}
+
+/* --- Fill the width -----------------------------------------------------
+ * Grid and flex children stretch by default; these are the ones that had an
+ * intrinsic width and so did not.
+ * --------------------------------------------------------------------- */
+
+.dash-main > *,
+.dash-rail > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.matcher-field {
+  width: 100%;
+  min-width: 0;
+}
+
+/* The applications table sizes to its container now that the container is
+   wide enough to hold it. The 1040px floor stays: below it the columns still
+   scroll rather than collapsing into ellipses. */
+.applications__scroll {
+  width: 100%;
+}
+
+/* --- Wider breakpoints --------------------------------------------------
+ * The three-column grids were gated at 1180px against the old 1080px cap,
+ * which meant they never actually reached three on a laptop. With the wider
+ * stage the real threshold is where three cards clear ~300px each.
+ * --------------------------------------------------------------------- */
+
+@media (min-width: 1080px) {
+  .app-grid,
+  .resume-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1500px) {
+  .app-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* The rail has a ceiling as well as a floor now. At 1560px a plain 25% would
+   give it 390px, which is wider than its longest line and turns a summary
+   into a second column of content. */
+@media (min-width: 1160px) {
+  .dash-layout {
+    grid-template-columns: minmax(0, 1fr) clamp(280px, 24%, 360px);
+  }
+}
+
+/* ===========================================================================
+ * Document sheet: the DOCX and TXT preview surface
+ *
+ * A PDF gets the browser's own viewer in an iframe. The other two are rendered
+ * by us, so they get a page: a light sheet, dark ink, generous measure. That
+ * is not decoration. A resume is a printed artefact and reading one as pale
+ * text on obsidian makes it look like a log file rather than the document
+ * somebody is about to send to an employer.
+ * ========================================================================= */
+
+.doc-sheet {
+  max-height: min(70vh, 720px);
+  overflow: auto;
+  padding: clamp(20px, 3vw, 44px);
+  background: #f7f7f4;
+  color: #16161a;
+}
+
+.doc-sheet__body,
+.doc-sheet__text {
+  max-width: 78ch;
+  margin: 0 auto;
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+/* The extracted text keeps its own line breaks, since they are the document's
+   layout, but it wraps rather than scrolling sideways. */
+.doc-sheet__text {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #16161a;
+}
+
+/* --- Converted Word structure ------------------------------------------ */
+
+.doc-sheet__body h1,
+.doc-sheet__body h2,
+.doc-sheet__body h3,
+.doc-sheet__body h4 {
+  margin: 1.4em 0 0.4em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.25;
+  color: #0d0d10;
+}
+
+.doc-sheet__body h1 { font-size: 1.35rem; }
+.doc-sheet__body h2 { font-size: 1.1rem; }
+.doc-sheet__body h3 { font-size: 0.95rem; }
+
+.doc-sheet__body h1:first-child,
+.doc-sheet__body h2:first-child,
+.doc-sheet__body h3:first-child {
+  margin-top: 0;
+}
+
+.doc-sheet__body p {
+  margin: 0 0 0.75em;
+}
+
+.doc-sheet__body ul,
+.doc-sheet__body ol {
+  margin: 0 0 0.9em;
+  padding-left: 1.35em;
+}
+
+.doc-sheet__body li {
+  margin-bottom: 0.3em;
+}
+
+.doc-sheet__body strong {
+  font-weight: 600;
+  color: #0d0d10;
+}
+
+.doc-sheet__body a {
+  color: #1c5fb8;
+  text-decoration: underline;
+}
+
+.doc-sheet__body table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.doc-sheet__body td,
+.doc-sheet__body th {
+  padding: 6px 9px;
+  border: 1px solid #d9d9d2;
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc-viewer__kind {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
 }

@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getUserIdOrNull } from "@/lib/auth";
-import { hasAnthropicKey } from "@/lib/env";
+import { hasAnthropicKey, hasOpenRouterKey } from "@/lib/env";
 import { AnalyzeError, errorBody } from "@/lib/errors";
-import { tailorResume } from "@/lib/providers/tailor";
+import { tailorResume, type TailorEngine } from "@/lib/providers/tailor";
 import { checkRateLimit, scopeFor } from "@/lib/rate-limit";
 import { MIN_WORDS, wordCount } from "@/lib/types";
 
@@ -17,6 +17,9 @@ const requestSchema = z.object({
   jobDescription: z.string().max(MAX_CHARS),
   resumeText: z.string().max(MAX_CHARS),
   gaps: z.array(z.string().max(200)).max(20).optional(),
+  /** Which engine writes the proposals. Omitted means "whichever this deployment has",
+   *  preferring Claude, which is what this endpoint has always used. */
+  engine: z.enum(["claude", "gemma"]).optional(),
 });
 
 /**
@@ -26,9 +29,10 @@ const requestSchema = z.object({
  * user accepts or rejects each change, and saving the result is a separate call to
  * `/api/resumes`. The master résumé is not reachable from here at all.
  *
- * Requires a session because it costs a Claude call, the same reasoning that gates the
- * paid engine on `/api/score`. An unauthenticated endpoint that spends API credits is the
- * surprise invoice SPEC §2.4 warns about, and no per-IP limit fixes it.
+ * Requires a session whichever engine runs, the same reasoning that gates both language-model
+ * engines on `/api/score`: Claude spends money per call, and the open-weights engine spends a
+ * shared free allowance one anonymous caller could drain for everybody. No per-IP limit fixes
+ * either, because addresses are free and neither a card nor a quota is.
  */
 export async function POST(request: Request) {
   const userId = await getUserIdOrNull();
@@ -36,18 +40,8 @@ export async function POST(request: Request) {
     return fail(
       new AnalyzeError(
         "NOT_CONFIGURED",
-        "Elevating a résumé needs an account, since it runs a paid model call.",
+        "Elevating a résumé needs an account, since it runs a language model against a shared allowance.",
         401,
-      ),
-    );
-  }
-
-  if (!hasAnthropicKey()) {
-    return fail(
-      new AnalyzeError(
-        "NOT_CONFIGURED",
-        "Résumé rewriting is not configured on this deployment (ANTHROPIC_API_KEY is unset). The analysis above still stands, and the gaps it names are the changes worth making by hand.",
-        501,
       ),
     );
   }
@@ -69,6 +63,53 @@ export async function POST(request: Request) {
 
   const { jobDescription, resumeText, gaps = [] } = parsed.data;
 
+  /**
+   * Which engine writes the proposals.
+   *
+   * An explicit choice is honoured and then checked, so asking for an engine this deployment
+   * cannot run says which key is missing rather than failing inside the provider. With no
+   * choice, Claude wins when it is available — that is what this endpoint has always done,
+   * and it is the better rewriter — and the free engine is the fallback rather than the
+   * default, so nothing here starts spending money that was not already being spent.
+   */
+  const engine: TailorEngine | null = parsed.data.engine
+    ? parsed.data.engine
+    : hasAnthropicKey()
+      ? "claude"
+      : hasOpenRouterKey()
+        ? "gemma"
+        : null;
+
+  if (!engine) {
+    return fail(
+      new AnalyzeError(
+        "NOT_CONFIGURED",
+        "Résumé rewriting is not configured on this deployment (neither ANTHROPIC_API_KEY nor OPENROUTER_API_KEY is set). The analysis above still stands, and the gaps it names are the changes worth making by hand.",
+        501,
+      ),
+    );
+  }
+
+  if (engine === "claude" && !hasAnthropicKey()) {
+    return fail(
+      new AnalyzeError(
+        "NOT_CONFIGURED",
+        "Rewriting with Claude is not configured on this deployment (ANTHROPIC_API_KEY is unset).",
+        501,
+      ),
+    );
+  }
+
+  if (engine === "gemma" && !hasOpenRouterKey()) {
+    return fail(
+      new AnalyzeError(
+        "NOT_CONFIGURED",
+        "Rewriting with the open-weights engine is not configured on this deployment (OPENROUTER_API_KEY is unset).",
+        501,
+      ),
+    );
+  }
+
   if (wordCount(jobDescription) < MIN_WORDS || wordCount(resumeText) < MIN_WORDS) {
     return fail(
       new AnalyzeError(
@@ -79,14 +120,18 @@ export async function POST(request: Request) {
     );
   }
 
-  // Same bucket as the paid engine: this is the other thing on this product that spends
-  // money per call, and it should drain the same allowance.
-  const limited = await checkRateLimit(userId, scopeFor(false, "claude"));
+  // The same bucket the chosen engine uses on /api/score, because it is the same allowance
+  // being spent: Claude's money, or the shared free quota behind the OpenRouter key. A
+  // rewrite is one call of the same kind, and giving it a private bucket would let a user
+  // spend the allowance twice.
+  const limited = await checkRateLimit(userId, scopeFor(false, engine));
   if (!limited.allowed) {
     return fail(
       new AnalyzeError(
         "RATE_LIMITED",
-        `You have used this deployment's paid-model allowance. Try again in ${limited.retryAfter} seconds.`,
+        engine === "claude"
+          ? `You have used this deployment's paid-model allowance. Try again in ${limited.retryAfter} seconds.`
+          : `You have used this deployment's open-weights allowance. Try again in ${limited.retryAfter} seconds, or rewrite with Claude.`,
         429,
         limited.retryAfter,
       ),
@@ -95,10 +140,11 @@ export async function POST(request: Request) {
 
   const startedAt = Date.now();
   try {
-    const result = await tailorResume(jobDescription, resumeText, gaps);
+    const result = await tailorResume(jobDescription, resumeText, gaps, engine);
 
     // Counts only. Never the résumé, never the proposed text (SPEC Part 7).
     console.info("[tailor] ok", {
+      engine,
       changes: result.changes.length,
       notAdded: result.notAdded.length,
       latencyMs: Date.now() - startedAt,
@@ -112,6 +158,7 @@ export async function POST(request: Request) {
         : new AnalyzeError("PROVIDER_ERROR", "The rewrite failed.", 502);
 
     console.warn("[tailor] failed", {
+      engine,
       code: analyzeError.code,
       latencyMs: Date.now() - startedAt,
     });

@@ -3,11 +3,12 @@ import { z } from "zod";
 
 import { getUserIdOrNull } from "@/lib/auth";
 import { getApplication, isPersistenceConfigured, saveAnalysis } from "@/lib/db";
-import { MissingEnvError, env, hasAnthropicKey } from "@/lib/env";
+import { MissingEnvError, env, hasAnthropicKey, hasOpenRouterKey } from "@/lib/env";
 import { AnalyzeError, errorBody } from "@/lib/errors";
 import { scoreWithBaseModel } from "@/lib/providers/baseline";
 import { analyzeWithClaude } from "@/lib/providers/claude";
 import { analyzeWithFineTuned } from "@/lib/providers/finetuned";
+import { analyzeWithGemma } from "@/lib/providers/gemma";
 import { analyzeWithKeywords } from "@/lib/providers/keyword";
 import { checkRateLimit, clientAddress, scopeFor } from "@/lib/rate-limit";
 import { ENGINES, MIN_WORDS, type EngineId, type ScoreResult, wordCount } from "@/lib/types";
@@ -119,14 +120,16 @@ export async function POST(request: Request) {
     );
   }
 
-  // The paid engine requires a session. An unauthenticated endpoint that spends API credits
-  // is the surprise invoice SPEC §2.4 warns about, and no per-IP limit fixes it: addresses
-  // are free and a card is not.
-  if (engine === "claude" && !userId) {
+  // Both language-model engines require a session, for the same reason at two scales. Claude
+  // spends money per call, which is the surprise invoice SPEC §2.4 warns about. Gemma spends
+  // a small shared daily allowance on a free endpoint, which one anonymous caller can drain
+  // for everybody. No per-IP limit fixes either: addresses are free, and neither a card nor a
+  // quota is.
+  if ((engine === "claude" || engine === "gemma") && !userId) {
     return fail(
       new AnalyzeError(
         "NOT_CONFIGURED",
-        "Written feedback needs an account. The free engines, fine-tuned, base and keyword coverage, work without signing in.",
+        "Written feedback needs an account. The engines that need no allowance, fine-tuned, base and keyword coverage, work without signing in.",
         401,
       ),
     );
@@ -211,6 +214,15 @@ async function runEngine(
         );
       }
       return analyzeWithClaude(jobDescription, resumeText);
+    case "gemma":
+      if (!hasOpenRouterKey()) {
+        throw new AnalyzeError(
+          "NOT_CONFIGURED",
+          "The open-weights evaluation engine is not configured on this deployment (OPENROUTER_API_KEY is unset).",
+          501,
+        );
+      }
+      return analyzeWithGemma(jobDescription, resumeText);
     case "keyword":
       // No service, no key, no network. This is the engine that always works.
       return analyzeWithKeywords(jobDescription, resumeText);

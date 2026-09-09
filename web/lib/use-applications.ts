@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import type { ApplicationStatus } from "@/lib/applications";
+import type { ApplicationStatus, WorkModel } from "@/lib/applications";
 
 /** The wire shape of an application. Mirrors `Application` in `lib/db.ts`, restated here
  *  so a client component never imports the server-only data module to get a type. */
@@ -23,6 +23,9 @@ export interface ApplicationView {
   company: string;
   role: string;
   location: string | null;
+  /** Free text the user entered. Shown in the detail drawer, not in the table. */
+  industry: string | null;
+  workModel: WorkModel | null;
   postingUrl: string | null;
   status: ApplicationStatus;
   matchScore: number | null;
@@ -45,6 +48,8 @@ export interface NewApplication {
   company: string;
   role: string;
   location?: string | null;
+  industry?: string | null;
+  workModel?: WorkModel | null;
   postingUrl?: string | null;
   postingText?: string | null;
   status?: ApplicationStatus;

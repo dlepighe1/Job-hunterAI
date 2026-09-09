@@ -33,6 +33,8 @@ export function Drawer({
   onClose,
   title,
   subtitle,
+  lead,
+  aside,
   width = "standard",
   children,
   footer,
@@ -41,6 +43,16 @@ export function Drawer({
   onClose: () => void;
   title: string;
   subtitle?: string;
+  /**
+   * Optional content left of the title, for a company mark or document icon.
+   *
+   * Additive so the four existing callers are untouched. The alternative was rebuilding this
+   * header inside the application drawer's body, which would have printed the title twice:
+   * once as the drawer's accessible name and once as the board's header block.
+   */
+  lead?: React.ReactNode;
+  /** Optional content right of the title, before the close button. A score, typically. */
+  aside?: React.ReactNode;
   /** `wide` is for document preview, where a narrow column makes a resume unreadable. */
   width?: DrawerWidth;
   children: React.ReactNode;
@@ -128,10 +140,12 @@ export function Drawer({
         tabIndex={-1}
       >
         <header className="drawer__head">
-          <div>
+          {lead}
+          <div className="drawer__head-ident">
             <h2>{title}</h2>
             {subtitle && <p>{subtitle}</p>}
           </div>
+          {aside}
           <button type="button" className="drawer__close" onClick={close} aria-label={`Close ${title}`}>
             ×
           </button>

@@ -58,6 +58,18 @@ alter table resumes add column if not exists note        text;
 create index if not exists resumes_parent_idx on resumes (parent_id);
 create index if not exists resumes_master_idx on resumes (user_id, is_tailored, created_at desc);
 
+-- One default per user, enforced here rather than only in the code that maintains it.
+--
+-- `setDefaultResume()` clears every flag and then sets one, in that order, so a failure
+-- between the two writes leaves the user with no default rather than two. This index is what
+-- makes "two" impossible rather than merely unlikely: without it the invariant lives in one
+-- function, and the day something else writes `is_default` the product starts asking a row
+-- ordering which résumé is the default.
+--
+-- Partial, because the constraint is on the true rows only. A user may own any number of
+-- résumés that are not the default, and a plain unique index on (user_id) would forbid that.
+create unique index if not exists resumes_one_default_idx on resumes (user_id) where is_default;
+
 -- ---------------------------------------------------------------------------
 -- job_boards
 -- ---------------------------------------------------------------------------
@@ -133,6 +145,19 @@ alter table applications add column if not exists priority boolean not null defa
 alter table applications add column if not exists responded_at timestamptz;
 create index if not exists applications_priority_idx on applications (user_id, priority);
 
+-- Context the detail drawer shows and the table deliberately does not.
+--
+-- Both are optional and both are entered by the user. Neither is inferred: this product does
+-- not have a company database, and guessing that "Helixion Health" is in healthcare from its
+-- name is the kind of plausible fabrication FEATURES.md §2.6 exists to prevent.
+--
+-- `work_model` is constrained rather than free text because it drives a filter later and
+-- three spellings of "remote" would defeat that. `industry` stays free text because the
+-- taxonomy of industries is genuinely open and a CHECK would be wrong within a month.
+alter table applications add column if not exists industry text;
+alter table applications add column if not exists work_model text
+  check (work_model is null or work_model in ('remote','hybrid','onsite'));
+
 -- The other half of the resume lineage, declared here because it points at the table
 -- above. Which posting a tailored resume was written for; null on a master.
 alter table resumes add column if not exists application_id uuid references applications(id) on delete set null;
@@ -152,7 +177,7 @@ create table if not exists analyses (
   user_id        text not null references profiles(id) on delete cascade,
   application_id uuid references applications(id) on delete cascade,
   resume_id      uuid references resumes(id) on delete set null,
-  engine         text not null check (engine in ('finetuned','base','claude','keyword')),
+  engine         text not null,               -- see analyses_engine_check below
   model_id       text not null,               -- exact model string, for reproducibility
   score          numeric(5,4),                -- 0 to 1, null for engines that do not score
   calibrated     boolean not null default false,
@@ -180,6 +205,25 @@ create index if not exists analyses_user_idx on analyses (user_id, created_at de
 alter table analyses add column if not exists is_baseline boolean not null default true;
 alter table analyses add column if not exists role_title  text;
 create index if not exists analyses_baseline_idx on analyses (user_id, is_baseline, created_at desc);
+
+-- The engine vocabulary, as a NAMED constraint rather than an inline check.
+--
+-- Inline, it could never change. `create table if not exists` is a no-op against a project
+-- that already has the table, so a fifth engine added to lib/types.ts would pass every
+-- offline test and then be rejected by a constraint from the first day of the project. Named
+-- and dropped first, it is re-stated on every run and an existing database moves with the
+-- file. The name is the one Postgres generates for the inline form, so this adopts the
+-- constraint already on the live project rather than leaving it behind alongside a second.
+--
+-- `gemma` is an open-weights model served over OpenRouter. It is an evaluation engine for
+-- the generative path, which otherwise could not be exercised without paying Anthropic per
+-- iteration. Its score is uncalibrated, exactly as Claude's is.
+--
+-- `db.constraints.test.ts` parses this list and compares it to ENGINES in lib/types.ts, so
+-- the two cannot drift without a test failing offline.
+alter table analyses drop constraint if exists analyses_engine_check;
+alter table analyses add constraint analyses_engine_check
+  check (engine in ('finetuned','base','claude','keyword','gemma'));
 
 -- ---------------------------------------------------------------------------
 -- application_events
@@ -278,6 +322,18 @@ create table if not exists waitlist (
   created_at timestamptz not null default now()
 );
 
+-- One row per address per feature.
+--
+-- The route already trims and lowercases the address before it validates it, precisely so
+-- that a dedupe could not be defeated by casing or stray whitespace. Nothing then deduped:
+-- a visitor who clicked "notify me" three times was three rows, and the count of people
+-- waiting for a feature — the only thing this table is for — was an overstatement nobody
+-- could correct after the fact.
+--
+-- `joinWaitlist()` upserts against this index and ignores the conflict, so signing up twice
+-- stays a success for the visitor and stops being a row.
+create unique index if not exists waitlist_signup_idx on waitlist (email, feature);
+
 -- ---------------------------------------------------------------------------
 -- Row-level security
 -- ---------------------------------------------------------------------------
@@ -309,3 +365,79 @@ drop policy if exists "shared analyses are publicly readable" on analyses;
 --
 -- `contacts` cascading matters more than the rest: those rows describe third parties who
 -- never had an account here, so they must not outlive the account that recorded them.
+
+-- ---------------------------------------------------------------------------
+-- Storage: the resumes bucket
+-- ---------------------------------------------------------------------------
+-- Holds the ORIGINAL uploaded file, so the résumé preview can show the actual document
+-- rather than a re-rendering of the text pulled out of it. The extracted text stays in
+-- `resumes.content`, which is what the matcher scores; this is what a human looks at.
+--
+-- `lib/db.ts` has always referenced this bucket to clean it up on account deletion, and
+-- nothing ever created it. Uploads went nowhere and `resumes.file_path` was never written,
+-- which is why every preview had only text to show.
+--
+-- **Private.** `public = false`, so an object is reachable only through a signed URL minted
+-- server-side for its owner. A résumé carries a home address and a phone number, and a
+-- public bucket makes every one of them a guessable URL away from anyone.
+--
+-- Objects are keyed `{userId}/{resumeId}.{ext}`, which is what makes the account-deletion
+-- cleanup a prefix listing rather than a join.
+-- EVERY statement in this section is wrapped, and that is not fastidiousness.
+--
+-- `scripts/apply-schema.mjs` sends this whole file to the Management API as ONE query, which
+-- the API runs in a single transaction. A statement that fails takes all nine tables down
+-- with it. The `storage` schema is owned by `supabase_storage_admin` rather than by the role
+-- this runs as, so `alter table storage.objects` and `drop policy ... on storage.objects` can
+-- both fail with `insufficient_privilege` depending on how the project was provisioned.
+--
+-- Unguarded, that turns "apply the schema" into "apply nothing, and report an error about a
+-- table you did not know existed". Each block below degrades to a notice instead, so the
+-- tables always land and anything the role could not do is reported rather than fatal.
+
+do $$
+begin
+  insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  values (
+    'resumes',
+    'resumes',
+    false,
+    10485760,  -- 10 MB, the ceiling MAX_UPLOAD_BYTES enforces before a parser sees bytes
+    array[
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ]
+  )
+  on conflict (id) do update
+    set public             = excluded.public,
+        file_size_limit    = excluded.file_size_limit,
+        allowed_mime_types = excluded.allowed_mime_types;
+exception
+  when insufficient_privilege or undefined_table then
+    raise notice 'Could not create the resumes bucket from SQL. Create it in Storage: name "resumes", NOT public, 10 MB limit.';
+end $$;
+
+-- Same posture as every table above: RLS on, no permissive policies. Reads and writes go
+-- through the server with the service-role key, which bypasses RLS by design, so a leaked
+-- anon key can neither list nor fetch a single résumé.
+--
+-- Supabase enables RLS on `storage.objects` by default, so this is usually a no-op that
+-- confirms the state rather than changing it.
+do $$
+begin
+  alter table storage.objects enable row level security;
+exception
+  when insufficient_privilege or undefined_table then
+    raise notice 'Could not alter storage.objects (owned by supabase_storage_admin). Supabase enables RLS there by default; verify it in the dashboard.';
+end $$;
+
+-- Removes a policy an earlier setup may have added by hand. Re-running this file should
+-- close a hole rather than leave it open.
+do $$
+begin
+  drop policy if exists "resumes are publicly readable" on storage.objects;
+exception
+  when insufficient_privilege or undefined_table then
+    raise notice 'Could not drop legacy storage policies; check Storage policies in the dashboard.';
+end $$;

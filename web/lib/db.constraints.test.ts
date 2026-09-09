@@ -27,6 +27,7 @@ import { describe, expect, it } from "vitest";
 import { APPLICATION_STATUSES } from "@/lib/applications";
 import { OUTREACH_CHANNELS, OUTREACH_STATUSES } from "@/lib/outreach";
 import { ENGINES } from "@/lib/types";
+import { WAITLIST_FEATURES } from "@/lib/waitlist";
 
 const ROOT = join(__dirname, "..", "..");
 const SQL = readFileSync(join(ROOT, "supabase", "schema.sql"), "utf8");
@@ -63,28 +64,13 @@ function schemaChecks(): Map<string, Set<string>> {
   return checks;
 }
 
-/**
- * A string-literal union from `db.ts`, as a set.
+/*
+ * Every vocabulary below is now imported rather than parsed out of source text.
  *
- * `waitlist.feature` has no runtime constant to import — it exists only as a type, which
- * vanishes at compile time and cannot be asserted against directly. The source text is the
- * only place that vocabulary survives, so it is read the same way `db.schema.test.ts` reads
- * the query text.
- *
- * `outreach.channel` used to need this too. It was written out three separate times as an
- * inline union, so there was nothing to import; it is now `OUTREACH_CHANNELS` and is checked
- * directly. One caller left is not a pattern worth keeping, but a parser that exists anyway
- * is cheaper than a constant invented solely to be asserted.
+ * Both `outreach.channel` and `waitlist.feature` were once inline unions repeated across
+ * several files, with no constant to import and nothing but the source text to read. Each
+ * now has exactly one definition, so the assertions compare values instead of regexes.
  */
-function unionInDbTs(field: string): Set<string> {
-  // String.raw, because in a plain template literal `\b` is a backspace character
-  // rather than a word boundary, and the pattern then silently matches nothing.
-  const m = DB_TS.match(
-    new RegExp(String.raw`\b${field}\??:\s*((?:"[^"]*"\s*\|\s*)+"[^"]*")`),
-  );
-  if (!m) throw new Error(`no string-literal union named "${field}" found in lib/db.ts`);
-  return new Set([...m[1].matchAll(/"([^"]*)"/g)].map((v) => v[1]));
-}
 
 describe("lib/ matches the CHECK constraints in supabase/schema.sql", () => {
   const checks = schemaChecks();
@@ -123,8 +109,8 @@ describe("lib/ matches the CHECK constraints in supabase/schema.sql", () => {
     expect(new Set(OUTREACH_CHANNELS)).toEqual(checks.get("outreach.channel"));
   });
 
-  it("waitlist.feature matches the union in db.ts", () => {
-    expect(unionInDbTs("feature")).toEqual(checks.get("waitlist.feature"));
+  it("waitlist.feature matches WAITLIST_FEATURES", () => {
+    expect(new Set(WAITLIST_FEATURES)).toEqual(checks.get("waitlist.feature"));
   });
 });
 
